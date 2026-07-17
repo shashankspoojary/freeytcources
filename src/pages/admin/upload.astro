@@ -1,0 +1,568 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = "Secure Course Upload Console";
+const description = "Manually ingest new courses and syllabus layouts into the curriculum directory.";
+---
+
+<Layout title={title} description={description}>
+  <!-- Navigation Bar -->
+  <nav class="sticky top-0 z-50 bg-canvas/95 backdrop-blur border-b border-hairline px-6 py-4 md:px-12 flex justify-between items-center transition-all">
+    <a href="/" class="flex items-center gap-2 group">
+      <!-- Video Screen Play Icon -->
+      <svg class="h-6 w-6 text-primary transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zm-5-6l-7 4V7l7 4z"/>
+      </svg>
+      <span class="font-mono text-lg font-bold tracking-widest text-ink group-hover:text-primary transition-colors">
+        FREEYT<span class="text-primary">COURSES</span>
+      </span>
+    </a>
+    <a href="/" class="text-xs font-mono uppercase border border-hairline hover:border-primary text-body hover:text-primary px-3 py-1.5 rounded-sm transition-all flex items-center gap-2">
+      <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Back to Hub
+    </a>
+  </nav>
+
+  <main class="max-w-4xl mx-auto px-6 py-12 md:py-20 flex flex-col items-center justify-center min-h-[calc(100vh-140px)]">
+    
+    <!-- Lock Screen / Passcode Entry -->
+    <div id="lock-screen" class="w-full max-w-md bg-canvas border border-hairline rounded-md p-8 text-center transition-all duration-300 transform scale-100 opacity-100">
+      <div class="h-16 w-16 mx-auto mb-6 rounded-full bg-canvas-soft border border-hairline flex items-center justify-center text-primary">
+        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+        </svg>
+      </div>
+      
+      <div class="inline-block font-mono text-[10px] text-primary uppercase tracking-[2.52px] mb-3 bg-primary/10 px-2.5 py-1 rounded-pill border border-primary/20">
+        Access Restricted
+      </div>
+      
+      <h1 class="text-2xl font-light text-ink-strong tracking-tight mb-3">Admin Lockscreen</h1>
+      <p class="text-sm text-body mb-8 font-light leading-relaxed">
+        Authentication required. Enter the administrative passcode to access the course ingestion console.
+      </p>
+
+      <form id="passcode-form" class="space-y-4 text-left">
+        <div>
+          <label for="passcode" class="block text-xs font-mono uppercase tracking-wider text-mute mb-2">Security Access Code</label>
+          <input 
+            type="password" 
+            id="passcode" 
+            placeholder="Hint: admin123" 
+            class="w-full bg-canvas-soft border border-hairline text-ink rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/40"
+            required
+          />
+          <p id="passcode-error" class="hidden text-xs text-red-500 mt-2 font-mono">❌ Invalid passcode. Access denied.</p>
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full bg-primary text-on-primary font-mono uppercase text-sm font-bold tracking-wider py-3.5 px-4 rounded-sm hover:bg-primary-soft transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-canvas cursor-pointer"
+        >
+          Unlock Console
+        </button>
+      </form>
+    </div>
+
+    <!-- Admin Upload Console (Hidden Initially) -->
+    <div id="admin-console" class="hidden w-full max-w-3xl space-y-8 opacity-0 transform translate-y-4 transition-all duration-500">
+      
+      <!-- Console Header -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-hairline pb-6">
+        <div>
+          <div class="inline-block font-mono text-[10px] text-primary uppercase tracking-[2.52px] mb-2 bg-primary/10 px-2.5 py-1 rounded-pill border border-primary/20">
+            Secure Admin Session Active
+          </div>
+          <h1 class="text-3xl font-light text-ink-strong tracking-[-0.65px]">Course Ingestion Console</h1>
+          <p class="text-sm text-body font-light mt-1">
+            Build, review, and export AdSense-compliant course syllabus structures.
+          </p>
+        </div>
+        <button 
+          id="lock-console-btn" 
+          class="text-xs font-mono uppercase border border-hairline hover:border-red-500/50 hover:text-red-400 text-body px-3 py-2 rounded-sm transition-all flex items-center gap-2 cursor-pointer"
+        >
+          <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2z" />
+          </svg>
+          Lock Console
+        </button>
+      </div>
+
+      <!-- Main Form -->
+      <form id="upload-form" class="space-y-8">
+        
+        <!-- Section 1: Course Metadata -->
+        <div class="bg-canvas-soft border border-hairline rounded-md p-6 space-y-6">
+          <div class="flex items-center gap-2 mb-2 border-b border-hairline/40 pb-3">
+            <span class="text-xs font-mono text-primary font-bold">01/</span>
+            <h2 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold">Course Meta-Data</h2>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="course-title" class="block text-xs font-mono uppercase tracking-wider text-mute mb-2">Course Title</label>
+              <input 
+                type="text" 
+                id="course-title" 
+                placeholder="e.g. Advanced AI Agents Masterclass"
+                class="w-full bg-canvas border border-hairline text-ink rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/40"
+                required
+              />
+            </div>
+
+            <div>
+              <label for="youtube-link" class="block text-xs font-mono uppercase tracking-wider text-mute mb-2">YouTube Playlist Link / ID</label>
+              <input 
+                type="text" 
+                id="youtube-link" 
+                placeholder="e.g. https://www.youtube.com/playlist?list=..."
+                class="w-full bg-canvas border border-hairline text-ink rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/40"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="category" class="block text-xs font-mono uppercase tracking-wider text-mute mb-2">Category</label>
+              <div class="relative">
+                <select 
+                  id="category" 
+                  class="w-full appearance-none bg-canvas border border-hairline text-ink rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all cursor-pointer pr-10"
+                  required
+                >
+                  <option value="" disabled selected>Select Category</option>
+                  <option value="AI Engineering">AI Engineering</option>
+                  <option value="Video Editing">Video Editing</option>
+                  <option value="Coding Skills">Coding Skills</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-mute">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label for="author" class="block text-xs font-mono uppercase tracking-wider text-mute mb-2">Author Name</label>
+              <input 
+                type="text" 
+                id="author" 
+                placeholder="e.g. Dr. Angela Thorne"
+                class="w-full bg-canvas border border-hairline text-ink rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/40"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Extended Summary (AdSense word-count check) -->
+        <div class="bg-canvas-soft border border-hairline rounded-md p-6 space-y-6">
+          <div class="flex justify-between items-center border-b border-hairline/40 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-primary font-bold">02/</span>
+              <h2 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold">Extended Overview & Critique</h2>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-mono uppercase tracking-wider text-mute">AdSense Criteria:</span>
+              <span id="adsense-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono border border-red-500/20 bg-red-500/10 text-red-400 flex items-center gap-1">
+                <span class="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                Incomplete (<span id="words-needed">200</span> left)
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <label for="overview" class="block text-xs font-mono uppercase tracking-wider text-mute">Extended Summary (Markdown Supported)</label>
+              <span class="text-xs font-mono text-mute">
+                Words: <span id="word-count" class="text-ink font-semibold">0</span> / 200 | Chars: <span id="char-count" class="text-ink">0</span>
+              </span>
+            </div>
+            
+            <textarea 
+              id="overview" 
+              rows="8"
+              placeholder="Provide a comprehensive review of the course. Must be at least 200 words long to satisfy SEO/AdSense optimization layers. Detail the teaching style, strengths, flaws, and required tools."
+              class="w-full bg-canvas border border-hairline text-ink rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/40 font-light leading-relaxed mb-1"
+              required
+            ></textarea>
+            
+            <div id="adsense-warning" class="mt-3 p-3 bg-red-500/5 border border-red-500/20 rounded-sm flex items-start gap-2.5 transition-all duration-300">
+              <svg class="h-4 w-4 text-red-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <p class="text-xs text-body font-light">
+                <strong class="text-ink-strong">AdSense Requirement Warning:</strong> Your overview review text is currently under 200 words. Search crawlers expect editorial substance for high-quality monetization directories.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Dynamic Syllabus Modules -->
+        <div class="bg-canvas-soft border border-hairline rounded-md p-6 space-y-6">
+          <div class="flex justify-between items-center border-b border-hairline/40 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-primary font-bold">03/</span>
+              <h2 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold">Syllabus & Chapter Modules</h2>
+            </div>
+            <span class="text-xs font-mono text-mute">
+              Active Modules: <span id="module-count" class="text-primary font-bold">0</span>
+            </span>
+          </div>
+
+          <!-- Modules Container -->
+          <div id="modules-list" class="space-y-4">
+            <!-- Dynamic rows will be inserted here by JavaScript -->
+          </div>
+
+          <!-- Add Module Control -->
+          <button 
+            type="button" 
+            id="add-module-btn"
+            class="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-hairline hover:border-primary/50 text-xs font-mono uppercase text-body hover:text-primary rounded-sm transition-all cursor-pointer bg-canvas/30"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Course Module
+          </button>
+        </div>
+
+        <!-- Form Submission Controls -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-hairline">
+          <button 
+            type="button" 
+            id="reset-form-btn"
+            class="w-full sm:w-auto px-6 py-3.5 border border-hairline hover:border-red-500/30 text-xs font-mono uppercase text-body hover:text-red-400 rounded-sm transition-all cursor-pointer bg-transparent"
+          >
+            Reset Form
+          </button>
+          
+          <button 
+            type="submit" 
+            class="w-full sm:w-auto bg-primary text-on-primary font-mono uppercase text-sm font-bold tracking-wider py-3.5 px-8 rounded-sm hover:bg-primary-soft transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-canvas cursor-pointer flex items-center justify-center gap-2"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+            </svg>
+            Submit Course payload
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </main>
+
+  <!-- Success Toast Alert Component -->
+  <div 
+    id="success-toast" 
+    class="fixed bottom-6 right-6 z-50 bg-canvas border border-hairline rounded-md p-4 shadow-2xl max-w-sm flex gap-3 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-300 border-l-4 border-l-primary"
+  >
+    <div class="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+    <div>
+      <h3 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold">Submission Mock Success</h3>
+      <p class="text-xs text-body font-light mt-0.5 leading-relaxed">
+        Course structure has been validated and compiled. The complete JSON payload was printed to the developer console.
+      </p>
+    </div>
+    <button 
+      id="close-toast-btn"
+      class="text-mute hover:text-ink transition-colors ml-2 self-start cursor-pointer focus:outline-none bg-transparent border-none"
+    >
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+</Layout>
+
+<script>
+  // DOM Elements
+  const lockScreen = document.getElementById('lock-screen');
+  const passcodeForm = document.getElementById('passcode-form');
+  const passcodeField = document.getElementById('passcode') as HTMLInputElement;
+  const passcodeError = document.getElementById('passcode-error');
+  
+  const adminConsole = document.getElementById('admin-console');
+  const lockConsoleBtn = document.getElementById('lock-console-btn');
+  const uploadForm = document.getElementById('upload-form') as HTMLFormElement;
+  const resetFormBtn = document.getElementById('reset-form-btn');
+  
+  // Overview counter inputs
+  const overviewInput = document.getElementById('overview') as HTMLTextAreaElement;
+  const wordCountDisplay = document.getElementById('word-count');
+  const charCountDisplay = document.getElementById('char-count');
+  const adsenseBadge = document.getElementById('adsense-badge');
+  const wordsNeededDisplay = document.getElementById('words-needed');
+  const adsenseWarning = document.getElementById('adsense-warning');
+  
+  // Dynamic Modules
+  const modulesList = document.getElementById('modules-list');
+  const addModuleBtn = document.getElementById('add-module-btn');
+  const moduleCountDisplay = document.getElementById('module-count');
+  
+  // Toast
+  const successToast = document.getElementById('success-toast');
+  const closeToastBtn = document.getElementById('close-toast-btn');
+
+  // App Session state check
+  const AUTH_KEY = 'freeytcourses_admin_auth';
+  
+  function checkSession() {
+    const isAuthed = localStorage.getItem(AUTH_KEY) === 'true';
+    if (isAuthed) {
+      revealConsole();
+    }
+  }
+
+  function revealConsole() {
+    lockScreen?.classList.add('opacity-0', 'scale-95');
+    setTimeout(() => {
+      lockScreen?.classList.add('hidden');
+      adminConsole?.classList.remove('hidden');
+      // trigger slide-up transition
+      setTimeout(() => {
+        adminConsole?.classList.add('opacity-100', 'translate-y-0');
+      }, 50);
+    }, 300);
+  }
+
+  function hideConsole() {
+    adminConsole?.classList.remove('opacity-100', 'translate-y-0');
+    setTimeout(() => {
+      adminConsole?.classList.add('hidden');
+      lockScreen?.classList.remove('hidden');
+      setTimeout(() => {
+        lockScreen?.classList.remove('opacity-0', 'scale-95');
+      }, 50);
+    }, 300);
+    localStorage.removeItem(AUTH_KEY);
+    passcodeField.value = '';
+    passcodeError?.classList.add('hidden');
+  }
+
+  // Handle Passcode Unlock
+  passcodeForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (passcodeField.value === 'admin123') {
+      localStorage.setItem(AUTH_KEY, 'true');
+      passcodeError?.classList.add('hidden');
+      revealConsole();
+    } else {
+      passcodeError?.classList.remove('hidden');
+      passcodeField.classList.add('border-red-500');
+      setTimeout(() => {
+        passcodeField.classList.remove('border-red-500');
+      }, 1000);
+    }
+  });
+
+  // Handle Lock Out
+  lockConsoleBtn?.addEventListener('click', hideConsole);
+
+  // Live overview validation
+  function updateCounters() {
+    const text = overviewInput.value.trim();
+    const words = text ? text.split(/\s+/).filter(Boolean) : [];
+    const wordCount = words.length;
+    const charCount = text.length;
+
+    if (wordCountDisplay) wordCountDisplay.textContent = String(wordCount);
+    if (charCountDisplay) charCountDisplay.textContent = String(charCount);
+
+    const minWords = 200;
+    if (wordCount >= minWords) {
+      // Success Criteria met
+      if (adsenseBadge) {
+        adsenseBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono border border-primary/20 bg-primary/10 text-primary flex items-center gap-1";
+        adsenseBadge.innerHTML = `<span class="h-1.5 w-1.5 rounded-full bg-primary"></span> Meets AdSense criteria`;
+      }
+      adsenseWarning?.classList.add('hidden');
+    } else {
+      // Under criteria
+      const wordsLeft = minWords - wordCount;
+      if (adsenseBadge) {
+        adsenseBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono border border-red-500/20 bg-red-500/10 text-red-400 flex items-center gap-1";
+        adsenseBadge.innerHTML = `<span class="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span> Incomplete (<span id="words-needed">${wordsLeft}</span> left)`;
+      }
+      adsenseWarning?.classList.remove('hidden');
+    }
+  }
+
+  overviewInput?.addEventListener('input', updateCounters);
+
+  // Dynamic modules management
+  let moduleIndex = 0;
+
+  function createModuleRow(titleText = '', descText = '') {
+    moduleIndex++;
+    const rowId = `module-row-${moduleIndex}`;
+    
+    const row = document.createElement('div');
+    row.id = rowId;
+    row.className = "group border border-hairline bg-canvas/40 p-4 rounded-sm space-y-4 relative hover:border-hairline-soft transition-colors";
+    
+    row.innerHTML = `
+      <div class="flex justify-between items-center">
+        <span class="text-[10px] font-mono uppercase text-mute">Module Row #${moduleIndex}</span>
+        <button 
+          type="button" 
+          class="remove-module-btn text-mute hover:text-red-400 text-xs font-mono flex items-center gap-1 transition-colors cursor-pointer bg-transparent border-none"
+          data-target="${rowId}"
+        >
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Remove
+        </button>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="md:col-span-1">
+          <label class="block text-[10px] font-mono uppercase tracking-wider text-mute mb-1.5">Chapter Title</label>
+          <input 
+            type="text" 
+            placeholder="e.g. Module 1: Core Fundamentals" 
+            class="module-title-input w-full bg-canvas border border-hairline text-ink rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/30 font-medium"
+            required
+          />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[10px] font-mono uppercase tracking-wider text-mute mb-1.5">Module Description</label>
+          <input 
+            type="text" 
+            placeholder="Describe what is taught, references, or duration estimates..." 
+            class="module-desc-input w-full bg-canvas border border-hairline text-ink rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/30 font-light"
+            required
+          />
+        </div>
+      </div>
+    `;
+
+    // Add event listener to the remove button
+    const removeBtn = row.querySelector('.remove-module-btn');
+    removeBtn?.addEventListener('click', () => {
+      row.remove();
+      updateModuleCount();
+    });
+
+    modulesList?.appendChild(row);
+    updateModuleCount();
+
+    // Fill elements if values passed
+    if (titleText) {
+      const titleInput = row.querySelector('.module-title-input') as HTMLInputElement;
+      if (titleInput) titleInput.value = titleText;
+    }
+    if (descText) {
+      const descInput = row.querySelector('.module-desc-input') as HTMLInputElement;
+      if (descInput) descInput.value = descText;
+    }
+  }
+
+  function updateModuleCount() {
+    if (modulesList && moduleCountDisplay) {
+      const count = modulesList.children.length;
+      moduleCountDisplay.textContent = String(count);
+    }
+  }
+
+  addModuleBtn?.addEventListener('click', () => createModuleRow());
+
+  // Toast controls
+  let toastTimeout: number;
+  
+  function triggerToast() {
+    if (successToast) {
+      successToast.classList.remove('translate-y-12', 'opacity-0', 'pointer-events-none');
+      successToast.classList.add('translate-y-0', 'opacity-100');
+      
+      clearTimeout(toastTimeout);
+      toastTimeout = window.setTimeout(dismissToast, 4000);
+    }
+  }
+
+  function dismissToast() {
+    if (successToast) {
+      successToast.classList.remove('translate-y-0', 'opacity-100');
+      successToast.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
+    }
+  }
+
+  closeToastBtn?.addEventListener('click', dismissToast);
+
+  // Form Reset
+  resetFormBtn?.addEventListener('click', () => {
+    if (confirm('Are you sure you want to discard all form inputs?')) {
+      uploadForm.reset();
+      if (modulesList) {
+        modulesList.innerHTML = '';
+      }
+      moduleIndex = 0;
+      // Re-create default one module row
+      createModuleRow();
+      updateCounters();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+
+  // Form Submit
+  uploadForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const titleVal = (document.getElementById('course-title') as HTMLInputElement).value;
+    const ytVal = (document.getElementById('youtube-link') as HTMLInputElement).value;
+    const catVal = (document.getElementById('category') as HTMLSelectElement).value;
+    const authorVal = (document.getElementById('author') as HTMLInputElement).value;
+    const overviewVal = overviewInput.value;
+
+    // Collect dynamic modules
+    const modules: Array<{ title: string; description: string }> = [];
+    const moduleRows = modulesList?.children || [];
+    for (let i = 0; i < moduleRows.length; i++) {
+      const row = moduleRows[i];
+      const titleInput = row.querySelector('.module-title-input') as HTMLInputElement;
+      const descInput = row.querySelector('.module-desc-input') as HTMLInputElement;
+      if (titleInput && descInput) {
+        modules.push({
+          title: titleInput.value.trim(),
+          description: descInput.value.trim()
+        });
+      }
+    }
+
+    // Compile into course JSON
+    const payload = {
+      title: titleVal.trim(),
+      youtubeUrl: ytVal.trim(),
+      category: catVal,
+      author: authorVal.trim(),
+      overview: overviewVal.trim(),
+      chapters: modules,
+      timestamp: new Date().toISOString(),
+      status: "mock_success"
+    };
+
+    console.log("Ingested Course JSON Payload:", payload);
+
+    // Show toast
+    triggerToast();
+  });
+
+  // Initialization
+  checkSession();
+  // Start with 1 default module row if empty
+  if (modulesList && modulesList.children.length === 0) {
+    createModuleRow();
+  }
+  updateCounters();
+</script>
