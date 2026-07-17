@@ -1,0 +1,140 @@
+export const courses = [
+  {
+    id: 1,
+    slug: "mastering-ai-agents-langchain-python",
+    title: "Mastering AI Agents with LangChain & Python",
+    description: "Build autonomous AI agents capable of tool usage, dynamic planning, and vector search in Python.",
+    category: "AI Engineering",
+    rating: 4.9,
+    votes: 482,
+    views: 12450,
+    publishDate: "2026-05-12",
+    duration: "4h 15m",
+    author: "Dr. Angela Thorne",
+    youtubeUrl: "https://www.youtube.com/watch?v=mock-langchain",
+    tools: ["Python", "LangChain", "OpenAI API", "ChromaDB"],
+    overview: "Building autonomous AI agents requires a thorough understanding of Prompt Engineering, LangChain expressions, and vector-based database retrievals. This tutorial provides an exceptional roadmap for developers looking to move beyond simple chat API calls. The editorial team highly recommends this curriculum because of its hands-on approach. In the first half, the instructor guides the student through setting up custom tools and incorporating structural outputs, which are essential for tool-calling APIs. Unlike many standard tutorials that gloss over error-handling, this course addresses agent failure loops and hallucination mitigation with practical code examples. The second half focuses on deploying these models using LangServe and integrating persistent state, which is a major bottleneck in enterprise agent development. By dissecting real-world use cases, the tutorial bridges the gap between toy projects and production systems. The critique of LangChain's internal abstractions is particularly helpful; the author does not shy away from showing when raw API calls or lightweight alternatives might be more efficient. The pacing is intense but manageable, structured module by module. It is a must-watch for coding engineers looking to master agentic workflows in Python.",
+    chapters: [
+      { title: "Module 1: Introduction to Agentic Workflows", duration: "45 mins" },
+      { title: "Module 2: Prompt Templates and Structured Outputs", duration: "60 mins" },
+      { title: "Module 3: Memory Systems and Vector Databases", duration: "75 mins" },
+      { title: "Module 4: Building Custom Tools and ReAct Frameworks", duration: "90 mins" },
+      { title: "Module 5: Deploying Agents with LangServe", duration: "60 mins" }
+    ]
+  },
+  {
+    id: 2,
+    slug: "davinci-resolve-19-video-editing-masterclass",
+    title: "DaVinci Resolve 19: Complete Video Editing Masterclass",
+    description: "Learn professional video editing, color grading, visual effects, and audio mixing in DaVinci Resolve.",
+    category: "Video Editing",
+    rating: 4.8,
+    votes: 312,
+    views: 8900,
+    publishDate: "2026-06-20",
+    duration: "5h 15m",
+    author: "Marcus Sterling",
+    youtubeUrl: "https://www.youtube.com/watch?v=mock-davinci",
+    tools: ["DaVinci Resolve", "Fusion", "Fairlight", "Color Page"],
+    overview: "DaVinci Resolve 19 has consolidated its place as the industry standard for post-production, color grading, and visual effects editing. This comprehensive tutorial serves as an excellent entry point for video editors looking to migrate from Premiere Pro. Our editorial review team highlighted this course for its structured methodology. The tutorial does not just teach button-clicking; it explains the color science, rendering pipelines, and file organization strategies that professionals use. The grading modules are particularly impressive, breaking down the Color Page node system, primary wheels, and custom curves in a readable format. The editor outlines how to manipulate color space transforms and manage skin tones with surgical precision. In addition, the Fusion visual effects chapter covers keyframing, tracking, and particle generators in a way that simplifies DaVinci's node-based workspace. The course overview also outlines how to mix audio elements inside the Fairlight suite, ensuring that viewers walk away with a complete understanding of the post-production workflow. Overall, this YouTube series offers premium-grade content for free, making it highly suitable for aspiring content creators and film students alike.",
+    chapters: [
+      { title: "Module 1: Interface Setup and Media Ingestion", duration: "35 mins" },
+      { title: "Module 2: Rough Cuts, Trimming, and Editing Tools", duration: "50 mins" },
+      { title: "Module 3: Color Pages, LUTs, and Secondary Grading", duration: "80 mins" },
+      { title: "Module 4: Visual Effects inside the Fusion Tab", duration: "90 mins" },
+      { title: "Module 5: Audio Mastering with Fairlight", duration: "45 mins" }
+    ]
+  },
+  {
+    id: 3,
+    slug: "advanced-python-design-patterns-concurrency",
+    title: "Advanced Python: Design Patterns and Concurrency",
+    description: "Master clean code OOP, structural design patterns, multi-threading, and asyncio in modern Python.",
+    category: "Coding Skills",
+    rating: 4.7,
+    votes: 624,
+    views: 18200,
+    publishDate: "2026-04-18",
+    duration: "6h 30m",
+    author: "Elena Rostova",
+    youtubeUrl: "https://www.youtube.com/watch?v=mock-python",
+    tools: ["Python", "Asyncio", "VS Code", "Profiling Tools"],
+    overview: "Writing idiomatic Python requires mastering advanced OOP concepts, design patterns, and concurrency paradigms. This tutorial provides an outstanding, deep-dive examination of Python's execution model and execution optimizations. Our editorial critique rates this as one of the best advanced Python series available online. The author starts by breaking down creational, structural, and behavioral design patterns, adapting classic Gang of Four patterns to modern Python constructs. The section on metaprogramming, descriptors, and custom metaclasses is highly detailed, explaining how frameworks like Django and Pydantic work under the hood. More importantly, the course tackles the complex topic of concurrency vs parallelism. It clearly distinguishes between CPU-bound tasks utilizing multiprocessing and I/O-bound tasks using asyncio or threading. The tutorial provides side-by-side performance benchmarks, demonstrating how to write clean, non-blocking asynchronous training loops and microservices. The code quality is stellar throughout, highlighting PEP 8 compliance and proper type-hinting. This is a critical educational resource for developers who want to scale their applications, reduce compute overhead, and write highly maintainable Python software.",
+    chapters: [
+      { title: "Module 1: Creational, Structural, and Behavioral Design Patterns", duration: "90 mins" },
+      { title: "Module 2: The Python Object Model and Metaprogramming", duration: "70 mins" },
+      { title: "Module 3: Concurrency vs Parallelism: Multiprocessing and Threading", duration: "85 mins" },
+      { title: "Module 4: Asynchronous I/O with asyncio", duration: "95 mins" },
+      { title: "Module 5: Testing and Profiling Concurrent Programs", duration: "50 mins" }
+    ]
+  },
+  {
+    id: 4,
+    slug: "vite-tailwind-v4-hyper-fast-interfaces",
+    title: "Vite & Tailwind CSS v4: Building Hyper-Fast Interfaces",
+    description: "Explore the new features of Tailwind CSS v4 and integrate it with Vite for rapid static site builds.",
+    category: "Coding Skills",
+    rating: 4.8,
+    votes: 215,
+    views: 6500,
+    publishDate: "2026-07-02",
+    duration: "4h 40m",
+    author: "Julian Kade",
+    youtubeUrl: "https://www.youtube.com/watch?v=mock-tailwind",
+    tools: ["HTML", "CSS", "Tailwind CSS", "Vite"],
+    overview: "Vite and Tailwind CSS v4 represent a quantum leap forward for frontend developer experience and build optimization. This tutorial is an excellent guide for developers looking to build modern, hyper-fast static web applications. Our editorial review team found this course to be highly valuable due to its early coverage of Tailwind v4's brand-new CSS-first architecture. The instructor explains how the compiler eliminates the need for JS-based configurations and moves all customization into standard CSS `@theme` directives. The tutorial demonstrates how to build a fully responsive dashboard from scratch using CSS grid, flexbox, and utility classes. The integration with Vite is explained step-by-step, including configuration, asset routing, and build optimization. The course overview highlights v4's improved performance metrics, showing how it compiles large codebases up to ten times faster than previous versions. Viewers will also learn how to configure custom utility classes using the new `@utility` directive and handle advanced styling states like focus-visible and active indicators. Furthermore, the review team appreciates the instructor's detailed comparison between v3 and v4, highlighting deprecated classes and showing how to use the automated upgrade tool. Additionally, the tutorial covers production bundling and purging configuration to ensure minimal CSS bundle size. This is an essential watch for frontend engineers looking to stay at the cutting edge of web styling.",
+    chapters: [
+      { title: "Module 1: Understanding Tailwind v4's CSS-First Architecture", duration: "40 mins" },
+      { title: "Module 2: Vite Plugin Setup and Asset Bundling", duration: "50 mins" },
+      { title: "Module 3: Building Responsive Layouts with Container Queries", duration: "65 mins" },
+      { title: "Module 4: Directives, Custom Utilities, and Theme Customization", duration: "80 mins" },
+      { title: "Module 5: Production Optimization, Purging, and Performance Auditing", duration: "45 mins" }
+    ]
+  },
+  {
+    id: 5,
+    slug: "premiere-pro-after-effects-kinetic-typography",
+    title: "Premiere Pro & After Effects: Kinetic Typography & Motion Graphics",
+    description: "Combine Premiere Pro and After Effects for advanced text animation and social media formatting.",
+    category: "Video Editing",
+    rating: 4.6,
+    votes: 184,
+    views: 5200,
+    publishDate: "2026-06-05",
+    duration: "3h 30m",
+    author: "Sarah Lindqvist",
+    youtubeUrl: "https://www.youtube.com/watch?v=mock-motion",
+    tools: ["Premiere Pro", "After Effects", "Illustrator", "Dynamic Link"],
+    overview: "Combining Adobe Premiere Pro's linear editing speed with After Effects' kinetic animation capabilities is the secret behind high-retention social media videos. This tutorial provides a seamless, step-by-step workflow for creating professional motion graphics and type layouts. Our review team highly recommends this course for its focus on practical agency-style workflows. The author demonstrates how to set up Dynamic Links between Premiere and After Effects to avoid tedious rendering and importing cycles. The layout modules teach viewers how to select typography, create custom presets, and apply dynamic motion blur to make text pop. The After Effects section focuses heavily on keyframe easing, utilizing the Graph Editor to control kinetic pacing rather than relying on default presets. The course overview also covers the addition of SFX and audio mastering to complement visual transitions. By following this guide, video editors can elevate their editing capabilities, create engaging intros, and increase their production value. It is an incredibly detailed and practical series that bridges the gap between basic editing and motion design mastery.",
+    chapters: [
+      { title: "Module 1: Storyboarding and Type Layout", duration: "30 mins" },
+      { title: "Module 2: Premiere Pro Timeline Setup & Rough Sync", duration: "40 mins" },
+      { title: "Module 3: Dynamic Link and Transferring Assets to AE", duration: "45 mins" },
+      { title: "Module 4: Keyframing Motion, Easing, and Graph Editor", duration: "80 mins" },
+      { title: "Module 5: Audio Integration, SFX, and Final Rendering", duration: "55 mins" }
+    ]
+  },
+  {
+    id: 6,
+    slug: "introduction-pytorch-deep-learning-researchers",
+    title: "Introduction to PyTorch for Deep Learning Researchers",
+    description: "A mathematically rigorous introduction to PyTorch tensors, autograd, and training loops.",
+    category: "AI Engineering",
+    rating: 4.9,
+    votes: 512,
+    views: 14900,
+    publishDate: "2026-05-30",
+    duration: "5h 45m",
+    author: "Prof. Alan Vance",
+    youtubeUrl: "https://www.youtube.com/watch?v=mock-pytorch",
+    tools: ["Python", "PyTorch", "Jupyter Notebook", "CUDA"],
+    overview: "PyTorch has become the default library for deep learning research and model deployment. This tutorial provides a mathematically rigorous introduction to deep learning using PyTorch, designed specifically for researchers and computer scientists. Our editorial team rates this series highly for its clarity and depth. The instructor begins with the core tensor operations, showing how custom operations are mapped to GPU acceleration. The autograd module is explained in detail, illustrating the math behind backpropagation and how custom gradients can be registered. The course covers building custom neural network layers using `nn.Module` and structuring clean data loading pipelines with `Dataset` and `DataLoader`. The final sections guide the student through building a custom training loop from scratch, including logging metrics, checkpointing models, and learning rate scheduling. The code is structured professionally, demonstrating best practices for reproducible deep learning research. If you want to understand how deep learning libraries function under the hood rather than just calling a high-level API, this series is the perfect educational tool.",
+    chapters: [
+      { title: "Module 1: Tensors, Operations, and GPU Acceleration", duration: "50 mins" },
+      { title: "Module 2: Autograd: Mechanics of Backpropagation", duration: "60 mins" },
+      { title: "Module 3: Neural Network Modules (nn.Module) and Layers", duration: "75 mins" },
+      { title: "Module 4: Dataset, DataLoader, and Custom Pipelines", duration: "70 mins" },
+      { title: "Module 5: Training Loops, Logging, and Checkpointing", duration: "90 mins" }
+    ]
+  }
+];
