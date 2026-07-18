@@ -1,16 +1,21 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { courses } from '../../data/courses.js';
+import { getAllCourses, getCourseBySlug } from '../../lib/firebase.js';
 
 // Pre-render static pages for every mock course
 export async function getStaticPaths() {
-  return courses.map((course) => ({
+  const allCourses = await getAllCourses();
+  return allCourses.map((course) => ({
     params: { slug: course.slug },
-    props: { course },
   }));
 }
 
-const { course } = Astro.props;
+const { slug } = Astro.params;
+const course = await getCourseBySlug(slug);
+
+if (!course) {
+  return Astro.redirect('/404');
+}
 
 // SEO title and description
 const title = `${course.title} - Free Course Review`;

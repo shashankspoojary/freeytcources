@@ -1,6 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { courses, getYoutubeThumbnail } from '../data/courses.js';
+import { getAllCourses, getYoutubeThumbnail } from '../lib/firebase.js';
+
+const courses = await getAllCourses();
 
 // Define SEO title and description
 const title = "Curated Free YouTube Courses Dashboard";
@@ -9,28 +11,64 @@ const description = "Explore and filter high-quality curated YouTube courses for
 
 <Layout title={title} description={description}>
   <!-- Navigation Bar -->
-  <nav class="sticky top-0 z-50 bg-canvas/95 backdrop-blur border-b border-hairline px-6 py-4 md:px-12 flex justify-between items-center transition-all">
-    <a href="/" class="flex items-center gap-2 group">
+  <nav class="sticky top-0 z-50 bg-canvas/95 backdrop-blur border-b border-hairline px-6 py-4 md:px-12 flex justify-between items-center transition-all gap-4">
+    <a href="/" class="flex items-center gap-2 group shrink-0">
       <!-- Video Screen Play Icon -->
       <svg class="h-6 w-6 text-primary transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor">
         <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zm-5-6l-7 4V7l7 4z"/>
       </svg>
-      <span class="font-mono text-lg font-bold tracking-widest text-ink group-hover:text-primary transition-colors">
+      <span class="font-mono text-lg font-bold tracking-widest text-ink group-hover:text-primary transition-colors hidden sm:inline">
         FREEYT<span class="text-primary">COURSES</span>
       </span>
     </a>
-    <div class="flex items-center gap-6">
-      <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="text-sm text-body hover:text-ink transition-colors">
+
+    <!-- Center Search Container: YouTube style! -->
+    <div id="search-container" class="relative w-full max-w-xs sm:max-w-md md:max-w-lg mx-auto flex items-center">
+      <div class="relative w-full">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-mute">
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Search courses, topics, or creators..." 
+          class="w-full bg-canvas-soft border border-hairline text-ink rounded-sm pl-10 pr-10 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/40"
+        />
+        <button 
+          id="clear-search-btn" 
+          type="button" 
+          class="absolute inset-y-0 right-0 flex items-center pr-3 text-mute hover:text-ink hidden cursor-pointer bg-transparent border-none focus:outline-none"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Autocomplete Suggestion Dropdown Overlay -->
+      <div 
+        id="search-suggestions-dropdown" 
+        class="absolute left-0 right-0 top-full mt-1.5 bg-canvas border border-hairline rounded-sm shadow-2xl z-50 overflow-hidden divide-y divide-hairline/40 hidden"
+      >
+        <!-- Suggestions dynamically rendered here -->
+      </div>
+    </div>
+
+    <!-- Right-aligned items -->
+    <div class="flex items-center gap-4 md:gap-6 shrink-0">
+      <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="text-sm text-body hover:text-ink transition-colors hidden md:inline">
         GitHub
       </a>
-      <a href="#about" class="text-sm text-body hover:text-ink transition-colors">
+      <a href="#about" class="text-sm text-body hover:text-ink transition-colors hidden md:inline">
         About
       </a>
-      <a href="/admin/upload" class="text-xs font-mono uppercase border border-hairline hover:border-primary text-body hover:text-primary px-3 py-1.5 rounded-sm transition-all">
-        Ingestion Console
+      <a href="/admin/upload" class="text-xs font-mono uppercase border border-hairline hover:border-primary text-body hover:text-primary px-3 py-1.5 rounded-sm transition-all hidden sm:inline">
+        Ingestion
       </a>
       <a href="#courses-section" class="text-xs font-mono uppercase bg-primary text-on-primary px-3 py-1.5 rounded-sm hover:bg-primary-soft transition-colors font-semibold">
-        Browse Hub
+        Browse
       </a>
     </div>
   </nav>
@@ -182,21 +220,6 @@ const description = "Explore and filter high-quality curated YouTube courses for
           Top Rated
         </button>
       </div>
-    </div>
-
-    <!-- Search Engine input field -->
-    <div class="relative w-full max-w-md mb-8">
-      <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-mute">
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      </span>
-      <input 
-        type="text" 
-        id="search-input" 
-        placeholder="Search courses, topics, or creators..." 
-        class="w-full bg-canvas-soft border border-hairline text-ink rounded-sm pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/40"
-      />
     </div>
 
     <!-- Course Cards Grid -->
@@ -353,11 +376,20 @@ const description = "Explore and filter high-quality curated YouTube courses for
     const sortTabs = document.querySelectorAll('.sort-tab');
     const courseGrid = document.getElementById('course-grid');
     const emptyState = document.getElementById('empty-state');
+    
+    // Youtube Top Search Elements
+    const searchContainer = document.getElementById('search-container');
     const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const clearSearchBtn = document.getElementById('clear-search-btn');
+    const dropdown = document.getElementById('search-suggestions-dropdown');
     
     let activeFilter = 'All';
     let activeSort = 'latest';
     const HISTORY_KEY = 'freeyt_watch_history';
+
+    // Retrieve courses from data block
+    const coursesDataEl = document.getElementById('courses-data');
+    const allCourses = JSON.parse(coursesDataEl?.getAttribute('data-courses') || '[]');
 
     // Event listeners for visual filter cards (Hero grid)
     filterCards.forEach((card) => {
@@ -387,9 +419,171 @@ const description = "Explore and filter high-quality curated YouTube courses for
       });
     });
 
-    // Event listener for Search Engine input
+    // YouTube Autocomplete & Clear Button Interactivity
     searchInput?.addEventListener('input', () => {
+      const q = searchInput.value;
+      if (q.trim()) {
+        clearSearchBtn?.classList.remove('hidden');
+        renderSuggestions(q);
+      } else {
+        clearSearchBtn?.classList.add('hidden');
+        if (dropdown) dropdown.classList.add('hidden');
+      }
       applyFiltersAndSort();
+    });
+
+    searchInput?.addEventListener('focus', () => {
+      const q = searchInput.value;
+      if (q.trim() && dropdown) {
+        renderSuggestions(q);
+      }
+    });
+
+    // Dismiss search dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (searchContainer && !searchContainer.contains(e.target as Node)) {
+        dropdown?.classList.add('hidden');
+      }
+    });
+
+    clearSearchBtn?.addEventListener('click', () => {
+      searchInput.value = '';
+      clearSearchBtn.classList.add('hidden');
+      if (dropdown) dropdown.classList.add('hidden');
+      applyFiltersAndSort();
+      searchInput.focus();
+    });
+
+    // Levenshtein distance calculation for powerful fuzzy search
+    function getLevenshteinDistance(a: string, b: string): number {
+      const matrix: number[][] = [];
+      for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+      for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1, // substitution
+              matrix[i][j - 1] + 1,     // insertion
+              matrix[i - 1][j] + 1      // deletion
+            );
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+
+    // Powerful Case-Insensitive, Tokenized, and Levenshtein Fuzzy Search Match
+    function searchMatch(course: any, query: string): boolean {
+      const q = query.toLowerCase().trim();
+      if (!q) return true;
+
+      const title = course.title.toLowerCase();
+      const creator = course.creatorName.toLowerCase();
+      const category = course.category.toLowerCase();
+      const description = course.description.toLowerCase();
+      const tools = course.tools.map((t: string) => t.toLowerCase()).join(' ');
+
+      // 1. Exact case-insensitive substring matches
+      if (title.includes(q) || creator.includes(q) || category.includes(q) || description.includes(q) || tools.includes(q)) {
+        return true;
+      }
+
+      // 2. Tokenized multi-word search matching
+      const words = q.split(/\s+/).filter(Boolean);
+      if (words.length > 1) {
+        const combinedText = `${title} ${creator} ${category} ${tools}`;
+        if (words.every(w => combinedText.includes(w))) {
+          return true;
+        }
+      }
+
+      // 3. Levenshtein fuzzy distance matching on word tokens
+      if (q.length >= 3) {
+        const courseTokens = [...title.split(/[\s,.-]+/), ...creator.split(/[\s,.-]+/)].filter(t => t.length >= 3);
+        for (const token of courseTokens) {
+          const dist = getLevenshteinDistance(q, token);
+          // Distance threshold: <= 1 for short queries, <= 2 for queries 4+ chars
+          if (dist <= 1 || (q.length >= 4 && dist <= 2)) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    }
+
+    // Highlight query text matches inside the suggestions dropdown
+    function highlightText(text: string, query: string): string {
+      if (!query.trim()) return text;
+      const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escapedQuery})`, 'gi');
+      return text.replace(regex, '<span class="text-primary font-bold">$1</span>');
+    }
+
+    function renderSuggestions(query: string) {
+      if (!dropdown) return;
+      
+      const matches = allCourses.filter((c: any) => searchMatch(c, query));
+      
+      if (matches.length === 0) {
+        dropdown.innerHTML = `
+          <div class="p-3 text-xs text-mute font-mono">
+            No suggestions found
+          </div>
+        `;
+        dropdown.classList.remove('hidden');
+        return;
+      }
+
+      dropdown.innerHTML = '';
+      
+      // Render suggestion items (limit to 5 like YouTube)
+      matches.slice(0, 5).forEach((course: any) => {
+        const videoId = course.sampleVideoId;
+        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        
+        const item = document.createElement('a');
+        item.href = `/courses/${course.slug}`;
+        item.className = "flex items-center gap-3 p-3.5 hover:bg-canvas-soft transition-colors text-left group cursor-pointer focus:outline-none focus:bg-canvas-soft";
+        
+        item.innerHTML = `
+          <img src="${thumbnailUrl}" class="h-9 w-14 object-cover rounded-sm border border-hairline shrink-0" />
+          <div class="overflow-hidden">
+            <h4 class="text-xs font-semibold text-ink-strong group-hover:text-primary transition-colors line-clamp-1 leading-snug">
+              ${highlightText(course.title, query)}
+            </h4>
+            <span class="text-[10px] font-mono text-mute">
+              by ${highlightText(course.creatorName, query)}
+            </span>
+          </div>
+        `;
+
+        item.addEventListener('click', () => {
+          addToHistory(course.slug);
+        });
+
+        dropdown.appendChild(item);
+      });
+
+      // Suggestion dropdown header / footer actions
+      const footerAction = document.createElement('div');
+      footerAction.className = "p-2 bg-canvas-soft/40 text-[10px] font-mono text-mute text-right border-t border-hairline/25";
+      footerAction.textContent = "Press Enter to filter results below";
+      dropdown.appendChild(footerAction);
+
+      dropdown.classList.remove('hidden');
+    }
+
+    // Trigger full filter when pressing enter in search
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        applyFiltersAndSort();
+        dropdown?.classList.add('hidden');
+        searchInput.blur();
+      }
     });
 
     function setFilter(category: string) {
@@ -439,17 +633,17 @@ const description = "Explore and filter high-quality curated YouTube courses for
     function applyFiltersAndSort() {
       if (!courseGrid) return;
       const cards = Array.from(courseGrid.getElementsByClassName('course-card')) as HTMLElement[];
-      const searchQuery = searchInput?.value.toLowerCase().trim() || '';
+      const searchQuery = searchInput?.value || '';
       let visibleCount = 0;
 
-      // 1. Filter by category & search query
+      // 1. Filter by category & search query (using upgraded searchMatch logic)
       cards.forEach((card) => {
         const cat = card.getAttribute('data-category');
-        const title = card.querySelector('h2')?.textContent?.toLowerCase() || '';
-        const creator = card.getAttribute('data-creator')?.toLowerCase() || '';
+        const slug = card.getAttribute('data-slug');
+        const course = allCourses.find((c: any) => c.slug === slug);
 
         const matchesCategory = activeFilter === 'All' || cat === activeFilter;
-        const matchesSearch = title.includes(searchQuery) || creator.includes(searchQuery);
+        const matchesSearch = course ? searchMatch(course, searchQuery) : true;
 
         if (matchesCategory && matchesSearch) {
           card.classList.remove('hidden');
@@ -546,9 +740,6 @@ const description = "Explore and filter high-quality curated YouTube courses for
         container.classList.add('hidden');
         return;
       }
-
-      const coursesDataEl = document.getElementById('courses-data');
-      const allCourses = JSON.parse(coursesDataEl?.getAttribute('data-courses') || '[]');
 
       grid.innerHTML = '';
       let count = 0;
