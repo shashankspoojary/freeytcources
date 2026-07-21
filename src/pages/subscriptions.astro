@@ -1,0 +1,396 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getAllCourses, getCreatorSlug, getYoutubeThumbnail } from '../lib/firebase.js';
+
+const courses = await getAllCourses();
+
+// Extract unique creators in SSR
+const creatorsMap = new Map();
+courses.forEach(c => {
+  const slug = getCreatorSlug(c.creatorName);
+  if (!creatorsMap.has(slug)) {
+    creatorsMap.set(slug, {
+      name: c.creatorName,
+      slug: slug,
+      logo: c.creatorLogo,
+      subscribers: c.creatorSubscribers || "4.2M subscribers"
+    });
+  }
+});
+const creators = Array.from(creatorsMap.values());
+
+const title = "My Course Subscriptions - FreeYT Feed";
+const description = "Access and track the latest courses and updates published by your subscribed tech creators.";
+---
+
+<Layout title={title} description={description} activePage="subscriptions">
+
+  <!-- Main Subscriptions Content -->
+  <main class="max-w-6xl mx-auto px-6 py-8 md:py-12">
+    <!-- Top Row Header -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-hairline gap-4">
+      <div>
+        <h1 class="text-2xl font-light text-ink-strong tracking-tight">Subscriptions Feed</h1>
+        <p class="text-xs font-mono text-mute mt-1">Latest structured courses from your subscribed channels.</p>
+      </div>
+      
+      <!-- Search inside subscriptions -->
+      <div id="sub-search-controls" class="flex items-center gap-3">
+        <div class="relative w-full sm:w-48">
+          <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            id="sub-feed-search"
+            placeholder="Search subscribed courses..."
+            class="w-full bg-canvas-soft border border-hairline text-ink rounded-sm py-1.5 pl-8 pr-3 text-xs focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-mono"
+          />
+        </div>
+        
+        <!-- Sorting -->
+        <div class="flex items-center gap-1 bg-canvas-soft border border-hairline p-1 rounded-sm text-[10px] font-mono uppercase">
+          <button id="sort-latest" class="sort-pill px-2.5 py-1 text-primary bg-canvas border border-hairline transition-all cursor-pointer">
+            Latest
+          </button>
+          <button id="sort-popular" class="sort-pill px-2.5 py-1 text-body hover:text-ink hover:bg-canvas/30 transition-all cursor-pointer">
+            Popular
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Subscribed Creators YouTube Style Horizontal Bar -->
+    <section id="subscribed-creators-panel" class="mb-8 p-4 bg-canvas-soft/40 border border-hairline rounded-md overflow-x-auto scrollbar-thin">
+      <div id="subscribed-creators-grid" class="flex items-center gap-6 min-w-max">
+        {creators.map((creator) => (
+          <button 
+            type="button" 
+            class="channel-bubble-btn flex flex-col items-center gap-2 cursor-pointer group focus:outline-none w-20 shrink-0"
+            data-creator-slug={creator.slug}
+            title={creator.name}
+          >
+            <div class="relative">
+              <img 
+                src={creator.logo} 
+                alt={creator.name} 
+                class="bubble-avatar h-14 w-14 rounded-full object-cover border-2 border-hairline group-hover:border-primary/80 transition-all shadow-md group-hover:scale-105" 
+              />
+              <span class="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-primary ring-2 ring-canvas" title="Subscribed channel"></span>
+            </div>
+            <span class="bubble-name text-[11px] font-mono text-mute group-hover:text-ink truncate w-full text-center leading-tight">
+              {creator.name.split(' ')[0]}
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
+
+    <!-- Courses Grid List -->
+    <div id="subscribed-courses-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {courses.map((course) => (
+        <article 
+          class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer"
+          data-slug={course.slug}
+          data-date={course.publishDate}
+          data-views={course.views}
+          data-rating={course.rating}
+          data-votes={course.votes}
+          data-title={course.title}
+          data-creator={getCreatorSlug(course.creatorName)}
+        >
+          <!-- Video Thumbnail image -->
+          <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
+            <img 
+              src={getYoutubeThumbnail(course.sampleVideoId)} 
+              alt={`${course.title} thumbnail`} 
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
+            />
+            <!-- Always-Visible Watch Later Button -->
+            <button 
+              type="button" 
+              class="watch-later-toggle-btn absolute top-2.5 left-2.5 z-30 bg-canvas/95 hover:bg-primary hover:text-on-primary text-ink px-2.5 py-1 rounded-sm transition-all shadow-md focus:outline-none cursor-pointer border border-hairline hover:border-primary flex items-center gap-1.5 text-[11px] font-mono"
+              data-slug={course.slug}
+              title="Save to Watch Later"
+            >
+              <svg class="h-3.5 w-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span class="wl-label pointer-events-none">Watch later</span>
+            </button>
+            <span class={`absolute top-3 right-3 text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-sm font-semibold shadow-md ${course.type === 'paid' ? 'bg-amber-400 text-on-primary border border-amber-500/20' : 'bg-primary text-on-primary border border-primary-soft/20'}`}>
+              {course.type}
+            </span>
+            <!-- Modules Count Overlay Badge -->
+            <div class="absolute bottom-2.5 right-2.5 z-20 bg-canvas/90 backdrop-blur-sm text-ink-strong border border-hairline px-2 py-0.5 rounded-sm text-[10px] font-mono flex items-center gap-1.5 shadow-md">
+              <svg class="h-3 w-3 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <span>{course.chapters?.length || 0} Modules</span>
+            </div>
+          </div>
+
+          <!-- Card text body details -->
+          <div class="p-5 flex flex-grow flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <span class="text-[9px] font-mono uppercase bg-canvas border border-hairline px-2.5 py-0.5 rounded-pill text-body">
+                  {course.category}
+                </span>
+                <span class="text-xs font-mono text-mute">{course.duration}</span>
+              </div>
+
+              <h2 class="text-base font-semibold text-ink-strong mb-2 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                <a href={`/courses/${course.slug}`} class="focus:outline-none after:absolute after:inset-0">
+                  {course.title}
+                </a>
+              </h2>
+
+              <p class="text-xs text-body line-clamp-2 leading-relaxed mb-4 font-light">
+                {course.description}
+              </p>
+            </div>
+
+            <div>
+              <!-- Metrics inside card -->
+              <div class="pt-3 border-t border-hairline flex justify-between items-center text-[10px] font-mono text-mute">
+                <div class="flex items-center gap-1.5 relative z-30">
+                  <img src={course.creatorLogo} class="h-4 w-4 rounded-full object-cover border border-hairline" alt="" />
+                  <span class="text-[10px] font-mono text-mute line-clamp-1">{course.creatorName}</span>
+                </div>
+                
+                <div class="flex items-center gap-1">
+                  <span class="text-ink font-semibold">{course.rating.toFixed(1)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <!-- Empty search matches card -->
+    <div id="subs-empty-state" class="hidden text-center p-12 bg-canvas border border-hairline border-dashed rounded-md my-12 max-w-xl mx-auto">
+      <svg class="mx-auto h-12 w-12 text-mute mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+      </svg>
+      <h3 class="text-lg font-semibold text-ink mb-1 font-mono uppercase tracking-wider">No Courses Found</h3>
+      <p class="text-sm text-body mb-6 font-light">No courses match the selected channel filter or search parameter.</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-canvas border-t border-hairline py-12 px-6 text-center text-xs font-mono text-mute mt-24">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+      <div>
+        &copy; {new Date().getFullYear()} FreeYTCourses. Curated creator directory.
+      </div>
+      <div class="flex gap-6">
+        <a href="/" class="hover:text-ink transition-colors">Directory Dashboard</a>
+        <a href="#" class="hover:text-ink transition-colors">Submit Curriculum</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Client script for channel filtering, sorting, watch later -->
+  <script>
+    const SUBS_KEY = 'freeyt_subscribed_creators';
+    const navSubBadge = document.getElementById('nav-sub-badge');
+    const coursesGrid = document.getElementById('subscribed-courses-grid');
+    const searchInput = document.getElementById('sub-feed-search') as HTMLInputElement;
+    const sortPills = document.querySelectorAll('.sort-pill');
+    
+    let activeSort = 'latest';
+    let selectedChannelSlug: string | null = null; // null = show all subscribed channels combined
+
+    function getSubscriptions(): string[] {
+      try {
+        const raw = localStorage.getItem(SUBS_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function initSubscriptionsPage() {
+      const channelBtns = document.querySelectorAll('.channel-bubble-btn');
+      
+      channelBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const slug = btn.getAttribute('data-creator-slug');
+          
+          if (selectedChannelSlug === slug) {
+            selectedChannelSlug = null; // Deselect channel to show all
+          } else {
+            selectedChannelSlug = slug; // Filter to clicked channel
+          }
+          
+          updateChannelSelectionUI();
+          applyFiltersAndSort();
+        });
+      });
+
+      searchInput?.addEventListener('input', applyFiltersAndSort);
+
+      sortPills.forEach((pill) => {
+        pill.addEventListener('click', () => {
+          sortPills.forEach(p => {
+            p.classList.remove('text-primary', 'bg-canvas', 'border');
+            p.classList.add('text-body', 'hover:text-ink', 'hover:bg-canvas/30');
+          });
+          
+          pill.classList.remove('text-body', 'hover:text-ink', 'hover:bg-canvas/30');
+          pill.classList.add('text-primary', 'bg-canvas', 'border');
+          
+          const id = pill.id;
+          if (id === 'sort-latest') activeSort = 'latest';
+          else if (id === 'sort-popular') activeSort = 'popular';
+          
+          applyFiltersAndSort();
+        });
+      });
+
+      updateSubscribedChannelAvatarsVisibility();
+      applyFiltersAndSort();
+      renderProgressOnCards();
+    }
+
+    function updateSubscribedChannelAvatarsVisibility() {
+      const subs = getSubscriptions();
+
+      if (navSubBadge) {
+        if (subs.length > 0) {
+          navSubBadge.textContent = String(subs.length);
+          navSubBadge.classList.remove('hidden');
+        } else {
+          navSubBadge.classList.add('hidden');
+        }
+      }
+
+      // If user explicitly subscribed to specific channels, filter visible avatars
+      const channelBtns = document.querySelectorAll('.channel-bubble-btn');
+      channelBtns.forEach((btn) => {
+        const slug = btn.getAttribute('data-creator-slug');
+        if (subs.length === 0 || (slug && subs.includes(slug))) {
+          (btn as HTMLElement).style.display = 'flex';
+        } else {
+          (btn as HTMLElement).style.display = 'none';
+        }
+      });
+    }
+
+    function updateChannelSelectionUI() {
+      const channelBtns = document.querySelectorAll('.channel-bubble-btn');
+      
+      channelBtns.forEach((btn) => {
+        const slug = btn.getAttribute('data-creator-slug');
+        const avatar = btn.querySelector('.bubble-avatar');
+        const name = btn.querySelector('.bubble-name');
+        
+        if (slug === selectedChannelSlug) {
+          avatar?.classList.add('border-primary', 'scale-110', 'shadow-lg');
+          avatar?.classList.remove('border-hairline');
+          name?.classList.add('text-primary', 'font-bold');
+          name?.classList.remove('text-mute');
+        } else {
+          avatar?.classList.remove('border-primary', 'scale-110', 'shadow-lg');
+          avatar?.classList.add('border-hairline');
+          name?.classList.remove('text-primary', 'font-bold');
+          name?.classList.add('text-mute');
+        }
+      });
+    }
+
+    function applyFiltersAndSort() {
+      if (!coursesGrid) return;
+      const subs = getSubscriptions();
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+      const cards = Array.from(coursesGrid.querySelectorAll('.course-card')) as HTMLElement[];
+      let visibleCount = 0;
+
+      cards.forEach((card) => {
+        const creatorSlug = card.getAttribute('data-creator') || '';
+        const title = card.getAttribute('data-title')?.toLowerCase() || '';
+
+        const matchesSub = subs.length === 0 || subs.includes(creatorSlug);
+        const matchesSelectedChannel = selectedChannelSlug === null || creatorSlug === selectedChannelSlug;
+        const matchesSearch = query === '' || title.includes(query);
+
+        if (matchesSub && matchesSelectedChannel && matchesSearch) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      const emptyState = document.getElementById('subs-empty-state');
+      if (visibleCount === 0) {
+        emptyState?.classList.remove('hidden');
+      } else {
+        emptyState?.classList.add('hidden');
+      }
+
+      // Sort matching cards
+      cards.sort((a, b) => {
+        if (activeSort === 'latest') {
+          const dateA = new Date(a.getAttribute('data-date') || '');
+          const dateB = new Date(b.getAttribute('data-date') || '');
+          return dateB.getTime() - dateA.getTime();
+        } else if (activeSort === 'popular') {
+          const viewsA = Number(a.getAttribute('data-views') || 0);
+          const viewsB = Number(b.getAttribute('data-views') || 0);
+          return viewsB - viewsA;
+        }
+        return 0;
+      });
+
+      cards.forEach((card) => {
+        coursesGrid.appendChild(card);
+      });
+    }
+
+    // Render local progress on cards
+    function renderProgressOnCards() {
+      document.querySelectorAll('.course-card').forEach((card) => {
+        const slug = card.getAttribute('data-slug');
+        if (!slug) return;
+        
+        const progressKey = `freeyt_progress_${slug}`;
+        try {
+          const rawProgress = localStorage.getItem(progressKey);
+          if (rawProgress) {
+            const progressState = JSON.parse(rawProgress);
+            const completedCh = Array.isArray(progressState.completedChapters) ? progressState.completedChapters.length : 0;
+            const totalCh = 5;
+            const progressPercent = Math.round((completedCh / totalCh) * 100);
+            
+            if (completedCh > 0 || Object.keys(progressState.chapterPositions || {}).length > 0) {
+              const imgContainer = card.querySelector('.aspect-video');
+              if (imgContainer) {
+                const progressOverlay = document.createElement('div');
+                progressOverlay.className = 'absolute bottom-0 left-0 right-0 h-1.5 bg-canvas border-t border-hairline overflow-hidden z-20';
+                progressOverlay.innerHTML = `<div class="h-full bg-primary" style="width: ${progressPercent}%"></div>`;
+                imgContainer.appendChild(progressOverlay);
+                
+                const durationEl = card.querySelector('.text-xs.font-mono.text-mute');
+                if (durationEl) {
+                  durationEl.innerHTML = `<span class="text-primary font-semibold">${progressPercent}% done</span> <span class="mx-1 text-hairline">|</span> ${durationEl.textContent}`;
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSubscriptionsPage);
+    } else {
+      initSubscriptionsPage();
+    }
+  </script>
+</Layout>

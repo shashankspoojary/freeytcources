@@ -1,15 +1,24 @@
 ---
+import HeaderNav from '../components/HeaderNav.astro';
+import Sidebar from '../components/Sidebar.astro';
 import '../styles/global.css';
 
 interface Props {
 	title: string;
 	description?: string;
+  activePage?: string;
+  hideSidebar?: boolean;
 }
 
-const { title, description = "FreeYTCourses - A Curated Hub of premium, text-rich and highly optimized free YouTube courses." } = Astro.props;
+const { 
+  title, 
+  description = "FreeYTCourses - A Curated Hub of premium, text-rich and highly optimized free YouTube courses.",
+  activePage = 'home',
+  hideSidebar = false
+} = Astro.props;
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -22,8 +31,36 @@ const { title, description = "FreeYTCourses - A Curated Hub of premium, text-ric
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Instant inline script to restore theme and sidebar toggle state without FOUC -->
+    <script is:inline>
+      (function() {
+        var savedTheme = localStorage.getItem('freeyt_theme') || 'dark';
+        if (savedTheme === 'light') {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+        } else {
+          document.documentElement.classList.remove('light');
+          document.documentElement.classList.add('dark');
+        }
+        var savedState = localStorage.getItem('freeyt_sidebar_state');
+        var isDesktop = window.innerWidth >= 768;
+        var state = savedState || (isDesktop ? 'expanded' : 'collapsed');
+        document.documentElement.setAttribute('data-sidebar-state', state);
+        document.documentElement.setAttribute('data-sidebar-mobile', 'closed');
+      })();
+    </script>
 	</head>
-	<body class="bg-canvas text-ink font-sans selection:bg-primary/30 selection:text-primary">
-		<slot />
+	<body class="bg-canvas text-ink font-sans selection:bg-primary/30 selection:text-primary min-h-screen flex flex-col">
+    <!-- Top YouTube Header Navbar -->
+    <HeaderNav activePage={activePage} hideSidebarToggle={hideSidebar} />
+    
+    <!-- Collapsible YouTube Left Sidebar -->
+    {!hideSidebar && <Sidebar activePage={activePage} />}
+
+    <!-- Main Page Content Wrapper with Responsive Margin Shift -->
+    <div class={`page-main-layout flex-1 transition-all duration-200 ease-in-out ${hideSidebar ? 'no-sidebar !pl-0' : ''}`}>
+      <slot />
+    </div>
 	</body>
 </html>

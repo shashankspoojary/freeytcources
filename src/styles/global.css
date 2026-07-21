@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-@theme {
+:root,
+html,
+html.dark {
   --color-primary: #00d992;
   --color-primary-soft: #2fd6a1;
   --color-primary-deep: #10b981;
@@ -12,11 +14,53 @@
   --color-mute: #8b949e;
   
   --color-hairline: #3d3a39;
-  --color-hairline-soft: #b8b3b0;
+  --color-hairline-soft: #55504d;
   
   --color-canvas: #101010;
   --color-canvas-soft: #1a1a1a;
   --color-canvas-text-soft: #f5f6f7;
+  
+  color-scheme: dark;
+}
+
+html.light {
+  --color-primary: #00875a;
+  --color-primary-soft: #00a870;
+  --color-primary-deep: #006644;
+  --color-on-primary: #ffffff;
+  
+  --color-ink: #1e293b;
+  --color-ink-strong: #0f172a;
+  --color-body: #334155;
+  --color-mute: #64748b;
+  
+  --color-hairline: #cbd5e1;
+  --color-hairline-soft: #94a3b8;
+  
+  --color-canvas: #e2e8f0;
+  --color-canvas-soft: #edf2f7;
+  --color-canvas-text-soft: #1e293b;
+  
+  color-scheme: light;
+}
+
+@theme {
+  --color-primary: var(--color-primary);
+  --color-primary-soft: var(--color-primary-soft);
+  --color-primary-deep: var(--color-primary-deep);
+  --color-on-primary: var(--color-on-primary);
+  
+  --color-ink: var(--color-ink);
+  --color-ink-strong: var(--color-ink-strong);
+  --color-body: var(--color-body);
+  --color-mute: var(--color-mute);
+  
+  --color-hairline: var(--color-hairline);
+  --color-hairline-soft: var(--color-hairline-soft);
+  
+  --color-canvas: var(--color-canvas);
+  --color-canvas-soft: var(--color-canvas-soft);
+  --color-canvas-text-soft: var(--color-canvas-text-soft);
   
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
@@ -43,5 +87,61 @@
     height: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
+
+/* Sidebar State CSS Rules for Desktop & Mobile Layout Shift */
+html[data-sidebar-state="expanded"] #yt-sidebar {
+  width: 240px;
+}
+html[data-sidebar-state="expanded"] .sidebar-expanded-content {
+  display: flex !important;
+}
+html[data-sidebar-state="expanded"] .sidebar-collapsed-content {
+  display: none !important;
+}
+html[data-sidebar-state="expanded"] .page-main-layout {
+  padding-left: 240px;
+}
+
+html[data-sidebar-state="collapsed"] #yt-sidebar {
+  width: 72px;
+}
+html[data-sidebar-state="collapsed"] .sidebar-expanded-content {
+  display: none !important;
+}
+html[data-sidebar-state="collapsed"] .sidebar-collapsed-content {
+  display: flex !important;
+}
+html[data-sidebar-state="collapsed"] .page-main-layout {
+  padding-left: 72px;
+}
+
+.page-main-layout.no-sidebar {
+  padding-left: 0 !important;
+}
+
+@media (max-width: 767px) {
+  #yt-sidebar {
+    transform: translateX(-100%);
+    width: 240px !important;
+    z-index: 50;
+  }
+  html[data-sidebar-mobile="open"] #yt-sidebar {
+    transform: translateX(0);
+  }
+  html[data-sidebar-mobile="open"] #sidebar-backdrop {
+    display: block !important;
+  }
+  .page-main-layout {
+    padding-left: 0 !important;
+  }
+  .sidebar-expanded-content {
+    display: flex !important;
+  }
+  .sidebar-collapsed-content {
+    display: none !important;
+  }
+}
+

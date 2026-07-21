@@ -1,0 +1,247 @@
+---
+interface Props {
+  activePage?: string;
+  hideSidebarToggle?: boolean;
+}
+
+const { activePage = 'home', hideSidebarToggle = false } = Astro.props;
+const isAdmin = activePage === 'admin' || hideSidebarToggle;
+---
+
+<!-- Sticky YouTube-Style Nav Bar -->
+<nav class="sticky top-0 z-50 bg-canvas/95 backdrop-blur border-b border-hairline px-4 md:px-6 py-3 flex justify-between items-center transition-all gap-4 h-[60px]">
+  <!-- Left: Hamburger Menu Button + YouTube Style Logo -->
+  <div class="flex items-center gap-3 shrink-0">
+    {!hideSidebarToggle && (
+      <button 
+        id="sidebar-toggle-btn" 
+        type="button"
+        aria-label="Toggle Navigation Sidebar" 
+        class="p-2 text-ink hover:text-primary hover:bg-canvas-soft rounded-full transition-colors flex items-center justify-center cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
+      >
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    )}
+
+    <a href="/" id="brand-logo-link" class="flex items-center gap-2 group shrink-0 select-none">
+      <!-- Video Screen Play Icon -->
+      <svg class="h-6 w-6 text-primary transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zm-5-6l-7 4V7l7 4z"/>
+      </svg>
+      <span class="font-mono text-lg font-bold tracking-widest text-ink group-hover:text-primary transition-colors hidden sm:inline">
+        FREEYT<span class="text-primary">COURSES</span>
+      </span>
+    </a>
+  </div>
+
+  <!-- Center: Global Search Bar (hidden on admin pages) -->
+  {!isAdmin && (
+    <div id="search-container" class="relative w-full max-w-xs sm:max-w-md md:max-w-lg mx-auto flex items-center">
+      <form id="global-search-form" class="relative w-full" action="/courses" method="GET">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-mute pointer-events-none">
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
+        <input 
+          type="text" 
+          id="search-input"
+          name="q"
+          placeholder="Search courses, topics, or creators..." 
+          class="w-full bg-canvas-soft border border-hairline text-ink rounded-sm pl-10 pr-10 py-2 text-xs focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder-mute/40"
+          autocomplete="off"
+        />
+        <button 
+          id="clear-search-btn" 
+          type="button" 
+          class="absolute inset-y-0 right-0 flex items-center pr-3 text-mute hover:text-ink hidden cursor-pointer bg-transparent border-none focus:outline-none"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </form>
+      <!-- Autocomplete Suggestion Dropdown Overlay -->
+      <div 
+        id="search-suggestions-dropdown" 
+        class="absolute left-0 right-0 top-full mt-1.5 bg-canvas border border-hairline rounded-sm shadow-2xl z-50 overflow-hidden divide-y divide-hairline/40 hidden"
+      >
+        <!-- Suggestions dynamically rendered here -->
+      </div>
+    </div>
+  )}
+
+  <!-- Right-aligned Header Links -->
+  <div class="flex items-center gap-3 md:gap-4 shrink-0">
+    <!-- Light/Dark Theme Toggle Button -->
+    <button 
+      id="theme-toggle-btn" 
+      type="button"
+      aria-label="Toggle Light and Dark Theme"
+      class="p-2 text-ink hover:text-primary hover:bg-canvas-soft border border-hairline rounded-full transition-all flex items-center justify-center cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
+      title="Toggle Light / Dark Mode"
+    >
+      <!-- Sun icon: displayed when in dark mode (click to switch to light) -->
+      <svg id="theme-icon-sun" class="h-4 w-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+      <!-- Moon icon: displayed when in light mode (click to switch to dark) -->
+      <svg id="theme-icon-moon" class="h-4 w-4 text-slate-700 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+      </svg>
+    </button>
+
+    <a href="/courses" class="text-xs font-mono uppercase bg-primary text-on-primary px-3 py-1.5 rounded-sm hover:bg-primary-soft transition-colors font-semibold">
+      Browse
+    </a>
+  </div>
+</nav>
+
+<script>
+  // Theme Toggle Interactivity
+  function initThemeToggle() {
+    const toggleBtn = document.getElementById('theme-toggle-btn');
+    const sunIcon = document.getElementById('theme-icon-sun');
+    const moonIcon = document.getElementById('theme-icon-moon');
+
+    function updateIcons() {
+      const isLight = document.documentElement.classList.contains('light');
+      if (isLight) {
+        sunIcon?.classList.add('hidden');
+        moonIcon?.classList.remove('hidden');
+      } else {
+        sunIcon?.classList.remove('hidden');
+        moonIcon?.classList.add('hidden');
+      }
+    }
+
+    updateIcons();
+
+    toggleBtn?.addEventListener('click', () => {
+      const isLight = document.documentElement.classList.contains('light');
+      if (isLight) {
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('freeyt_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        localStorage.setItem('freeyt_theme', 'light');
+      }
+      updateIcons();
+    });
+  }
+
+  // Global Search Bar Interactivity
+  function initGlobalSearch() {
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const clearBtn = document.getElementById('clear-search-btn');
+    const form = document.getElementById('global-search-form') as HTMLFormElement;
+
+    if (!searchInput) return;
+
+    // Pre-fill from URL ?q= param if on /courses page
+    const urlParams = new URLSearchParams(window.location.search);
+    const existingQuery = urlParams.get('q');
+    if (existingQuery) {
+      searchInput.value = existingQuery;
+      clearBtn?.classList.remove('hidden');
+    }
+
+    // Show/hide clear button on input
+    searchInput.addEventListener('input', () => {
+      if (searchInput.value.trim()) {
+        clearBtn?.classList.remove('hidden');
+      } else {
+        clearBtn?.classList.add('hidden');
+      }
+
+      // If we're on /courses, trigger live filtering via custom event
+      if (window.location.pathname === '/courses' || window.location.pathname === '/courses/') {
+        window.dispatchEvent(new CustomEvent('globalSearchInput', { detail: searchInput.value }));
+      }
+    });
+
+    // Clear button
+    clearBtn?.addEventListener('click', () => {
+      searchInput.value = '';
+      clearBtn.classList.add('hidden');
+      searchInput.focus();
+
+      if (window.location.pathname === '/courses' || window.location.pathname === '/courses/') {
+        window.dispatchEvent(new CustomEvent('globalSearchInput', { detail: '' }));
+      }
+    });
+
+    // Form submit: navigate to /courses?q=...
+    form?.addEventListener('submit', (e) => {
+      const query = searchInput.value.trim();
+      if (!query) {
+        e.preventDefault();
+        return;
+      }
+
+      // If already on /courses, just filter in-place, no navigation needed
+      if (window.location.pathname === '/courses' || window.location.pathname === '/courses/') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('globalSearchInput', { detail: query }));
+        return;
+      }
+
+      // Otherwise let the form navigate to /courses?q=query
+    });
+
+    // Keyboard shortcut: press "/" to focus search
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    });
+  }
+
+  // Secret Admin Access Triggers (Ctrl+Shift+A or Triple-Click Logo)
+  function initSecretAdminTriggers() {
+    // 1. Secret Hotkey: Ctrl + Shift + A (or Cmd + Shift + A)
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        window.location.href = '/admin/upload';
+      }
+    });
+
+    // 2. Secret Triple-Click on Brand Logo
+    const logoLink = document.getElementById('brand-logo-link');
+    let clickCount = 0;
+    let clickTimer: any = null;
+
+    logoLink?.addEventListener('click', (e) => {
+      clickCount++;
+      if (clickCount === 3) {
+        e.preventDefault();
+        clickCount = 0;
+        clearTimeout(clickTimer);
+        window.location.href = '/admin/upload';
+        return;
+      }
+      clearTimeout(clickTimer);
+      clickTimer = setTimeout(() => {
+        clickCount = 0;
+      }, 700);
+    });
+  }
+
+  function initHeader() {
+    initThemeToggle();
+    initGlobalSearch();
+    initSecretAdminTriggers();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHeader);
+  } else {
+    initHeader();
+  }
+</script>

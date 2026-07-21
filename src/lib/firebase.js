@@ -6,6 +6,7 @@ import { courses as fallbackCourses } from "../data/courses.js";
  * @typedef {Object} Chapter
  * @property {string} title
  * @property {string} duration
+ * @property {string} [videoId]
  * 
  * @typedef {Object} Course
  * @property {string|number} id
@@ -13,6 +14,7 @@ import { courses as fallbackCourses } from "../data/courses.js";
  * @property {string} title
  * @property {string} description
  * @property {string} category
+ * @property {string} language
  * @property {number} rating
  * @property {number} votes
  * @property {number} views
@@ -21,6 +23,8 @@ import { courses as fallbackCourses } from "../data/courses.js";
  * @property {string} author
  * @property {string} creatorName
  * @property {string} creatorLogo
+ * @property {string} [channelId]
+ * @property {string} [creatorSubscribers]
  * @property {string} type
  * @property {string} sampleVideoId
  * @property {string} youtubeUrl
@@ -42,6 +46,7 @@ const firebaseConfig = {
 // Check if we have a valid configuration (e.g. project ID is populated)
 const isValidConfig = firebaseConfig.projectId && firebaseConfig.projectId !== "mock-project-id" && firebaseConfig.projectId !== "";
 
+/** @type {import('firebase/firestore').Firestore | null} */
 let db = null;
 if (isValidConfig) {
   try {
@@ -111,6 +116,18 @@ export async function getCourseBySlug(slug) {
  */
 export function getYoutubeThumbnail(videoId) {
   return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+}
+
+/**
+ * Generates a URL-friendly slug from a creator's name.
+ * @param {string} name
+ * @returns {string}
+ */
+export function getCreatorSlug(name) {
+  if (!name) return "";
+  return name.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
 }
 
 export { db };

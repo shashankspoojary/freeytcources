@@ -1,0 +1,218 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getAllCourses } from '../lib/firebase.js';
+
+const courses = await getAllCourses();
+
+const title = "Watch Later Playlist - FreeYTCourses";
+const description = "Access your saved YouTube courses and video tutorials to watch anytime.";
+---
+
+<Layout title={title} description={description} activePage="subscriptions">
+  <main class="max-w-6xl mx-auto px-6 py-8 md:py-12">
+    <!-- Top Row Header -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-hairline gap-4">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-md bg-canvas-soft border border-hairline flex items-center justify-center text-primary shrink-0">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-light text-ink-strong tracking-tight flex items-center gap-3">
+            Watch Later 
+            <span id="watch-later-count-badge" class="text-xs font-mono bg-primary/15 text-primary border border-primary/30 px-2.5 py-0.5 rounded-full font-bold">0 videos</span>
+          </h1>
+          <p class="text-xs font-mono text-mute mt-0.5">Your saved list of curated courses to view anytime.</p>
+        </div>
+      </div>
+
+      <!-- Action Controls -->
+      <div id="watch-later-actions" class="flex items-center gap-3 hidden">
+        <button 
+          id="clear-all-watch-later" 
+          type="button" 
+          class="text-xs font-mono text-mute hover:text-red-400 border border-hairline hover:border-red-400/40 px-3 py-1.5 rounded-sm transition-all flex items-center gap-1.5 cursor-pointer bg-canvas-soft"
+        >
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Clear Playlist
+        </button>
+      </div>
+    </header>
+
+    <!-- Watch Later Courses Grid -->
+    <div id="watch-later-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+      <!-- Dynamically rendered via client-side script -->
+    </div>
+
+    <!-- Empty State Container -->
+    <div id="watch-later-empty" class="hidden text-center p-12 md:p-16 bg-canvas-soft border border-hairline border-dashed rounded-md my-8 max-w-xl mx-auto">
+      <div class="h-16 w-16 mx-auto mb-4 rounded-full bg-canvas border border-hairline flex items-center justify-center text-mute">
+        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-ink mb-1 font-mono uppercase tracking-wider">Your Watch Later List is Empty</h3>
+      <p class="text-sm text-body mb-6 font-light">Hover over any course thumbnail or click "Save to Watch Later" on course pages to save videos for later.</p>
+      <a href="/" class="inline-flex items-center gap-2 bg-primary text-on-primary px-5 py-2 rounded-sm text-xs font-mono uppercase font-bold hover:bg-primary-soft transition-colors">
+        Browse Courses
+      </a>
+    </div>
+
+    <!-- Embedded Courses Store Data -->
+    <div id="all-courses-data" data-courses={JSON.stringify(courses)} class="hidden"></div>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'freeyt_watch_later';
+    const grid = document.getElementById('watch-later-grid');
+    const emptyState = document.getElementById('watch-later-empty');
+    const badge = document.getElementById('watch-later-count-badge');
+    const actions = document.getElementById('watch-later-actions');
+    const clearBtn = document.getElementById('clear-all-watch-later');
+
+    const coursesDataEl = document.getElementById('all-courses-data');
+    const allCourses = JSON.parse(coursesDataEl?.getAttribute('data-courses') || '[]');
+
+    function getWatchLater(): string[] {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveWatchLater(slugs: string[]) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(slugs));
+      window.dispatchEvent(new Event('watchLaterChanged'));
+    }
+
+    function getCreatorSlug(name: string) {
+      if (!name) return "";
+      return name.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
+    }
+
+    function renderWatchLater() {
+      if (!grid || !emptyState) return;
+      const slugs = getWatchLater();
+
+      if (badge) {
+        badge.textContent = `${slugs.length} video${slugs.length === 1 ? '' : 's'}`;
+      }
+
+      if (slugs.length === 0) {
+        grid.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        actions?.classList.add('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      grid.classList.remove('hidden');
+      actions?.classList.remove('hidden');
+      grid.innerHTML = '';
+
+      slugs.forEach(slug => {
+        const course = allCourses.find((c: any) => c.slug === slug);
+        if (!course) return;
+
+        const videoId = course.sampleVideoId;
+        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        const creatorSlug = getCreatorSlug(course.creatorName);
+
+        const card = document.createElement('article');
+        card.className = "group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full";
+        card.innerHTML = `
+          <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
+            <img 
+              src="${thumbnailUrl}" 
+              alt="${course.title} thumbnail" 
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <span class="absolute top-3 right-3 text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-sm font-semibold shadow-md ${course.type === 'paid' ? 'bg-amber-400 text-on-primary' : 'bg-primary text-on-primary'}">
+              ${course.type}
+            </span>
+
+            <!-- Remove Button Overlay -->
+            <button 
+              type="button" 
+              class="remove-wl-btn absolute top-3 left-3 bg-canvas/90 hover:bg-red-500 text-ink hover:text-white p-1.5 rounded-sm transition-all shadow-md z-30 cursor-pointer"
+              data-slug="${course.slug}"
+              title="Remove from Watch Later"
+            >
+              <svg class="h-4 w-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <!-- Modules Count Overlay Badge -->
+            <div class="absolute bottom-2.5 right-2.5 z-20 bg-canvas/90 backdrop-blur-sm text-ink-strong border border-hairline px-2 py-0.5 rounded-sm text-[10px] font-mono flex items-center gap-1.5 shadow-md">
+              <svg class="h-3 w-3 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <span>${course.chapters ? course.chapters.length : 0} Modules</span>
+            </div>
+          </div>
+
+          <div class="p-6 flex flex-col justify-between flex-grow">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <span class="text-[10px] font-mono uppercase bg-canvas border border-hairline px-2.5 py-0.5 rounded-pill text-body">
+                  ${course.category}
+                </span>
+                <span class="text-xs font-mono text-mute">${course.duration}</span>
+              </div>
+
+              <h2 class="text-base font-semibold text-ink-strong mb-2.5 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                <a href="/courses/${course.slug}" class="focus:outline-none">
+                  ${course.title}
+                </a>
+              </h2>
+
+              <a href="/creators/${creatorSlug}" class="flex items-center gap-2 mb-4 hover:text-primary transition-colors group/creator shrink-0 relative z-30">
+                <img 
+                  src="${course.creatorLogo}" 
+                  alt="${course.creatorName}" 
+                  class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0"
+                />
+                <span class="text-xs font-mono text-mute group-hover/creator:text-primary transition-colors leading-none">${course.creatorName}</span>
+              </a>
+            </div>
+
+            <div class="pt-3.5 border-t border-hairline flex justify-between items-center text-[11px] font-mono text-mute">
+              <a href="/courses/${course.slug}" class="w-full bg-primary text-on-primary text-center py-2 rounded-sm font-bold uppercase hover:bg-primary-soft transition-colors text-xs">
+                Watch Course
+              </a>
+            </div>
+          </div>
+        `;
+
+        // Event listener for remove button inside card
+        const removeBtn = card.querySelector('.remove-wl-btn');
+        removeBtn?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const currentSlugs = getWatchLater().filter(s => s !== slug);
+          saveWatchLater(currentSlugs);
+          renderWatchLater();
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    clearBtn?.addEventListener('click', () => {
+      if (confirm('Clear all saved courses from Watch Later?')) {
+        saveWatchLater([]);
+        renderWatchLater();
+      }
+    });
+
+    renderWatchLater();
+    window.addEventListener('watchLaterChanged', renderWatchLater);
+  </script>
+</Layout>
