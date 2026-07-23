@@ -404,6 +404,10 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
       applyFiltersAndSort();
     }
 
+    (window as any).setFilter = setFilter;
+    (window as any).setSort = setSort;
+    (window as any).setLanguage = setLanguage;
+
     function applyFiltersAndSort() {
       if (!courseGrid) return;
       const cards = Array.from(courseGrid.getElementsByClassName('course-card')) as HTMLElement[];
