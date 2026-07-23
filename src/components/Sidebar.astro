@@ -75,7 +75,7 @@ const creatorsList = Array.from(uniqueCreatorsMap.values());
       </a>
 
       <!-- Subscribed Creator Channels Container (Populated dynamically on client with ONLY subscribed creators) -->
-      <div id="sidebar-channels-list" class="space-y-0.5" data-creators={JSON.stringify(creatorsList)}>
+      <div id="sidebar-channels-list" class="space-y-0.5 scrollbar-none" data-creators={JSON.stringify(creatorsList)}>
         <p id="sidebar-empty-subs" class="px-3 py-2 text-xs font-mono text-mute hidden">No subscriptions yet</p>
       </div>
 
@@ -244,9 +244,9 @@ const creatorsList = Array.from(uniqueCreatorsMap.values());
 
       if (channelsContainer) {
         if (isShowingAll) {
-          channelsContainer.classList.add('max-h-64', 'overflow-y-auto', 'pr-1');
+          channelsContainer.classList.add('max-h-64', 'overflow-y-auto', 'scrollbar-none');
         } else {
-          channelsContainer.classList.remove('max-h-64', 'overflow-y-auto', 'pr-1');
+          channelsContainer.classList.remove('max-h-64', 'overflow-y-auto', 'scrollbar-none');
           channelsContainer.scrollTop = 0;
         }
       }

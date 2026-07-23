@@ -84,6 +84,53 @@ const description = "Manage, view, and search all cataloged and submitted course
             Lock Console
           </button>
         </div>
+      <!-- Category Management Card -->
+      <div class="bg-canvas-soft border border-hairline rounded-md p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-hairline/40 pb-3">
+          <div>
+            <h2 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold flex items-center gap-2">
+              <svg class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 11h.01M7 15h.01M11 7h8M11 11h8M11 15h8" />
+              </svg>
+              Category Manager
+            </h2>
+            <p class="text-xs text-body font-light mt-0.5">Type to add new categories or click ✕ to remove existing ones.</p>
+          </div>
+          <span class="text-xs font-mono text-mute">
+            Total Categories: <span id="admin-cat-count" class="text-primary font-bold">0</span>
+          </span>
+        </div>
+
+        <!-- Add Category Form Row -->
+        <div class="space-y-2">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-lg">
+            <input 
+              type="text" 
+              id="admin-new-category-input" 
+              placeholder="Type new category name (e.g. Data Science)..." 
+              class="flex-1 bg-canvas border border-hairline text-ink rounded-sm px-3.5 py-2 text-xs font-mono focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-mute/40"
+            />
+            <button 
+              type="button" 
+              id="admin-add-category-btn" 
+              class="bg-primary text-on-primary font-mono text-xs uppercase font-bold px-4 py-2 rounded-sm hover:bg-primary-soft transition-colors cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Category
+            </button>
+          </div>
+          <p id="admin-cat-error" class="text-xs font-mono text-red-400 hidden"></p>
+        </div>
+
+        <!-- Category Chips -->
+        <div class="pt-1">
+          <div class="text-[11px] font-mono uppercase text-mute mb-2 font-semibold">Active Catalog Categories:</div>
+          <div id="admin-categories-chips" class="flex flex-wrap gap-2">
+            <!-- Dynamically populated chips with remove buttons -->
+          </div>
+        </div>
       </div>
 
       <!-- Submitted Courses Table Container -->
@@ -475,6 +522,136 @@ const description = "Manage, view, and search all cataloged and submitted course
       successToast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-12');
     });
 
+    // Category Manager Integration in Admin Console
+    const DEFAULT_CATEGORIES = ["AI Engineering", "Video Editing", "Coding Skills"];
+    const CAT_STORAGE_KEY = 'freeyt_categories';
+
+    function getAdminCategories(): string[] {
+      try {
+        const raw = localStorage.getItem(CAT_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
+      localStorage.setItem(CAT_STORAGE_KEY, JSON.stringify(DEFAULT_CATEGORIES));
+      return DEFAULT_CATEGORIES;
+    }
+
+    function saveAdminCategories(cats: string[]) {
+      localStorage.setItem(CAT_STORAGE_KEY, JSON.stringify(cats));
+      window.dispatchEvent(new CustomEvent('categoriesChanged', { detail: cats }));
+    }
+
+    const adminCatInput = document.getElementById('admin-new-category-input') as HTMLInputElement;
+    const adminAddCatBtn = document.getElementById('admin-add-category-btn');
+    const adminCatChipsContainer = document.getElementById('admin-categories-chips');
+    const adminCatCountBadge = document.getElementById('admin-cat-count');
+    const adminCatErrorMsg = document.getElementById('admin-cat-error');
+
+    function renderAdminCategoryManager() {
+      const cats = getAdminCategories();
+      
+      if (adminCatCountBadge) {
+        adminCatCountBadge.textContent = String(cats.length);
+      }
+
+      if (adminCatChipsContainer) {
+        adminCatChipsContainer.innerHTML = '';
+        cats.forEach(cat => {
+          const chip = document.createElement('div');
+          chip.className = 'inline-flex items-center gap-1.5 px-3 py-1 bg-canvas border border-hairline hover:border-primary/50 text-ink rounded-sm text-xs font-mono transition-colors group shadow-sm';
+          chip.innerHTML = `
+            <span>${cat}</span>
+            <button type="button" class="admin-remove-cat-btn text-mute hover:text-red-400 focus:outline-none cursor-pointer text-xs font-bold ml-1 transition-colors" data-category="${cat}" title="Remove category">&times;</button>
+          `;
+
+          chip.querySelector('.admin-remove-cat-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeAdminCategory(cat);
+          });
+
+          adminCatChipsContainer.appendChild(chip);
+        });
+      }
+    }
+
+    function addAdminCategory() {
+      if (!adminCatInput) return;
+      const rawVal = adminCatInput.value.trim();
+      if (!rawVal) {
+        showAdminCatError("Please enter a category name.");
+        return;
+      }
+
+      const currentCats = getAdminCategories();
+      const exists = currentCats.some(c => c.toLowerCase() === rawVal.toLowerCase());
+      if (exists) {
+        showAdminCatError(`Category '${rawVal}' already exists.`);
+        return;
+      }
+
+      hideAdminCatError();
+      const updated = [...currentCats, rawVal];
+      saveAdminCategories(updated);
+      renderAdminCategoryManager();
+      adminCatInput.value = '';
+
+      if (successToast) {
+        const toastTitle = successToast.querySelector('h3');
+        const toastDesc = successToast.querySelector('p');
+        if (toastTitle) toastTitle.textContent = "Category Added";
+        if (toastDesc) toastDesc.textContent = `New category '${rawVal}' was added to catalog index.`;
+        triggerToast();
+      }
+    }
+
+    function removeAdminCategory(catToRemove: string) {
+      const currentCats = getAdminCategories();
+      if (currentCats.length <= 1) {
+        showAdminCatError("At least one category must remain.");
+        return;
+      }
+
+      hideAdminCatError();
+      const updated = currentCats.filter(c => c !== catToRemove);
+      saveAdminCategories(updated);
+      renderAdminCategoryManager();
+
+      if (successToast) {
+        const toastTitle = successToast.querySelector('h3');
+        const toastDesc = successToast.querySelector('p');
+        if (toastTitle) toastTitle.textContent = "Category Removed";
+        if (toastDesc) toastDesc.textContent = `Category '${catToRemove}' was removed from catalog index.`;
+        triggerToast();
+      }
+    }
+
+    function showAdminCatError(msg: string) {
+      if (adminCatErrorMsg) {
+        adminCatErrorMsg.textContent = msg;
+        adminCatErrorMsg.classList.remove('hidden');
+      }
+    }
+
+    function hideAdminCatError() {
+      if (adminCatErrorMsg) {
+        adminCatErrorMsg.classList.add('hidden');
+      }
+    }
+
+    adminAddCatBtn?.addEventListener('click', addAdminCategory);
+    adminCatInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addAdminCategory();
+      }
+    });
+
+    window.addEventListener('categoriesChanged', renderAdminCategoryManager);
+    window.addEventListener('storage', (e) => {
+      if (e.key === CAT_STORAGE_KEY) renderAdminCategoryManager();
+    });
+
+    renderAdminCategoryManager();
     checkSession();
   </script>
 </Layout>

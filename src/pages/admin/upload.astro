@@ -130,14 +130,45 @@ const description = "Manually ingest new courses and syllabus layouts into the c
                   required
                 >
                   <option value="" disabled selected>Select Category</option>
-                  <option value="AI Engineering">AI Engineering</option>
-                  <option value="Video Editing">Video Editing</option>
-                  <option value="Coding Skills">Coding Skills</option>
                 </select>
                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-mute">
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
+                </div>
+              </div>
+
+              <!-- Interactive Category Manager (Add by typing & Remove) -->
+              <div class="mt-3 bg-canvas-soft/80 border border-hairline rounded-sm p-3 space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-mono uppercase tracking-wider text-mute font-semibold">Category Manager</span>
+                  <span id="cat-count-badge" class="text-[10px] font-mono text-primary font-bold">0 Categories</span>
+                </div>
+
+                <!-- Add Category Row -->
+                <div class="flex items-center gap-2">
+                  <input 
+                    type="text" 
+                    id="new-category-input" 
+                    placeholder="Type new category name..." 
+                    class="flex-1 bg-canvas border border-hairline text-ink rounded-sm px-3 py-1.5 text-xs focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-mono placeholder:text-mute/40"
+                  />
+                  <button 
+                    type="button" 
+                    id="add-category-btn" 
+                    class="bg-primary text-on-primary font-mono text-xs uppercase font-bold px-3 py-1.5 rounded-sm hover:bg-primary-soft transition-colors cursor-pointer shrink-0 flex items-center gap-1"
+                  >
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+                <p id="category-error-msg" class="text-[10px] font-mono text-red-400 hidden"></p>
+
+                <!-- Removable Category Chips -->
+                <div id="category-chips-container" class="flex flex-wrap gap-1.5 pt-1">
+                  <!-- Dynamically populated chips -->
                 </div>
               </div>
             </div>
@@ -506,6 +537,163 @@ const description = "Manually ingest new courses and syllabus layouts into the c
       e.preventDefault();
       addTagFromInput();
     }
+  });
+
+  // Category Storage & Manager Integration
+  const DEFAULT_CATEGORIES = ["AI Engineering", "Video Editing", "Coding Skills"];
+  const CAT_STORAGE_KEY = 'freeyt_categories';
+
+  function getStoredCategories(): string[] {
+    try {
+      const raw = localStorage.getItem(CAT_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch (e) {}
+    localStorage.setItem(CAT_STORAGE_KEY, JSON.stringify(DEFAULT_CATEGORIES));
+    return DEFAULT_CATEGORIES;
+  }
+
+  function saveStoredCategories(cats: string[]) {
+    localStorage.setItem(CAT_STORAGE_KEY, JSON.stringify(cats));
+    window.dispatchEvent(new CustomEvent('categoriesChanged', { detail: cats }));
+  }
+
+  const categorySelect = document.getElementById('category') as HTMLSelectElement;
+  const newCatInput = document.getElementById('new-category-input') as HTMLInputElement;
+  const addCatBtn = document.getElementById('add-category-btn');
+  const catChipsContainer = document.getElementById('category-chips-container');
+  const catCountBadge = document.getElementById('cat-count-badge');
+  const catErrorMsg = document.getElementById('category-error-msg');
+
+  function renderCategoryManager() {
+    const cats = getStoredCategories();
+    
+    if (catCountBadge) {
+      catCountBadge.textContent = `${cats.length} Categories`;
+    }
+
+    // Update Select Dropdown
+    if (categorySelect) {
+      const currentSelected = categorySelect.value;
+      categorySelect.innerHTML = '<option value="" disabled>Select Category</option>';
+      cats.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        if (c === currentSelected) {
+          opt.selected = true;
+        }
+        categorySelect.appendChild(opt);
+      });
+      if (!currentSelected) {
+        categorySelect.value = "";
+      }
+    }
+
+    // Update Removable Chips
+    if (catChipsContainer) {
+      catChipsContainer.innerHTML = '';
+      cats.forEach(cat => {
+        const chip = document.createElement('div');
+        chip.className = 'inline-flex items-center gap-1 px-2.5 py-1 bg-canvas border border-hairline hover:border-primary/40 text-ink rounded-sm text-xs font-mono transition-colors group';
+        chip.innerHTML = `
+          <span>${cat}</span>
+          <button type="button" class="remove-category-chip-btn text-mute hover:text-red-400 focus:outline-none cursor-pointer text-xs font-bold ml-1 transition-colors" data-category="${cat}" title="Remove category">&times;</button>
+        `;
+
+        chip.querySelector('.remove-category-chip-btn')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeCategory(cat);
+        });
+
+        catChipsContainer.appendChild(chip);
+      });
+    }
+  }
+
+  function addCategoryFromInput() {
+    if (!newCatInput) return;
+    const rawVal = newCatInput.value.trim();
+    if (!rawVal) {
+      showCatError("Please enter a category name.");
+      return;
+    }
+
+    const currentCats = getStoredCategories();
+    const exists = currentCats.some(c => c.toLowerCase() === rawVal.toLowerCase());
+    if (exists) {
+      showCatError(`Category '${rawVal}' already exists.`);
+      return;
+    }
+
+    hideCatError();
+    const updated = [...currentCats, rawVal];
+    saveStoredCategories(updated);
+    renderCategoryManager();
+
+    // Auto-select the newly added category in the dropdown
+    if (categorySelect) {
+      categorySelect.value = rawVal;
+    }
+
+    newCatInput.value = '';
+    
+    // Show success toast feedback
+    if (typeof successToast !== 'undefined' && successToast) {
+      const toastTitle = successToast.querySelector('h3');
+      const toastDesc = successToast.querySelector('p');
+      if (toastTitle) toastTitle.textContent = "Category Added";
+      if (toastDesc) toastDesc.textContent = `New category '${rawVal}' has been added successfully.`;
+      triggerToast();
+    }
+  }
+
+  function removeCategory(catToRemove: string) {
+    const currentCats = getStoredCategories();
+    if (currentCats.length <= 1) {
+      showCatError("At least one category must remain.");
+      return;
+    }
+
+    hideCatError();
+    const updated = currentCats.filter(c => c !== catToRemove);
+    saveStoredCategories(updated);
+    renderCategoryManager();
+
+    // Show toast feedback
+    if (typeof successToast !== 'undefined' && successToast) {
+      const toastTitle = successToast.querySelector('h3');
+      const toastDesc = successToast.querySelector('p');
+      if (toastTitle) toastTitle.textContent = "Category Removed";
+      if (toastDesc) toastDesc.textContent = `Category '${catToRemove}' has been removed.`;
+      triggerToast();
+    }
+  }
+
+  function showCatError(msg: string) {
+    if (catErrorMsg) {
+      catErrorMsg.textContent = msg;
+      catErrorMsg.classList.remove('hidden');
+    }
+  }
+
+  function hideCatError() {
+    if (catErrorMsg) {
+      catErrorMsg.classList.add('hidden');
+    }
+  }
+
+  addCatBtn?.addEventListener('click', addCategoryFromInput);
+  newCatInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addCategoryFromInput();
+    }
+  });
+
+  window.addEventListener('categoriesChanged', renderCategoryManager);
+  window.addEventListener('storage', (e) => {
+    if (e.key === CAT_STORAGE_KEY) renderCategoryManager();
   });
 
   // YouTube Channel Auto-extraction Elements
@@ -1002,6 +1190,7 @@ const description = "Manually ingest new courses and syllabus layouts into the c
 
   // Initialization
   checkSession();
+  renderCategoryManager();
   populateLanguageSelect();
   // Start with 1 default module row if empty
   if (modulesList && modulesList.children.length === 0) {
