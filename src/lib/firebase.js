@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { courses as fallbackCourses } from "../data/courses.js";
 
 /**
@@ -46,12 +47,23 @@ const firebaseConfig = {
 // Check if we have a valid configuration (e.g. project ID is populated)
 const isValidConfig = firebaseConfig.projectId && firebaseConfig.projectId !== "mock-project-id" && firebaseConfig.projectId !== "";
 
+/** @type {import('firebase/app').FirebaseApp | null} */
+let app = null;
+
 /** @type {import('firebase/firestore').Firestore | null} */
 let db = null;
+
+/** @type {import('firebase/auth').Auth | null} */
+let auth = null;
+
+/** @type {import('firebase/auth').GoogleAuthProvider} */
+let googleProvider = new GoogleAuthProvider();
+
 if (isValidConfig) {
   try {
-    const app = initializeApp(firebaseConfig);
+    app = initializeApp(firebaseConfig);
     db = getFirestore(app);
+    auth = getAuth(app);
   } catch (e) {
     console.warn("Firebase initialization failed:", e);
   }
@@ -130,4 +142,4 @@ export function getCreatorSlug(name) {
     .replace(/(^-|-$)+/g, '');
 }
 
-export { db };
+export { app, db, auth, googleProvider };

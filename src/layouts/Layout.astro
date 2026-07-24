@@ -1,6 +1,7 @@
 ---
 import HeaderNav from '../components/HeaderNav.astro';
 import Sidebar from '../components/Sidebar.astro';
+import ProfileModal from '../components/ProfileModal.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -16,6 +17,8 @@ const {
   activePage = 'home',
   hideSidebar = false
 } = Astro.props;
+
+const isAdmin = activePage === 'shashank' || activePage === 'admin';
 ---
 <!doctype html>
 <html lang="en" class="dark">
@@ -62,5 +65,8 @@ const {
     <div class={`page-main-layout flex-1 pt-[60px] transition-all duration-200 ease-in-out ${hideSidebar ? 'no-sidebar !pl-0' : ''}`}>
       <slot />
     </div>
+
+    <!-- Global User Profile Modal (Only on learner pages) -->
+    {!isAdmin && <ProfileModal />}
 	</body>
 </html>

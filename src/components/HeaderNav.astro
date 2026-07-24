@@ -5,7 +5,7 @@ interface Props {
 }
 
 const { activePage = 'home', hideSidebarToggle = false } = Astro.props;
-const isAdmin = activePage === 'admin' || hideSidebarToggle;
+const isAdmin = activePage === 'shashank' || activePage === 'admin' || hideSidebarToggle;
 ---
 
 <!-- Sticky YouTube-Style Nav Bar -->
@@ -75,6 +75,24 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
 
   <!-- Right-aligned Header Links -->
   <div class="flex items-center gap-3 md:gap-4 shrink-0">
+    <!-- User Profile Header Button (hidden on admin pages) -->
+    {!isAdmin && (
+      <button 
+        id="header-profile-btn"
+        type="button"
+        data-open-profile="true"
+        aria-label="User Account Profile"
+        class="relative p-1.5 text-ink hover:text-primary hover:bg-canvas-soft border border-hairline rounded-full transition-all flex items-center justify-center cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary group"
+        title="User Account & Settings"
+      >
+        <div id="header-profile-avatar-box" class="h-6 w-6 rounded-full bg-primary/10 border border-primary/30 text-primary font-bold text-xs flex items-center justify-center shrink-0 overflow-hidden">
+          <span id="header-profile-initial">U</span>
+          <img id="header-profile-photo" src="" alt="Profile" class="h-full w-full object-cover hidden" />
+        </div>
+        <span id="header-auth-status-dot" class="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-mute border border-canvas group-hover:bg-primary transition-colors"></span>
+      </button>
+    )}
+
     <!-- Light/Dark Theme Toggle Button -->
     <button 
       id="theme-toggle-btn" 
@@ -208,7 +226,7 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
         e.preventDefault();
-        window.location.href = '/admin/upload';
+        window.location.href = '/shashank/upload';
       }
     });
 
@@ -223,7 +241,7 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
         e.preventDefault();
         clickCount = 0;
         clearTimeout(clickTimer);
-        window.location.href = '/admin/upload';
+        window.location.href = '/shashank/upload';
         return;
       }
       clearTimeout(clickTimer);
@@ -233,10 +251,59 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
     });
   }
 
+  function initHeaderProfileState() {
+    function updateHeaderAvatar() {
+      try {
+        const raw = localStorage.getItem('freeyt_user_auth');
+        const user = raw ? JSON.parse(raw) : null;
+        const initialEl = document.getElementById('header-profile-initial');
+        const photoEl = document.getElementById('header-profile-photo') as HTMLImageElement;
+        const dotEl = document.getElementById('header-auth-status-dot');
+
+        if (user) {
+          const displayName = user.displayName || user.email?.split('@')[0] || 'U';
+          const firstInitial = displayName.charAt(0).toUpperCase();
+          if (initialEl) initialEl.textContent = firstInitial;
+
+          if (user.photoURL && photoEl) {
+            photoEl.src = user.photoURL;
+            photoEl.classList.remove('hidden');
+            if (initialEl) initialEl.classList.add('hidden');
+          } else {
+            if (photoEl) photoEl.classList.add('hidden');
+            if (initialEl) initialEl.classList.remove('hidden');
+          }
+
+          if (dotEl) {
+            dotEl.className = "absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary border border-canvas transition-colors";
+            dotEl.title = "Logged In";
+          }
+        } else {
+          if (initialEl) {
+            initialEl.textContent = "U";
+            initialEl.classList.remove('hidden');
+          }
+          if (photoEl) photoEl.classList.add('hidden');
+          if (dotEl) {
+            dotEl.className = "absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-mute border border-canvas transition-colors";
+            dotEl.title = "Not Logged In";
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    updateHeaderAvatar();
+    window.addEventListener('userAuthChanged', updateHeaderAvatar);
+    window.addEventListener('storage', updateHeaderAvatar);
+  }
+
   function initHeader() {
     initThemeToggle();
     initGlobalSearch();
     initSecretAdminTriggers();
+    initHeaderProfileState();
   }
 
   if (document.readyState === 'loading') {

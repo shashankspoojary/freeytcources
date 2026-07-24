@@ -9,18 +9,23 @@ export async function GET({ request }) {
     });
   }
 
+  // Robust YouTube Video ID extractor
   function getYoutubeId(url) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+    if (!url) return null;
+    const trimmed = url.trim();
+    
+    // Direct 11-char ID
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+      return trimmed;
+    }
+
+    // Match youtu.be, youtube.com/watch?v=, embed, shorts, etc.
+    const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const match = trimmed.match(regExp);
+    return match ? match[1] : null;
   }
 
-  let videoId = getYoutubeId(searchUrl);
-  
-  // If the input itself is an 11-char video ID
-  if (!videoId && searchUrl.trim().length === 11) {
-    videoId = searchUrl.trim();
-  }
+  const videoId = getYoutubeId(searchUrl);
 
   if (!videoId) {
     return new Response(JSON.stringify({ error: 'Could not extract Video ID from URL' }), {
@@ -29,131 +34,136 @@ export async function GET({ request }) {
     });
   }
 
+  const defaultHeaders = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Cookie': 'SOCS=CAESEwgDEgk0ODE3NzkzOTQaAmVuIAEaBgiA_eWqBg'
+  };
+
+  let channelName = '';
+  let channelUrl = '';
+  let channelId = null;
+  let avatarUrl = null;
+  let subscribers = '1.5M subscribers';
+  let videoViews = 12450;
+
+  // Helper to clean JSON-escaped URLs
+  function cleanUrl(rawUrl) {
+    if (!rawUrl) return null;
+    return rawUrl.replace(/\\u0026/g, '&').replace(/\\/g, '');
+  }
+
+  // 1. Fetch Official oEmbed for reliable channelName & channelUrl
   try {
-    const noembedUrl = `https://noembed.com/embed?url=${encodeURIComponent('https://www.youtube.com/watch?v=' + videoId)}`;
-    const oembedRes = await fetch(noembedUrl);
-    
-    if (!oembedRes.ok) {
-      return new Response(JSON.stringify({ error: 'Failed to fetch oEmbed details' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    const ytOembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent('https://www.youtube.com/watch?v=' + videoId)}&format=json`;
+    const res = await fetch(ytOembedUrl, { headers: defaultHeaders });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.author_name) channelName = data.author_name;
+      if (data.author_url) channelUrl = data.author_url;
     }
+  } catch (e) {
+    console.warn("YouTube official oEmbed failed:", e);
+  }
 
-    const oembedJson = await oembedRes.json();
-    
-    if (oembedJson.error) {
-      return new Response(JSON.stringify({ error: oembedJson.error }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+  // 2. Fetch Video Page HTML (contains creator avatar in ytInitialData)
+  try {
+    const videoRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, { headers: defaultHeaders });
+    if (videoRes.ok) {
+      const videoHtml = await videoRes.text();
+
+      // Channel Name fallback
+      if (!channelName) {
+        const authorMatch = videoHtml.match(/<link\s+itemprop="name"\s+content="([^"]+)"/i) ||
+                            videoHtml.match(/<meta\s+itemprop="author"\s+content="([^"]+)"/i) ||
+                            videoHtml.match(/"author"\s*:\s*"([^"]+)"/i);
+        if (authorMatch) channelName = authorMatch[1];
+      }
+
+      // Channel URL fallback
+      if (!channelUrl) {
+        const channelUrlMatch = videoHtml.match(/<a\s+href="(https:\/\/www\.youtube\.com\/(?:@|channel\/|user\/)[^"]+)"/i) ||
+                                videoHtml.match(/"channelUrl"\s*:\s*"([^"]+)"/i);
+        if (channelUrlMatch) channelUrl = channelUrlMatch[1];
+      }
+
+      // Channel ID
+      const canonicalMatch = videoHtml.match(/<meta\s+itemprop="channelId"\s+content="([^"]+)"/i) ||
+                             videoHtml.match(/"channelId"\s*:\s*"([^"]+)"/i);
+      if (canonicalMatch) channelId = canonicalMatch[1];
+
+      // Views
+      const viewsMatch = videoHtml.match(/<meta\s+itemprop="interactionCount"\s+content="([0-9]+)"/i) ||
+                         videoHtml.match(/"viewCount"\s*:\s*"([0-9]+)"/i);
+      if (viewsMatch) videoViews = Number(viewsMatch[1]);
+
+      // Extract Creator Avatar URL from video owner renderer or yt3.ggpht.com
+      const avatarMatch = videoHtml.match(/(https?:\\?\/\\?\/yt3\.(?:ggpht|googleusercontent)\.com\\?\/[a-zA-Z0-9_\-=/=]+)/i) ||
+                          videoHtml.match(/"videoOwnerRenderer"[^}]*?"thumbnail"\s*:\s*\{\s*"thumbnails"\s*:\s*\[\s*\{\s*"url"\s*:\s*"([^"]+)"/i) ||
+                          videoHtml.match(/"avatar"\s*:\s*\{\s*"thumbnails"\s*:\s*\[\s*\{\s*"url"\s*:\s*"([^"]+)"/i);
+      if (avatarMatch) {
+        avatarUrl = cleanUrl(avatarMatch[1]);
+      }
+
+      // Subscribers count
+      const subMatch = videoHtml.match(/"subscriberCountText"\s*:\s*\{\s*"accessibility"\s*:\s*\{\s*"accessibilityData"\s*:\s*\{\s*"label"\s*:\s*"([^"]+)"/i) ||
+                       videoHtml.match(/"simpleText"\s*:\s*"([0-9.KMB]+\s*subscribers)"/i) ||
+                       videoHtml.match(/"content"\s*:\s*"([0-9.KMB]+(?:\s*million)?\s*subscribers)"/i);
+      if (subMatch) {
+        subscribers = subMatch[1];
+      }
     }
+  } catch (e) {
+    console.warn("Video page scraping failed:", e);
+  }
 
-    const channelUrl = oembedJson.author_url;
-    const channelName = oembedJson.author_name;
-
-    if (!channelUrl) {
-      return new Response(JSON.stringify({ error: 'No channel URL in oEmbed' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Fetch Video views from video page
-    let views = 12450;
+  // 3. If avatar still missing, try fetching channel page directly
+  if (!avatarUrl && channelUrl) {
     try {
-      const videoRes = await fetch('https://www.youtube.com/watch?v=' + videoId, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Cookie': 'SOCS=CAESEwgDEgk0ODE3NzkzOTQaAmVuIAEaBgiA_eWqBg'
+      const channelRes = await fetch(channelUrl, { headers: defaultHeaders });
+      if (channelRes.ok) {
+        const html = await channelRes.text();
+
+        const channelAvatarMatch = html.match(/(https?:\\?\/\\?\/yt3\.(?:ggpht|googleusercontent)\.com\\?\/[a-zA-Z0-9_\-=/=]+)/i) ||
+                                   html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i) ||
+                                   html.match(/"avatar"\s*:\s*\{\s*"thumbnails"\s*:\s*\[\s*\{\s*"url"\s*:\s*"([^"]+)"/i);
+        if (channelAvatarMatch) {
+          avatarUrl = cleanUrl(channelAvatarMatch[1]);
         }
-      });
-      if (videoRes.ok) {
-        const videoHtml = await videoRes.text();
-        const viewsMatch = videoHtml.match(/<meta\s+itemprop="interactionCount"\s+content="([0-9]+)"/i) ||
-                           videoHtml.match(/"viewCount"\s*:\s*"([0-9]+)"/i);
-        if (viewsMatch) {
-          views = Number(viewsMatch[1]);
+
+        if (!channelId) {
+          const canonicalMatch = html.match(/<link\s+rel="canonical"\s+href="https:\/\/www\.youtube\.com\/channel\/([^"]+)"/i) ||
+                                 html.match(/"channelId":"([^"]+)"/i);
+          if (canonicalMatch) channelId = canonicalMatch[1];
+        }
+
+        const subMatch = html.match(/"subscriberCountText"\s*:\s*\{\s*"accessibility"\s*:\s*\{\s*"accessibilityData"\s*:\s*\{\s*"label"\s*:\s*"([^"]+)"/i) ||
+                         html.match(/"simpleText"\s*:\s*"([0-9.KMB]+\s*subscribers)"/i);
+        if (subMatch) {
+          subscribers = subMatch[1];
         }
       }
     } catch (e) {
-      console.warn("Failed to fetch views:", e);
+      console.warn("Channel page fetch failed:", e);
     }
-
-    // Fetch the channel page using SOCS bypass cookie
-    const channelRes = await fetch(channelUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Cookie': 'SOCS=CAESEwgDEgk0ODE3NzkzOTQaAmVuIAEaBgiA_eWqBg'
-      }
-    });
-
-    if (!channelRes.ok) {
-      // Fallback to oembed data only
-      return new Response(JSON.stringify({
-        channelName,
-        channelId: null,
-        creatorLogo: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
-        subscribers: '4.2M subscribers',
-        views
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    const html = await channelRes.text();
-    
-    const canonicalMatch = html.match(/<link\s+rel="canonical"\s+href="https:\/\/www\.youtube\.com\/channel\/([^"]+)"/i) ||
-                           html.match(/meta\s+itemprop="channelId"\s+content="([^"]+)"/i) ||
-                           html.match(/"channelId":"([^"]+)"/i);
-    const channelId = canonicalMatch ? canonicalMatch[1] : null;
-
-    const ogImageMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i) ||
-                         html.match(/<link\s+rel="image_src"\s+href="([^"]+)"/i);
-    const avatarUrl = ogImageMatch ? ogImageMatch[1] : null;
-
-    // Parse subscribers count
-    let subscribers = '4.2M subscribers';
-    const handle = channelUrl.substring(channelUrl.lastIndexOf('/') + 1);
-    if (handle) {
-      const escapedHandle = handle.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      const subRegex = new RegExp(escapedHandle + '[^"]*?•[^"({]*?([0-9.KMB]+(?:\\s*million)?\\s*subscribers)', 'i');
-      const subMatch = html.match(subRegex);
-      if (subMatch) {
-        subscribers = subMatch[1];
-      } else {
-        // fallback 1
-        const subMatch2 = html.match(/"metadataParts"[^}]*?"text"\s*:\s*\{\s*"content"\s*:\s*"([0-9.KMB]+(?:\\s*million)?\\s*subscribers)"/i);
-        if (subMatch2) {
-          subscribers = subMatch2[1];
-        } else {
-          // fallback 2
-          const genericMatch = html.match(/"text"\s*:\s*\{\s*"content"\s*:\s*"([0-9.KMB]+(?:\\s*million)?\\s*subscribers)"/gi);
-          if (genericMatch && genericMatch.length > 0) {
-            subscribers = genericMatch[0].match(/"content"\s*:\s*"([^"]+)"/i)?.[1] || subscribers;
-          }
-        }
-      }
-    }
-
-    return new Response(JSON.stringify({
-      channelName,
-      channelId,
-      creatorLogo: avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
-      subscribers,
-      views
-    }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
   }
+
+  // Fallback channel name
+  if (!channelName) {
+    channelName = "YouTube Creator";
+  }
+
+  // Fallback avatar logo using ui-avatars with green theme
+  const fallbackLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(channelName)}&background=00d992&color=101010&font-size=0.4`;
+
+  return new Response(JSON.stringify({
+    channelName,
+    channelId,
+    creatorLogo: avatarUrl || fallbackLogo,
+    subscribers,
+    views: videoViews
+  }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' }
+  });
 }
