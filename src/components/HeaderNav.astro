@@ -5,7 +5,7 @@ interface Props {
 }
 
 const { activePage = 'home', hideSidebarToggle = false } = Astro.props;
-const isAdmin = activePage === 'shashank' || activePage === 'admin' || hideSidebarToggle;
+const isAdmin = activePage === 'admin' || hideSidebarToggle;
 ---
 
 <!-- Sticky YouTube-Style Nav Bar -->
@@ -226,7 +226,7 @@ const isAdmin = activePage === 'shashank' || activePage === 'admin' || hideSideb
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
         e.preventDefault();
-        window.location.href = '/shashank/upload';
+        window.location.href = '/admin/upload';
       }
     });
 
@@ -241,7 +241,7 @@ const isAdmin = activePage === 'shashank' || activePage === 'admin' || hideSideb
         e.preventDefault();
         clickCount = 0;
         clearTimeout(clickTimer);
-        window.location.href = '/shashank/upload';
+        window.location.href = '/admin/upload';
         return;
       }
       clearTimeout(clickTimer);

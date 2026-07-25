@@ -2,6 +2,7 @@
 import HeaderNav from '../components/HeaderNav.astro';
 import Sidebar from '../components/Sidebar.astro';
 import ProfileModal from '../components/ProfileModal.astro';
+import GuestLoginPrompt from '../components/GuestLoginPrompt.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -18,7 +19,7 @@ const {
   hideSidebar = false
 } = Astro.props;
 
-const isAdmin = activePage === 'shashank' || activePage === 'admin';
+const isAdmin = activePage === 'admin';
 ---
 <!doctype html>
 <html lang="en" class="dark">
@@ -66,7 +67,8 @@ const isAdmin = activePage === 'shashank' || activePage === 'admin';
       <slot />
     </div>
 
-    <!-- Global User Profile Modal (Only on learner pages) -->
+    <!-- Global User Profile Modal & Guest Login Prompt (Only on learner pages) -->
     {!isAdmin && <ProfileModal />}
+    {!isAdmin && <GuestLoginPrompt activePage={activePage} />}
 	</body>
 </html>

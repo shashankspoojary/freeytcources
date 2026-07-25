@@ -1,0 +1,153 @@
+---
+interface Props {
+  activePage?: string;
+}
+
+const { activePage = 'home' } = Astro.props;
+---
+
+<!-- Centered Interactive Login Prompt Modal Pop-up with Dark Backdrop Blur -->
+<div 
+  id="guest-login-prompt-modal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 hidden"
+>
+  <div 
+    id="guest-login-modal-card"
+    class="bg-canvas border border-hairline rounded-md p-6 sm:p-8 max-w-md w-full mx-4 shadow-2xl space-y-6 transform scale-95 transition-all duration-300 relative border-t-4 border-t-primary"
+  >
+    <!-- Top Row: Eyebrow + Close Button -->
+    <div class="flex items-center justify-between">
+      <div class="inline-flex items-center gap-2 border border-primary/20 bg-primary/10 px-3 py-1 rounded-pill">
+        <span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+        <span class="font-mono text-[10px] text-primary uppercase font-bold tracking-widest">
+          Save Your Progress
+        </span>
+      </div>
+
+      <button 
+        id="dismiss-guest-modal-btn" 
+        type="button" 
+        class="text-mute hover:text-ink transition-colors p-1 rounded-sm cursor-pointer border-none bg-transparent"
+        aria-label="Close modal"
+        title="Close"
+      >
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Center Content: Lock Icon & Title -->
+    <div class="text-center space-y-3 pt-2">
+      <div class="h-16 w-16 mx-auto rounded-full bg-canvas-soft border border-hairline flex items-center justify-center text-primary shadow-inner">
+        <svg class="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+        </svg>
+      </div>
+
+      <h2 class="text-2xl font-bold text-ink-strong tracking-tight">Sign In to FreeYTCourses</h2>
+      <p class="text-xs text-body font-light leading-relaxed max-w-sm mx-auto">
+        Sign in or create an account to save your learning progress, build your Watch Later playlist, and subscribe to top creators.
+      </p>
+    </div>
+
+    <!-- Bullet Feature Highlights -->
+    <div class="space-y-2.5 bg-canvas-soft/60 border border-hairline p-4 rounded-sm">
+      <div class="flex items-center gap-3 text-xs text-ink font-mono">
+        <span class="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">✓</span>
+        <span>Save course progress & completion state</span>
+      </div>
+      <div class="flex items-center gap-3 text-xs text-ink font-mono">
+        <span class="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">✓</span>
+        <span>Sync Watch Later playlist across devices</span>
+      </div>
+      <div class="flex items-center gap-3 text-xs text-ink font-mono">
+        <span class="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">✓</span>
+        <span>Subscribe to your favorite YouTube educators</span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="space-y-2.5 pt-2">
+      <a 
+        href="/login" 
+        class="block w-full text-center bg-primary text-on-primary font-mono text-sm uppercase font-bold tracking-wider py-3.5 px-4 rounded-sm hover:bg-primary-soft transition-colors duration-200 cursor-pointer shadow-lg shadow-primary/10"
+      >
+        Sign In / Create Account
+      </a>
+      
+      <button 
+        id="guest-continue-modal-btn"
+        type="button" 
+        class="w-full text-center py-2.5 text-xs font-mono uppercase text-mute hover:text-ink transition-colors cursor-pointer bg-transparent border border-hairline hover:border-hairline-soft rounded-sm"
+      >
+        Continue as Guest
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function initGuestLoginModal() {
+    const modal = document.getElementById('guest-login-prompt-modal');
+    const modalContainer = document.getElementById('guest-login-modal-card');
+    const dismissBtn = document.getElementById('dismiss-guest-modal-btn');
+    const continueBtn = document.getElementById('guest-continue-modal-btn');
+
+    if (!modal || !modalContainer) return;
+
+    // Check if user is logged in
+    const userSession = localStorage.getItem('freeyt_user_auth');
+    const isDismissed = sessionStorage.getItem('freeyt_guest_modal_dismissed');
+
+    // Skip on login page, admin pages, or if user is already authenticated
+    const currentPath = window.location.pathname;
+    const isLoginPage = currentPath.includes('/login');
+    const isAdminPage = currentPath.includes('/admin');
+
+    if (!userSession && !isDismissed && !isLoginPage && !isAdminPage) {
+      // Open Pop-Up Modal after 1 second
+      setTimeout(() => {
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+          modal.classList.remove('opacity-0', 'pointer-events-none');
+          modal.classList.add('opacity-100', 'pointer-events-auto');
+          modalContainer.classList.remove('scale-95');
+          modalContainer.classList.add('scale-100');
+        }, 50);
+      }, 1000);
+    }
+
+    function closeModal() {
+      if (!modal || !modalContainer) return;
+      modal.classList.remove('opacity-100', 'pointer-events-auto');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      modalContainer.classList.remove('scale-100');
+      modalContainer.classList.add('scale-95');
+      sessionStorage.setItem('freeyt_guest_modal_dismissed', 'true');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    dismissBtn?.addEventListener('click', closeModal);
+    continueBtn?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // If user logs in, close modal
+    window.addEventListener('userAuthChanged', () => {
+      const updatedUser = localStorage.getItem('freeyt_user_auth');
+      if (updatedUser) {
+        closeModal();
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGuestLoginModal);
+  } else {
+    initGuestLoginModal();
+  }
+</script>
