@@ -8,22 +8,31 @@ const courses = await getAllCourses();
 const languages = Array.from(new Set(courses.map(c => c.language || "English").filter(Boolean)));
 
 // Define SEO title and description
-const title = "Curated Free YouTube Courses Dashboard";
-const description = "Explore and filter high-quality curated YouTube courses for AI Engineering, Video Editing, and Coding Skills.";
+const title = "Free YouTube Courses & Structured Learning Roadmaps";
+const description = "Discover the best free YouTube courses for AI engineering, video editing, and coding. Access curated playlists, detailed syllabi, and top creator tutorials—100% free.";
+const ogTitle = "FreeYTCourses - Master AI, Coding & Video Editing for Free";
+const ogDescription = "Stop searching through chaotic playlists. Learn high-income tech skills with structured, step-by-step YouTube course roadmaps from top creators.";
+const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses and learning roadmaps.";
 ---
 
-<Layout title={title} description={description} activePage="home">
+<Layout 
+  title="Free YouTube Courses & Structured Learning Roadmaps | FreeYTCourses" 
+  description="Discover the best free YouTube courses for AI engineering, video editing, and coding. Access curated playlists, detailed syllabi, and top creator tutorials—100% free."
+  ogImage="/og-banner.jpg"
+  ogType="website"
+  activePage="home"
+>
 
 
-  <!-- Hero Section -->
+  <!-- Hero Section (Section A - App Workspace Top) -->
   <header class="max-w-6xl mx-auto px-6 pt-16 pb-12 md:pt-24 md:pb-16 text-center">
     <div class="inline-block font-mono text-xs text-primary uppercase tracking-[2.52px] mb-4 bg-primary/10 px-3 py-1.5 rounded-pill border border-primary/20">
       Engineered Learning
     </div>
-    <h1 class="text-4xl md:text-6xl font-light text-ink-strong tracking-[-0.65px] leading-tight max-w-3xl mx-auto mb-6">
-      Curated YouTube Courses <br class="hidden md:inline" />Dressed as Documentation.
-    </h1>
-    <p class="text-lg text-body max-w-2xl mx-auto mb-12 font-light leading-relaxed">
+    <div class="text-3xl md:text-5xl lg:text-6xl font-light text-ink-strong tracking-[-0.65px] leading-tight max-w-4xl mx-auto mb-6">
+      Free YouTube Courses & Curated Learning Roadmaps
+    </div>
+    <p class="text-base md:text-lg text-body max-w-2xl mx-auto mb-12 font-light leading-relaxed">
       No fluff, no paywalls. High-quality structured learning modules meticulously reviewed and organized by core developer tools.
     </p>
 
@@ -357,28 +366,130 @@ const description = "Explore and filter high-quality curated YouTube courses for
     </div>
   </div>
 
-  <!-- About Section -->
-  <section id="about" class="bg-canvas-soft border-t border-hairline py-16 px-6">
-    <div class="max-w-4xl mx-auto">
-      <div class="font-mono text-xs text-primary uppercase tracking-[2.52px] mb-4">
-        EDITORIAL STANDARDS
+  <!-- Section B (Below the Fold - SEO & Editorial Section) -->
+  <section class="mt-16 border-t border-slate-800 pt-12 max-w-4xl mx-auto px-6 text-left">
+    <!-- H1 Heading -->
+    <h1 class="text-3xl md:text-4xl font-light text-ink-strong tracking-tight mb-6">
+      Free YouTube Courses & Curated Learning Roadmaps
+    </h1>
+    <p class="text-body text-sm md:text-base leading-relaxed mb-8">
+      Welcome to <strong class="text-ink-strong font-semibold">FreeYTCourses</strong>, your ultimate free YouTube learning directory designed to transform chaotic video playlists into structured, step-by-step educational roadmaps. YouTube hosts some of the world's finest software engineering tutorials, video production masterclasses, and artificial intelligence guides. However, finding a complete, beginner-to-pro curriculum without getting lost in endless search results can be overwhelming. We curate the top free YouTube courses across high-demand tech industries, organizing them into clear, actionable learning paths so you can master new skills without paying expensive tuition or bootcamp fees.
+    </p>
+
+    <!-- H2: Master High-Income Tech Skills -->
+    <h2 class="text-2xl md:text-3xl font-light text-ink-strong tracking-tight mt-10 mb-4">
+      Master High-Income Tech Skills with Structured YouTube Playlists
+    </h2>
+    <p class="text-body text-sm md:text-base leading-relaxed mb-6">
+      Whether your goal is to build autonomous artificial intelligence agents, edit cinematic video content, or construct full-stack web applications, our curated directory connects you directly with top-tier education from world-class creators.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-6">
+      <div class="bg-canvas-soft border border-hairline p-5 rounded-md space-y-2">
+        <h3 class="text-base font-semibold text-primary font-mono">
+          Free AI Engineering Courses on YouTube
+        </h3>
+        <p class="text-xs text-body leading-relaxed">
+          Artificial intelligence is fundamentally changing how software is built. Our hand-picked collection of free AI engineering courses on YouTube covers Large Language Model (LLM) fine-tuning, LangChain and LlamaIndex orchestration, PyTorch neural networks, Vector DB integration, and autonomous agent design. Learn how to engineer production-ready AI solutions directly from active developers.
+        </p>
       </div>
-      <h2 class="text-2xl md:text-3xl font-light text-ink-strong mb-6 tracking-tight">
-        Why FreeYTCourses Exists
+
+      <div class="bg-canvas-soft border border-hairline p-5 rounded-md space-y-2">
+        <h3 class="text-base font-semibold text-primary font-mono">
+          Free Video Editing Courses on YouTube
+        </h3>
+        <p class="text-xs text-body leading-relaxed">
+          Turn raw video footage into polished, high-engagement visual stories. Our free video editing courses on YouTube showcase industry-standard tools including DaVinci Resolve, Adobe Premiere Pro, After Effects, and CapCut. Master essential timeline cutting, node-based color grading, audio engineering, keyframe animation, and motion graphics step-by-step.
+        </p>
+      </div>
+
+      <div class="bg-canvas-soft border border-hairline p-5 rounded-md space-y-2">
+        <h3 class="text-base font-semibold text-primary font-mono">
+          Free Coding & Web Development Courses on YouTube
+        </h3>
+        <p class="text-xs text-body leading-relaxed">
+          Acquiring coding skills doesn't require a university computer science degree. Explore our full library of free YouTube coding courses covering Python, JavaScript, TypeScript, React, Next.js, Astro, and backend relational databases. Every syllabus is audited for hands-on project creation so you build a real portfolio while learning.
+        </p>
+      </div>
+    </div>
+
+    <!-- Ad Placement Placeholder -->
+    <div class="my-8 p-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-lg text-center text-xs text-slate-500">Ad Placement Placeholder</div>
+
+    <!-- H2: Why Choose Curated YouTube Roadmaps -->
+    <h2 class="text-2xl md:text-3xl font-light text-ink-strong tracking-tight mt-10 mb-4">
+      Why Choose Curated YouTube Roadmaps Over Random Searching?
+    </h2>
+    <p class="text-body text-sm md:text-base leading-relaxed mb-6">
+      While YouTube contains millions of educational videos, most search results suffer from fragmented playlists, clickbait titles, and out-of-date instruction. FreeYTCourses acts as a quality filter and editorial index that adds critical context to every recommended tutorial.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+      <div class="bg-canvas-soft/70 border border-hairline p-6 rounded-md space-y-2">
+        <h3 class="text-lg font-semibold text-ink-strong">
+          Detailed Syllabi and In-Depth Reviews
+        </h3>
+        <p class="text-xs text-body leading-relaxed">
+          Every course listing features an editorial critique detailing key takeaways, chapter-by-chapter breakdowns, and topic outlines. Know exactly what skills you will master before investing hours in video tutorials.
+        </p>
+      </div>
+
+      <div class="bg-canvas-soft/70 border border-hairline p-6 rounded-md space-y-2">
+        <h3 class="text-lg font-semibold text-ink-strong">
+          Required Software Tools at a Glance
+        </h3>
+        <p class="text-xs text-body leading-relaxed">
+          Never start a video series only to discover halfway through that you lack prerequisite tools. We list required software—like VS Code, Docker, DaVinci Resolve, or Python 3—so your environment is set up beforehand.
+        </p>
+      </div>
+    </div>
+
+    <!-- Ad Placement Placeholder -->
+    <div class="my-8 p-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-lg text-center text-xs text-slate-500">Ad Placement Placeholder</div>
+
+    <!-- H2: Discover Top YouTube Tech Creators -->
+    <h2 class="text-2xl md:text-3xl font-light text-ink-strong tracking-tight mt-10 mb-4">
+      Discover Top YouTube Tech Creators in One Place
+    </h2>
+    <p class="text-body text-sm md:text-base leading-relaxed mb-6">
+      Exceptional online learning starts with exceptional instructors. Our creator index brings together top tech YouTubers and software educators. Explore individual creator channels, view subscriber stats, filter by domain expertise, and find teachers whose explanation styles match your personal learning preference.
+    </p>
+
+    <!-- Ad Placement Placeholder -->
+    <div class="my-8 p-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-lg text-center text-xs text-slate-500">Ad Placement Placeholder</div>
+
+    <!-- H2: Track Your Progress -->
+    <h2 class="text-2xl md:text-3xl font-light text-ink-strong tracking-tight mt-10 mb-4">
+      Track Your Progress and Learn at Your Own Pace
+    </h2>
+    <p class="text-body text-sm md:text-base leading-relaxed mb-6">
+      Stay disciplined and track your milestones with integrated browser storage. Save courses to your personal Watch Later list, resume lesson progress seamlessly across sessions, filter playlists by view counts or community ratings, and maintain your custom learning sequence without mandatory account creation.
+    </p>
+
+    <!-- Ad Placement Placeholder -->
+    <div class="my-8 p-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-lg text-center text-xs text-slate-500">Ad Placement Placeholder</div>
+
+    <!-- H2: Start Learning Today -->
+    <div class="bg-canvas-soft border border-hairline rounded-md p-8 text-center space-y-4 border-t-4 border-t-primary my-10">
+      <h2 class="text-2xl md:text-3xl font-light text-ink-strong tracking-tight">
+        Start Learning Today – 100% Free Forever
       </h2>
-      <div class="space-y-4 text-body text-sm md:text-base leading-relaxed">
-        <p>
-          The internet is saturated with excellent educational content. YouTube houses thousands of hours of high-quality courses uploaded by experts. However, these courses are often hard to find, unindexed, or mixed with low-effort videos.
-        </p>
-        <p>
-          We curate, structure, and verify tutorials by breaking them down into modules, listing required toolsets, and reviewing the core syllabus. Every single page in this hub contains a minimum 200-word detailed critique to guarantee compliance with premium search parameters, avoiding generic index placeholders.
-        </p>
+      <p class="text-body text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
+        High-quality tech education should be free and accessible to everyone worldwide. Browse our curated categories above, search for specific tools or creators, and take the first step toward mastering AI engineering, video editing, or web development today.
+      </p>
+      <div class="pt-2">
+        <a 
+          href="#courses-section" 
+          class="inline-block bg-primary text-on-primary font-mono text-xs uppercase font-bold tracking-wider py-3 px-6 rounded-sm hover:bg-primary-soft transition-colors cursor-pointer shadow-lg"
+        >
+          Explore Free Courses &rarr;
+        </a>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="bg-canvas border-t border-hairline py-12 px-6 text-center text-xs font-mono text-mute">
+  <footer class="bg-canvas border-t border-hairline py-12 px-6 text-center text-xs font-mono text-mute mt-16">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
       <div>
         &copy; {new Date().getFullYear()} FreeYTCourses. Curated under the Voltagent aesthetic guidelines.

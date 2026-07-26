@@ -58,6 +58,7 @@ let auth = null;
 
 /** @type {import('firebase/auth').GoogleAuthProvider} */
 let googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 if (isValidConfig) {
   try {

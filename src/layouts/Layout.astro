@@ -6,20 +6,38 @@ import GuestLoginPrompt from '../components/GuestLoginPrompt.astro';
 import '../styles/global.css';
 
 interface Props {
-	title: string;
+	title?: string;
 	description?: string;
+	ogImage?: string;
+	ogType?: string;
   activePage?: string;
   hideSidebar?: boolean;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImageAlt?: string;
+  canonicalUrl?: string;
 }
 
 const { 
-  title, 
-  description = "FreeYTCourses - A Curated Hub of premium, text-rich and highly optimized free YouTube courses.",
+  title = "Free YouTube Courses & Structured Learning Roadmaps | FreeYTCourses", 
+  description = "Discover the best free YouTube courses for AI engineering, video editing, and coding. Access curated playlists, detailed syllabi, and top creator tutorials—100% free.",
+  ogImage = "/og-banner.jpg",
+  ogType = "website",
   activePage = 'home',
-  hideSidebar = false
+  hideSidebar = false,
+  ogTitle,
+  ogDescription,
+  ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses and learning roadmaps.",
+  canonicalUrl
 } = Astro.props;
 
 const isAdmin = activePage === 'admin';
+const siteUrl = Astro.url.origin;
+const fullCanonicalUrl = canonicalUrl || Astro.url.href;
+const pageTitle = title.includes("FreeYTCourses") ? title : `${title} | FreeYTCourses`;
+const finalOgTitle = ogTitle || pageTitle;
+const finalOgDescription = ogDescription || description;
+const finalOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
 ---
 <!doctype html>
 <html lang="en" class="dark">
@@ -29,8 +47,39 @@ const isAdmin = activePage === 'admin';
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		<title>{title} | FreeYTCourses</title>
+		<title>{pageTitle}</title>
 		<meta name="description" content={description} />
+		<link rel="canonical" href={fullCanonicalUrl} />
+
+		<!-- Open Graph (OG) & Social Sharing Metadata -->
+		<meta property="og:title" content={finalOgTitle} />
+		<meta property="og:description" content={finalOgDescription} />
+		<meta property="og:type" content={ogType} />
+		<meta property="og:url" content={fullCanonicalUrl} />
+		<meta property="og:site_name" content="FreeYTCourses" />
+		<meta property="og:image" content={finalOgImage} />
+		<meta property="og:image:alt" content={ogImageAlt} />
+
+		<!-- Twitter Card Metadata -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={finalOgTitle} />
+		<meta name="twitter:description" content={finalOgDescription} />
+		<meta name="twitter:image" content={finalOgImage} />
+
+		<!-- JSON-LD Structured Data Schema -->
+		<script type="application/ld+json" set:html={JSON.stringify({
+			"@context": "https://schema.org",
+			"@type": "WebSite",
+			"name": "FreeYTCourses",
+			"url": siteUrl,
+			"description": description,
+			"potentialAction": {
+				"@type": "SearchAction",
+				"target": `${siteUrl}/courses?q={search_term_string}`,
+				"query-input": "required name=search_term_string"
+			}
+		})} />
+
 		<!-- Google Fonts Inter -->
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
