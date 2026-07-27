@@ -8,6 +8,7 @@ import '../styles/global.css';
 interface Props {
 	title?: string;
 	description?: string;
+	keywords?: string;
 	ogImage?: string;
 	ogType?: string;
   activePage?: string;
@@ -18,9 +19,12 @@ interface Props {
   canonicalUrl?: string;
 }
 
+const defaultKeywords = "free youtube courses, best free youtube courses with certificate, youtube learning roadmap, free curated youtube courses, youtube course directory, best youtube channels to learn tech skills, learn prompt engineering youtube free, best youtube course for machine learning, free python ai course youtube, llm developer roadmap youtube, best youtube channel for artificial intelligence tutorial, davinci resolve full course youtube free, best youtube course to learn premiere pro, capcut desktop full editing tutorial youtube, best youtube channel to learn color grading, free motion graphics roadmap youtube, best youtube course for web development, python full course for beginners youtube roadmap, learn full stack development on youtube free, javascript tutorial playlist for beginners, best youtube channel to learn react js";
+
 const { 
   title = "Free YouTube Courses & Structured Learning Roadmaps | FreeYTCourses", 
   description = "Discover the best free YouTube courses for AI engineering, video editing, and coding. Explore curated YouTube courses, detailed syllabi, and structured free online learning roadmaps—100% free.",
+  keywords = defaultKeywords,
   ogImage = "/og-banner.jpg",
   ogType = "website",
   activePage = 'home',
@@ -38,6 +42,7 @@ const pageTitle = title.includes("FreeYTCourses") ? title : `${title} | FreeYTCo
 const finalOgTitle = ogTitle || pageTitle;
 const finalOgDescription = ogDescription || description;
 const finalOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+const finalKeywords = keywords;
 ---
 <!doctype html>
 <html lang="en" class="dark">
@@ -49,6 +54,7 @@ const finalOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage
 		<meta name="generator" content={Astro.generator} />
 		<title>{pageTitle}</title>
 		<meta name="description" content={description} />
+		<meta name="keywords" content={finalKeywords} />
 		<link rel="canonical" href={fullCanonicalUrl} />
 
 		<!-- Open Graph (OG) & Social Sharing Metadata -->
