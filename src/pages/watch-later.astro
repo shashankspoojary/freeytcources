@@ -8,18 +8,8 @@ const title = "Watch Later Playlist - FreeYTCourses";
 const description = "Access your saved YouTube courses and video tutorials to watch anytime.";
 ---
 
-<Layout title={title} description={description} activePage="subscriptions">
+<Layout title={title} description={description} activePage="watch-later">
   <main class="max-w-6xl mx-auto px-6 py-8 md:py-12">
-    <!-- Top Back Link -->
-    <div class="mb-6">
-      <a 
-        href="/" 
-        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors font-sans"
-      >
-        <span>&larr;</span> Back to Home
-      </a>
-    </div>
-
     <!-- Top Row Header -->
 
     <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-hairline gap-4">
@@ -73,7 +63,7 @@ const description = "Access your saved YouTube courses and video tutorials to wa
     </div>
 
     <!-- Watch Later Courses Grid -->
-    <div id="watch-later-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+    <div id="watch-later-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
       <!-- Dynamically rendered via client-side script -->
     </div>
 

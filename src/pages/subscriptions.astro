@@ -27,16 +27,6 @@ const description = "Access and track the latest courses and updates published b
 
   <!-- Main Subscriptions Content -->
   <main class="max-w-6xl mx-auto px-6 py-8 md:py-12">
-    <!-- Top Back Link -->
-    <div class="mb-6">
-      <a 
-        href="/" 
-        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors font-sans"
-      >
-        <span>&larr;</span> Back to Home
-      </a>
-    </div>
-
     <!-- Top Row Header -->
 
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-hairline gap-4">
@@ -117,7 +107,7 @@ const description = "Access and track the latest courses and updates published b
     </div>
 
     <!-- Courses Grid List -->
-    <div id="subscribed-courses-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div id="subscribed-courses-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {courses.map((course) => (
         <article 
           class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer"

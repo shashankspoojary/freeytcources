@@ -49,15 +49,7 @@ const description = `Explore all curated structured courses, syllabus breakdowns
 
 
   <main class="max-w-6xl mx-auto px-6 py-8 md:py-12">
-    <!-- Top Back Link -->
-    <div class="mb-6">
-      <a 
-        href="/" 
-        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors font-sans"
-      >
-        <span>&larr;</span> Back to Home
-      </a>
-    </div>
+    <!-- Channel Header Banner -->
 
     <!-- Channel Header Metadata Area -->
 
@@ -134,7 +126,7 @@ const description = `Explore all curated structured courses, syllabus breakdowns
     </div>
 
     <!-- Courses Grid List -->
-    <div id="channel-courses-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div id="channel-courses-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {creatorCourses.map((course) => (
         <article 
           class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer"

@@ -13,16 +13,6 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
 
 <Layout title={title} description={description} activePage="courses">
   <main id="courses-section" class="max-w-6xl mx-auto px-6 py-8 md:py-12">
-    <!-- Top Back Link -->
-    <div class="mb-6">
-      <a 
-        href="/" 
-        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors font-sans"
-      >
-        <span>&larr;</span> Back to Home
-      </a>
-    </div>
-
     <!-- Top Header -->
 
     <div class="mb-8 pb-4 border-b border-hairline flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -140,7 +130,7 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
     </div>
 
     <!-- Course Cards Grid -->
-    <div id="course-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div id="course-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {courses.map((course) => (
         <article 
           class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer"
@@ -246,12 +236,47 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
     </div>
 
     <!-- Empty state card -->
-    <div id="empty-state" class="hidden text-center p-12 bg-canvas-soft border border-hairline border-dashed rounded-md my-12 max-w-xl mx-auto">
+    <div id="empty-state" class="hidden text-center p-8 sm:p-12 bg-canvas-soft border border-hairline border-dashed rounded-md my-12 max-w-xl mx-auto">
       <svg class="mx-auto h-12 w-12 text-mute mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <h3 class="text-lg font-semibold text-ink mb-1 font-mono uppercase tracking-wider">No Courses Found</h3>
-      <p class="text-sm text-body">No curated courses match the selected search parameters or skill categories.</p>
+      <h3 id="empty-state-title" class="text-lg font-semibold text-ink mb-1 font-mono uppercase tracking-wider">No Courses Found</h3>
+      <p id="empty-state-text" class="text-sm text-body mb-6 font-light">No curated courses match the selected search parameters or skill categories.</p>
+      
+      <!-- Category Shortcut Chips -->
+      <div class="pt-4 border-t border-hairline/60">
+        <span class="text-[11px] font-mono uppercase text-mute tracking-wider block mb-3 font-semibold">Explore Popular Categories:</span>
+        <div class="flex flex-wrap justify-center gap-2">
+          <button 
+            type="button" 
+            onclick="window.setFilter && window.setFilter('AI Engineering')" 
+            class="text-xs font-mono bg-canvas border border-hairline hover:border-primary text-ink px-3 py-1.5 rounded-sm transition-all cursor-pointer hover:bg-primary/10"
+          >
+            AI Engineering
+          </button>
+          <button 
+            type="button" 
+            onclick="window.setFilter && window.setFilter('Video Editing')" 
+            class="text-xs font-mono bg-canvas border border-hairline hover:border-primary text-ink px-3 py-1.5 rounded-sm transition-all cursor-pointer hover:bg-primary/10"
+          >
+            Video Editing
+          </button>
+          <button 
+            type="button" 
+            onclick="window.setFilter && window.setFilter('Coding Skills')" 
+            class="text-xs font-mono bg-canvas border border-hairline hover:border-primary text-ink px-3 py-1.5 rounded-sm transition-all cursor-pointer hover:bg-primary/10"
+          >
+            Coding Skills
+          </button>
+          <button 
+            type="button" 
+            onclick="window.setFilter && window.setFilter('All')" 
+            class="text-xs font-mono bg-primary text-on-primary font-bold px-3 py-1.5 rounded-sm transition-all cursor-pointer hover:bg-primary-soft"
+          >
+            View All Courses
+          </button>
+        </div>
+      </div>
     </div>
 
     <div id="courses-data" data-courses={JSON.stringify(courses)} class="hidden"></div>
@@ -300,6 +325,66 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
       } catch (e) {}
     }
 
+    /**
+     * 1. Search Query Tokenization & Normalization
+     */
+    function tokenize(text: string): string[] {
+      if (!text) return [];
+      return String(text)
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+    }
+
+    /**
+     * 2. Multi-Field Weighted Relevance Scoring Algorithm
+     */
+    function calculateRelevanceScore(course: any, rawQuery: string): number {
+      const queryTokens = tokenize(rawQuery);
+      if (queryTokens.length === 0) return 0;
+
+      const normQuery = rawQuery.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
+      const titleStr = course.title || '';
+      const normTitle = titleStr.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
+      const creatorStr = course.creatorName || course.creator || '';
+      const categoryStr = course.category || '';
+      const summaryStr = course.description || course.summary || '';
+      const tagsArr: string[] = Array.isArray(course.tags) ? course.tags : [];
+      const toolsArr: string[] = Array.isArray(course.tools) ? course.tools : [];
+
+      for (const token of queryTokens) {
+        const titleMatch = normTitle.includes(token);
+        const tagsMatch = tagsArr.some(t => String(t).toLowerCase().includes(token));
+        const creatorMatch = creatorStr.toLowerCase().includes(token);
+        const categoryMatch = categoryStr.toLowerCase().includes(token);
+        const toolsMatch = toolsArr.some(t => String(t).toLowerCase().includes(token));
+        const summaryMatch = summaryStr.toLowerCase().includes(token);
+
+        if (!(titleMatch || tagsMatch || creatorMatch || categoryMatch || toolsMatch || summaryMatch)) {
+          return 0;
+        }
+      }
+
+      let score = 0;
+
+      if (normQuery.length > 0 && normTitle === normQuery) {
+        score += 15;
+      }
+
+      for (const token of queryTokens) {
+        if (normTitle.includes(token)) score += 10;
+        if (tagsArr.some(t => String(t).toLowerCase().includes(token))) score += 8;
+        if (creatorStr.toLowerCase().includes(token)) score += 7;
+        if (categoryStr.toLowerCase().includes(token)) score += 6;
+        if (toolsArr.some(t => String(t).toLowerCase().includes(token))) score += 5;
+        if (summaryStr.toLowerCase().includes(token)) score += 2;
+      }
+
+      return score;
+    }
+
     // Read ?q= URL param on page load and pre-fill search input
     const urlParams = new URLSearchParams(window.location.search);
     const initialQuery = urlParams.get('q') || '';
@@ -308,11 +393,18 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
       searchQuery = initialQuery;
     }
 
-    // Listen for live search input from global HeaderNav search bar
-    window.addEventListener('globalSearchInput', ((e: CustomEvent) => {
-      searchQuery = e.detail || '';
+    // Listen for live search events
+    function handleSearchEvent(e: Event) {
+      const customEvt = e as CustomEvent;
+      searchQuery = typeof customEvt.detail === 'string' ? customEvt.detail : customEvt.detail?.query || '';
+      if (searchInput && searchInput.value !== searchQuery) {
+        searchInput.value = searchQuery;
+      }
       applyFiltersAndSort();
-    }) as EventListener);
+    }
+
+    window.addEventListener('course-search', handleSearchEvent as EventListener);
+    window.addEventListener('globalSearchInput', handleSearchEvent as EventListener);
 
     skillSelect?.addEventListener('change', () => {
       activeFilter = skillSelect.value;
@@ -341,62 +433,6 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
       }
     });
 
-    function getLevenshteinDistance(a: string, b: string): number {
-      const matrix: number[][] = [];
-      for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-      for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-      for (let i = 1; i <= b.length; i++) {
-        for (let j = 1; j <= a.length; j++) {
-          if (b.charAt(i - 1) === a.charAt(j - 1)) {
-            matrix[i][j] = matrix[i - 1][j - 1];
-          } else {
-            matrix[i][j] = Math.min(
-              matrix[i - 1][j - 1] + 1,
-              matrix[i][j - 1] + 1,
-              matrix[i - 1][j] + 1
-            );
-          }
-        }
-      }
-      return matrix[b.length][a.length];
-    }
-
-    function searchMatch(course: any, query: string): boolean {
-      const q = query.toLowerCase().trim();
-      if (!q) return true;
-
-      const title = course.title.toLowerCase();
-      const creator = course.creatorName.toLowerCase();
-      const category = course.category.toLowerCase();
-      const description = course.description.toLowerCase();
-      const language = (course.language || 'English').toLowerCase();
-      const tools = course.tools.map((t: string) => t.toLowerCase()).join(' ');
-
-      if (title.includes(q) || creator.includes(q) || category.includes(q) || description.includes(q) || tools.includes(q) || language.includes(q)) {
-        return true;
-      }
-
-      const words = q.split(/\s+/).filter(Boolean);
-      if (words.length > 1) {
-        const combinedText = `${title} ${creator} ${category} ${tools} ${language}`;
-        if (words.every(w => combinedText.includes(w))) {
-          return true;
-        }
-      }
-
-      if (q.length >= 3) {
-        const courseTokens = [...title.split(/[\s,.-]+/), ...creator.split(/[\s,.-]+/)].filter(t => t.length >= 3);
-        for (const token of courseTokens) {
-          const dist = getLevenshteinDistance(q, token);
-          if (dist <= 1 || (q.length >= 4 && dist <= 2)) {
-            return true;
-          }
-        }
-      }
-
-      return false;
-    }
-
     function setFilter(category: string) {
       activeFilter = category;
       if (skillSelect) skillSelect.value = category;
@@ -422,7 +458,10 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
     function applyFiltersAndSort() {
       if (!courseGrid) return;
       const cards = Array.from(courseGrid.getElementsByClassName('course-card')) as HTMLElement[];
-      const currentQuery = searchQuery || searchInput?.value || '';
+      const currentQuery = (searchQuery || searchInput?.value || '').trim();
+      const queryTokens = tokenize(currentQuery);
+
+      const scoredCards: { card: HTMLElement; score: number }[] = [];
       let visibleCount = 0;
 
       cards.forEach((card) => {
@@ -433,38 +472,66 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
 
         const matchesCategory = activeFilter === 'All' || cat === activeFilter;
         const matchesLanguage = activeLanguage === 'All' || lang === activeLanguage;
-        const matchesSearch = course ? searchMatch(course, currentQuery) : true;
+
+        let score = 0;
+        let matchesSearch = true;
+
+        if (queryTokens.length > 0 && course) {
+          score = calculateRelevanceScore(course, currentQuery);
+          matchesSearch = score > 0;
+        }
 
         if (matchesCategory && matchesLanguage && matchesSearch) {
           card.classList.remove('hidden');
+          scoredCards.push({ card, score });
           visibleCount++;
         } else {
           card.classList.add('hidden');
         }
       });
 
+      const emptyTitleEl = document.getElementById('empty-state-title');
+      const emptyTextEl = document.getElementById('empty-state-text');
+
       if (visibleCount === 0) {
-        emptyState?.classList.remove('hidden');
+        if (emptyState) {
+          emptyState.classList.remove('hidden');
+          if (currentQuery) {
+            if (emptyTitleEl) emptyTitleEl.textContent = `No courses found matching "${currentQuery}"`;
+            if (emptyTextEl) emptyTextEl.textContent = `No curated courses matched all of your search terms. Try searching by creator, tool, or broad category.`;
+          } else {
+            if (emptyTitleEl) emptyTitleEl.textContent = `No Courses Found`;
+            if (emptyTextEl) emptyTextEl.textContent = `No curated courses match the selected search parameters or skill categories.`;
+          }
+        }
         courseGrid.classList.add('hidden');
       } else {
         emptyState?.classList.add('hidden');
         courseGrid.classList.remove('hidden');
       }
 
-      cards.sort((a, b) => {
+      scoredCards.sort((a, b) => {
+        if (queryTokens.length > 0) {
+          if (b.score !== a.score) {
+            return b.score - a.score;
+          }
+        }
+
+        const cardA = a.card;
+        const cardB = b.card;
         if (activeSort === 'latest') {
-          const dateA = new Date(a.getAttribute('data-date') || '');
-          const dateB = new Date(b.getAttribute('data-date') || '');
+          const dateA = new Date(cardA.getAttribute('data-date') || '');
+          const dateB = new Date(cardB.getAttribute('data-date') || '');
           return dateB.getTime() - dateA.getTime();
         } else if (activeSort === 'popular') {
-          const viewsA = Number(a.getAttribute('data-views') || 0);
-          const viewsB = Number(b.getAttribute('data-views') || 0);
+          const viewsA = Number(cardA.getAttribute('data-views') || 0);
+          const viewsB = Number(cardB.getAttribute('data-views') || 0);
           return viewsB - viewsA;
         } else if (activeSort === 'top-rated') {
-          const ratingA = Number(a.getAttribute('data-rating') || 0);
-          const votesA = Number(a.getAttribute('data-votes') || 0);
-          const ratingB = Number(b.getAttribute('data-rating') || 0);
-          const votesB = Number(b.getAttribute('data-votes') || 0);
+          const ratingA = Number(cardA.getAttribute('data-rating') || 0);
+          const votesA = Number(cardA.getAttribute('data-votes') || 0);
+          const ratingB = Number(cardB.getAttribute('data-rating') || 0);
+          const votesB = Number(cardB.getAttribute('data-votes') || 0);
           const scoreA = ratingA * Math.log10(votesA + 1);
           const scoreB = ratingB * Math.log10(votesB + 1);
           return scoreB - scoreA;
@@ -472,8 +539,8 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
         return 0;
       });
 
-      cards.forEach((card) => {
-        courseGrid.appendChild(card);
+      scoredCards.forEach((item) => {
+        courseGrid.appendChild(item.card);
       });
     }
 
