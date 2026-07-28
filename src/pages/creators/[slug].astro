@@ -235,31 +235,17 @@ const description = `Explore all curated structured courses, syllabus breakdowns
   </footer>
 
   <!-- Client-Side Search, Sort & Progress Script -->
-  <script is:inline define:vars={{ creatorSlug: slug }}>
-    // Variables
-    const searchInput = document.getElementById('channel-search-input');
+  <script>
+    import { getSubscriptions, setSubscriptions, getWatchLater, setWatchLater } from '../../lib/userStorage.js';
+
+    const creatorSlug = document.getElementById('channel-courses-grid')?.getAttribute('data-creator-slug') || '';
+    const subBtn = document.getElementById('channel-subscribe-btn');
+    const searchInput = document.getElementById('channel-search-input') as HTMLInputElement;
     const grid = document.getElementById('channel-courses-grid');
     const emptyState = document.getElementById('channel-empty-state');
     const sortPills = document.querySelectorAll('.sort-pill');
     
     let activeSort = 'latest';
-    
-    // Subscription Logic
-    const SUBS_KEY = 'freeyt_subscribed_creators';
-    const subBtn = document.getElementById('subscribe-btn');
-    
-    function getSubscriptions() {
-      try {
-        const raw = localStorage.getItem(SUBS_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        return [];
-      }
-    }
-    
-    function saveSubscriptions(subs) {
-      localStorage.setItem(SUBS_KEY, JSON.stringify(subs));
-    }
     
     function isSubscribed() {
       const subs = getSubscriptions();
@@ -287,13 +273,12 @@ const description = `Explore all curated structured courses, syllabus breakdowns
     subBtn?.addEventListener('click', () => {
       let subs = getSubscriptions();
       if (subs.includes(creatorSlug)) {
-        subs = subs.filter(s => s !== creatorSlug);
+        subs = subs.filter((s: string) => s !== creatorSlug);
       } else {
         subs.push(creatorSlug);
       }
-      saveSubscriptions(subs);
+      setSubscriptions(subs);
       updateSubscribeButton();
-      window.dispatchEvent(new Event('subscriptionsChanged'));
     });
     
     // Initial call
@@ -413,7 +398,7 @@ const description = `Explore all curated structured courses, syllabus breakdowns
     }
 
     // Toast Notification Helper
-    function showToast(message, actionText = '', actionUrl = '') {
+    function showToast(message: string, actionText = '', actionUrl = '') {
       let container = document.getElementById('toast-container');
       if (!container) {
         container = document.createElement('div');
@@ -444,13 +429,7 @@ const description = `Explore all curated structured courses, syllabus breakdowns
     }
 
     function updateWatchLaterButtons() {
-      let wl = [];
-      try {
-        const raw = localStorage.getItem('freeyt_watch_later');
-        wl = raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        wl = [];
-      }
+      const wl = getWatchLater();
 
       document.querySelectorAll('.watch-later-toggle-btn').forEach(btn => {
         const slug = btn.getAttribute('data-slug');
@@ -474,25 +453,17 @@ const description = `Explore all curated structured courses, syllabus breakdowns
         const slug = btn.getAttribute('data-slug');
         if (!slug) return;
 
-        let wl = [];
-        try {
-          const raw = localStorage.getItem('freeyt_watch_later');
-          wl = raw ? JSON.parse(raw) : [];
-        } catch (e) {
-          wl = [];
-        }
-
+        let wl = getWatchLater();
         const isSaved = wl.includes(slug);
         if (isSaved) {
-          wl = wl.filter(s => s !== slug);
+          wl = wl.filter((s: string) => s !== slug);
           showToast('Removed from Watch Later');
         } else {
           wl.push(slug);
           showToast('Saved to Watch Later', 'View Playlist', '/watch-later');
         }
 
-        localStorage.setItem('freeyt_watch_later', JSON.stringify(wl));
-        window.dispatchEvent(new Event('watchLaterChanged'));
+        setWatchLater(wl);
         updateWatchLaterButtons();
       });
     });

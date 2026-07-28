@@ -821,6 +821,8 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
 
   <!-- Client-Side Filter, Search, Sort & History Script -->
   <script>
+    import { getSubscriptions, getWatchLater, setWatchLater, getWatchHistory, setWatchHistory, getUserStorageKey } from '../lib/userStorage.js';
+
     // Dropdown Filter Elements
     const skillSelect = document.getElementById('skill-filter-select') as HTMLSelectElement;
     const languageSelect = document.getElementById('language-filter-select') as HTMLSelectElement;
@@ -832,7 +834,6 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
     
     // Subscription Elements
     const navSubBadge = document.getElementById('nav-sub-badge');
-    const SUBS_KEY = 'freeyt_subscribed_creators';
     
     // Search Elements (HeaderNav & Hero Input)
     const searchContainer = document.getElementById('search-container');
@@ -845,7 +846,6 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
     let activeFilter = 'All';
     let activeLanguage = 'All';
     let activeSort = 'latest';
-    const HISTORY_KEY = 'freeyt_watch_history';
 
     // Retrieve courses from data block
     const coursesDataEl = document.getElementById('courses-data');
@@ -1140,9 +1140,9 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
 
       const scoredMatches = allCourses
         .map((c: any) => ({ course: c, score: calculateRelevanceScore(c, query) }))
-        .filter(item => item.score > 0)
-        .sort((a, b) => b.score - a.score)
-        .map(item => item.course);
+        .filter((item: any) => item.score > 0)
+        .sort((a: any, b: any) => b.score - a.score)
+        .map((item: any) => item.course);
 
       const normQuery = query.toLowerCase().trim();
       const matchingCreators: any[] = [];
@@ -1259,15 +1259,6 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
         document.getElementById('courses-section')?.scrollIntoView({ behavior: 'smooth' });
       }
     });
-
-    function getSubscriptions() {
-      try {
-        const raw = localStorage.getItem(SUBS_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        return [];
-      }
-    }
 
     function updateSubscriptionsUI() {
       const subs = getSubscriptions();
@@ -1404,21 +1395,9 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
       });
     }
 
-    // User Retention: LocalStorage Watch History Engine
+    // User Retention: Isolated Watch History Engine
     function addToHistory(slug: string) {
-      let history: string[] = [];
-      try {
-        const raw = localStorage.getItem(HISTORY_KEY);
-        if (raw) {
-          history = JSON.parse(raw);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-
-      if (!Array.isArray(history)) {
-        history = [];
-      }
+      let history: string[] = getWatchHistory();
 
       // Prepend to history & remove duplicates
       history = history.filter(item => item !== slug);
@@ -1429,7 +1408,7 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
         history = history.slice(0, 4);
       }
 
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      setWatchHistory(history);
     }
 
     function renderContinueLearning() {
@@ -1437,15 +1416,7 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
       const grid = document.getElementById('continue-learning-grid');
       if (!container || !grid) return;
 
-      let history: string[] = [];
-      try {
-        const raw = localStorage.getItem(HISTORY_KEY);
-        if (raw) {
-          history = JSON.parse(raw);
-        }
-      } catch (e) {
-        console.error(e);
-      }
+      let history: string[] = getWatchHistory();
 
       if (!Array.isArray(history) || history.length === 0) {
         container.classList.add('hidden');
@@ -1461,7 +1432,7 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
           count++;
           const thumbnailUrl = `https://img.youtube.com/vi/${course.sampleVideoId}/maxresdefault.jpg`;
           
-          const progressKey = `freeyt_progress_${course.slug}`;
+          const progressKey = getUserStorageKey(`freeyt_progress_${course.slug}`);
           let progressPercent = 0;
           let progressLabel = '';
           try {
@@ -1535,15 +1506,9 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
           const slug = btn.getAttribute('data-slug');
           if (!slug) return;
 
-          try {
-            const raw = localStorage.getItem(HISTORY_KEY);
-            let hist: string[] = raw ? JSON.parse(raw) : [];
-            hist = hist.filter(s => s !== slug);
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
-          } catch (err) {
-            console.error(err);
-          }
-
+          let hist: string[] = getWatchHistory();
+          hist = hist.filter(s => s !== slug);
+          setWatchHistory(hist);
           renderContinueLearning();
         });
       });
@@ -1560,7 +1525,7 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
         const slug = card.getAttribute('data-slug');
         if (!slug) return;
         
-        const progressKey = `freeyt_progress_${slug}`;
+        const progressKey = getUserStorageKey(`freeyt_progress_${slug}`);
         try {
           const rawProgress = localStorage.getItem(progressKey);
           if (rawProgress) {
@@ -1635,13 +1600,7 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
 
     // Watch Later Toggle Button Logic
     function updateWatchLaterButtons() {
-      let wl: string[] = [];
-      try {
-        const raw = localStorage.getItem('freeyt_watch_later');
-        wl = raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        wl = [];
-      }
+      const wl = getWatchLater();
 
       document.querySelectorAll('.watch-later-toggle-btn').forEach(btn => {
         const slug = btn.getAttribute('data-slug');
@@ -1665,14 +1624,7 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
         const slug = btn.getAttribute('data-slug');
         if (!slug) return;
 
-        let wl: string[] = [];
-        try {
-          const raw = localStorage.getItem('freeyt_watch_later');
-          wl = raw ? JSON.parse(raw) : [];
-        } catch (e) {
-          wl = [];
-        }
-
+        let wl = getWatchLater();
         const isSaved = wl.includes(slug);
         if (isSaved) {
           wl = wl.filter(s => s !== slug);
@@ -1682,8 +1634,7 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
           showToast('Saved to Watch Later', 'View Playlist', '/watch-later');
         }
 
-        localStorage.setItem('freeyt_watch_later', JSON.stringify(wl));
-        window.dispatchEvent(new Event('watchLaterChanged'));
+        setWatchLater(wl);
         updateWatchLaterButtons();
       });
     });

@@ -282,34 +282,58 @@ const description = `Read our full, detailed editorial critique and chapter brea
     </div>
   </footer>
 
+  <div id="course-page-data" data-slug={course.slug} data-chapters={JSON.stringify(course.chapters)} data-video-id={course.sampleVideoId} class="hidden"></div>
+
   <!-- Watch History & Playback Progress Engine -->
-  <script is:inline define:vars={{ slug: course.slug, chaptersData: course.chapters, courseVideoId: course.sampleVideoId }}>
-    // 1. History tracking logic
-    const HISTORY_KEY = 'freeyt_watch_history';
-    let history = [];
-    try {
-      const raw = localStorage.getItem(HISTORY_KEY);
-      if (raw) {
-        history = JSON.parse(raw);
+  <script>
+    import { getWatchLater, setWatchLater, getWatchHistory, setWatchHistory, getUserStorageKey } from '../../lib/userStorage.js';
+
+    declare global {
+      interface Window {
+        YT: any;
+        onYouTubeIframeAPIReady: any;
+        getPlaybackProgress: any;
       }
+    }
+
+    interface ProgressState {
+      completedChapters: number[];
+      chapterPositions: Record<number, number>;
+      chapterDurations: Record<number, number>;
+      chapterPercentages: Record<number, number>;
+      lastActiveIndex: number;
+    }
+
+    const dataEl = document.getElementById('course-page-data');
+    const courseSlug = dataEl?.getAttribute('data-slug') || '';
+    const courseVideoId = dataEl?.getAttribute('data-video-id') || '';
+    let chaptersData: any[] = [];
+    try {
+      chaptersData = JSON.parse(dataEl?.getAttribute('data-chapters') || '[]');
     } catch (e) {
-      console.error(e);
+      chaptersData = [];
     }
-    if (!Array.isArray(history)) {
-      history = [];
+
+    let player: any = null;
+    let progressInterval: any = null;
+    let apiPromise: Promise<any> | null = null;
+    
+    // 1. History tracking logic
+    let history = getWatchHistory();
+    if (courseSlug) {
+      history = history.filter((item: string) => item !== courseSlug);
+      history.unshift(courseSlug);
+      if (history.length > 4) {
+        history = history.slice(0, 4);
+      }
+      setWatchHistory(history);
     }
-    history = history.filter(item => item !== slug);
-    history.unshift(slug);
-    if (history.length > 4) {
-      history = history.slice(0, 4);
-    }
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 
     // 2. Video Player & Progress Tracking Logic
-    const PROGRESS_KEY = `freeyt_progress_${slug}`;
+    const PROGRESS_KEY = getUserStorageKey(`freeyt_progress_${courseSlug}`);
     
     // Load state
-    let progressState = {
+    let progressState: ProgressState = {
       completedChapters: [],
       chapterPositions: {},
       chapterDurations: {},
@@ -334,12 +358,9 @@ const description = `Read our full, detailed editorial critique and chapter brea
     if (typeof progressState.lastActiveIndex !== 'number') progressState.lastActiveIndex = 0;
 
     let activeChapterIndex = progressState.lastActiveIndex;
-    let player = null;
-    let progressInterval = null;
 
     // Load Youtube Iframe API Promise Wrapper
-    let apiPromise = null;
-    function loadYoutubeAPI() {
+    function loadYoutubeAPI(): Promise<any> {
       if (apiPromise) return apiPromise;
       apiPromise = new Promise((resolve) => {
         if (window.YT && window.YT.Player) {
@@ -350,7 +371,11 @@ const description = `Read our full, detailed editorial critique and chapter brea
         const tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
         const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        if (firstScriptTag && firstScriptTag.parentNode) {
+          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        } else {
+          document.head.appendChild(tag);
+        }
         
         window.onYouTubeIframeAPIReady = () => {
           resolve(window.YT);
@@ -359,7 +384,7 @@ const description = `Read our full, detailed editorial critique and chapter brea
       return apiPromise;
     }
 
-    async function initPlayer(videoId, startSeconds = 0) {
+    async function initPlayer(videoId: string, startSeconds = 0): Promise<any> {
       const YT = await loadYoutubeAPI();
       return new Promise((resolve) => {
         player = new YT.Player('youtube-player', {
@@ -377,7 +402,7 @@ const description = `Read our full, detailed editorial critique and chapter brea
             onReady: () => {
               resolve(player);
             },
-            onStateChange: (event) => {
+            onStateChange: (event: any) => {
               if (event.data === YT.PlayerState.PLAYING) {
                 startProgressTracking();
               } else {
@@ -452,7 +477,7 @@ const description = `Read our full, detailed editorial critique and chapter brea
       }
     }
 
-    function playChapter(index) {
+    function playChapter(index: number) {
       activeChapterIndex = index;
       progressState.lastActiveIndex = index;
       saveProgressToStorage();
@@ -517,7 +542,7 @@ const description = `Read our full, detailed editorial critique and chapter brea
         const statusIconEl = row.querySelector('.chapter-status-icon');
         const progressLabelEl = row.querySelector('.chapter-progress-lbl');
         const progressBarContainer = row.querySelector('.chapter-progress-bar-container');
-        const progressBarFill = row.querySelector('.chapter-progress-bar-fill');
+        const progressBarFill = row.querySelector('.chapter-progress-bar-fill') as HTMLElement;
 
         if (statusIconEl) {
           if (completed) {
@@ -733,13 +758,7 @@ const description = `Read our full, detailed editorial critique and chapter brea
 
     function updateHeroWatchLater() {
       if (!wlBtn || !wlText) return;
-      let wl = [];
-      try {
-        const raw = localStorage.getItem('freeyt_watch_later');
-        wl = raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        wl = [];
-      }
+      const wl = getWatchLater();
 
       if (Array.isArray(wl) && wl.includes(courseSlug)) {
         wlBtn.className = "px-2.5 py-1 bg-primary/20 border border-primary text-primary font-semibold transition-all rounded-xs flex items-center gap-1 cursor-pointer";
@@ -751,22 +770,15 @@ const description = `Read our full, detailed editorial critique and chapter brea
     }
 
     wlBtn?.addEventListener('click', () => {
-      let wl = [];
-      try {
-        const raw = localStorage.getItem('freeyt_watch_later');
-        wl = raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        wl = [];
-      }
+      let wl = getWatchLater();
 
       if (wl.includes(courseSlug)) {
-        wl = wl.filter(s => s !== courseSlug);
+        wl = wl.filter((s: string) => s !== courseSlug);
       } else {
         wl.push(courseSlug);
       }
 
-      localStorage.setItem('freeyt_watch_later', JSON.stringify(wl));
-      window.dispatchEvent(new Event('watchLaterChanged'));
+      setWatchLater(wl);
       updateHeroWatchLater();
     });
 

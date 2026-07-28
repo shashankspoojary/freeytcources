@@ -215,7 +215,8 @@ const description = "Access and track the latest courses and updates published b
 
   <!-- Client script for channel filtering, sorting, watch later -->
   <script>
-    const SUBS_KEY = 'freeyt_subscribed_creators';
+    import { getSubscriptions } from '../lib/userStorage.js';
+
     const navSubBadge = document.getElementById('nav-sub-badge');
     const coursesGrid = document.getElementById('subscribed-courses-grid');
     const searchInput = document.getElementById('sub-feed-search') as HTMLInputElement;
@@ -223,15 +224,6 @@ const description = "Access and track the latest courses and updates published b
     
     let activeSort = 'latest';
     let selectedChannelSlug: string | null = null; // null = show all subscribed channels combined
-
-    function getSubscriptions(): string[] {
-      try {
-        const raw = localStorage.getItem(SUBS_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        return [];
-      }
-    }
 
     function initSubscriptionsPage() {
       const channelBtns = document.querySelectorAll('.channel-bubble-btn');

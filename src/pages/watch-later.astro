@@ -86,7 +86,8 @@ const description = "Access your saved YouTube courses and video tutorials to wa
   </main>
 
   <script>
-    const STORAGE_KEY = 'freeyt_watch_later';
+    import { getWatchLater, setWatchLater } from '../lib/userStorage.js';
+
     const grid = document.getElementById('watch-later-grid');
     const emptyState = document.getElementById('watch-later-empty');
     const badge = document.getElementById('watch-later-count-badge');
@@ -96,18 +97,8 @@ const description = "Access your saved YouTube courses and video tutorials to wa
     const coursesDataEl = document.getElementById('all-courses-data');
     const allCourses = JSON.parse(coursesDataEl?.getAttribute('data-courses') || '[]');
 
-    function getWatchLater(): string[] {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        return [];
-      }
-    }
-
     function saveWatchLater(slugs: string[]) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(slugs));
-      window.dispatchEvent(new Event('watchLaterChanged'));
+      setWatchLater(slugs);
     }
 
     function getCreatorSlug(name: string) {

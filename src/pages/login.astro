@@ -266,7 +266,6 @@ const description = "Sign in or create your FreeYTCourses account with Google or
       signInWithPopup, 
       signInWithRedirect,
       getRedirectResult,
-      onAuthStateChanged,
       signInWithEmailAndPassword, 
       createUserWithEmailAndPassword,
       updateProfile,
@@ -451,12 +450,26 @@ const description = "Sign in or create your FreeYTCourses account with Google or
     function saveUserSession(user: any) {
       const sessionData = {
         uid: user.uid || 'usr_' + Date.now(),
-        email: user.email,
+        email: user.email || 'user@example.com',
         displayName: user.displayName || user.email?.split('@')[0] || 'Learner',
         photoURL: user.photoURL || null,
-        provider: user.providerId || 'firebase'
+        provider: user.providerId || 'google'
       };
       localStorage.setItem('freeyt_user_auth', JSON.stringify(sessionData));
+
+      try {
+        let saved = JSON.parse(localStorage.getItem('freeyt_saved_accounts') || '[]');
+        if (!Array.isArray(saved)) saved = [];
+        const existingIdx = saved.findIndex((a: any) => a.email === sessionData.email || a.uid === sessionData.uid);
+        if (existingIdx >= 0) {
+          saved[existingIdx] = sessionData;
+        } else {
+          saved.push(sessionData);
+        }
+        localStorage.setItem('freeyt_saved_accounts', JSON.stringify(saved));
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     function handleSuccessAndRedirect(user: any, actionName: string) {
@@ -469,7 +482,7 @@ const description = "Sign in or create your FreeYTCourses account with Google or
 
     let isRedirecting = false;
 
-    // Handle returning from Google Redirect Auth & active session state
+    // Handle returning from Google Redirect Auth
     if (auth) {
       getRedirectResult(auth)
         .then((result) => {
@@ -482,13 +495,6 @@ const description = "Sign in or create your FreeYTCourses account with Google or
           console.error("Google Redirect Error:", err);
           if (err.message) showFeedback(err.message, 'error');
         });
-
-      onAuthStateChanged(auth, (user) => {
-        if (user && !isRedirecting) {
-          isRedirecting = true;
-          handleSuccessAndRedirect(user, "Google Sign-In");
-        }
-      });
     }
 
     // Google One-Click Auth (Cloud Firebase Auth)
@@ -513,7 +519,7 @@ const description = "Sign in or create your FreeYTCourses account with Google or
       }
 
       if (!auth) {
-        showFeedback("Firebase Auth offline. Signing in demo learner...", 'loading');
+        showFeedback("Connecting offline... Signing in demo learner...", 'loading');
         setTimeout(() => {
           handleSuccessAndRedirect({ uid: 'google_demo_learner', email: 'learner@gmail.com', displayName: 'Learner' }, "Google Sign-In");
         }, 800);
@@ -601,7 +607,7 @@ const description = "Sign in or create your FreeYTCourses account with Google or
       if (submitBtn) submitBtn.disabled = true;
 
       if (!auth) {
-        showFeedback("Firebase Authentication is not initialized. Please check your .env config.", 'error');
+        showFeedback("Authentication service unavailable. Please check your credentials.", 'error');
         if (submitBtn) submitBtn.disabled = false;
         return;
       }
@@ -646,7 +652,7 @@ const description = "Sign in or create your FreeYTCourses account with Google or
         } else if (code === 'auth/email-already-in-use') {
           msg = "This email is already registered. Please click Sign in at the bottom.";
         } else if (code === 'auth/invalid-email') {
-          msg = "Firebase rejected this email address. Please use a valid email domain.";
+          msg = "Please enter a valid, active email address.";
         } else if (code === 'auth/weak-password') {
           msg = "Password is too weak. Please use at least 6 characters.";
         }

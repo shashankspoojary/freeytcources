@@ -218,6 +218,8 @@ const creatorsList = Array.from(uniqueCreatorsMap.values());
 </aside>
 
 <script>
+  import { getSubscriptions, getWatchLater } from '../lib/userStorage.js';
+
   // Global Sidebar Interactivity & LocalStorage Persistence
   function initSidebar() {
     const toggleBtn = document.getElementById('sidebar-toggle-btn');
@@ -294,20 +296,7 @@ const creatorsList = Array.from(uniqueCreatorsMap.values());
 
     function updateSubscriptionsState() {
       try {
-        let raw = localStorage.getItem('freeyt_subscribed_creators');
-        let subs = raw ? JSON.parse(raw) : [];
-        if (!Array.isArray(subs) || subs.length === 0) {
-          const defaultSubs = [
-            'dr-angela-thorne', 
-            'marcus-sterling', 
-            'elena-rostova', 
-            'julian-kade', 
-            'sarah-lindqvist', 
-            'prof-alan-vance'
-          ];
-          localStorage.setItem('freeyt_subscribed_creators', JSON.stringify(defaultSubs));
-          subs = defaultSubs;
-        }
+        const subs = getSubscriptions();
         
         subBadges.forEach(badge => {
           if (badge) {
@@ -332,7 +321,7 @@ const creatorsList = Array.from(uniqueCreatorsMap.values());
           creators = [];
         }
 
-        // Filter creators list to ONLY include those in the user's subscribed array
+        // Filter creators list to ONLY include those in the user's isolated subscribed array
         const subscribedCreators = creators.filter((c: any) => Array.isArray(subs) && subs.includes(c.slug));
 
         // Update expanded sidebar channels
@@ -375,8 +364,7 @@ const creatorsList = Array.from(uniqueCreatorsMap.values());
 
     function updateWatchLaterState() {
       try {
-        const raw = localStorage.getItem('freeyt_watch_later');
-        const wl = raw ? JSON.parse(raw) : [];
+        const wl = getWatchLater();
         const badges = [
           document.getElementById('sidebar-watch-later-badge'),
           document.getElementById('mini-sidebar-watch-later-badge')
