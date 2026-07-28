@@ -1,0 +1,32 @@
+---
+interface Props {
+  activePage?: string;
+}
+
+const { activePage = '' } = Astro.props;
+---
+
+<footer class="mt-20 pt-8 border-t border-stone-800/80 max-w-6xl mx-auto px-6 pb-12 w-full">
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+    <!-- Brand Logo using top logo icon -->
+    <a href="/" class="flex items-center gap-2 group select-none">
+      <svg class="h-6 w-6 text-primary transition-transform duration-300 group-hover:scale-110 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zm-5-6l-7 4V7l7 4z"/>
+      </svg>
+      <span class="font-mono text-base font-bold tracking-widest text-white group-hover:text-primary transition-colors">
+        FREEYT<span class="text-primary">COURSES</span>
+      </span>
+    </a>
+
+    <!-- Navigation Links -->
+    <nav class="flex flex-wrap items-center gap-6 text-sm text-slate-400 font-sans">
+      <a href="/about" class={`hover:text-white transition-colors ${activePage === 'about' ? 'text-white font-semibold' : ''}`}>About</a>
+      <a href="/contact" class={`hover:text-white transition-colors ${activePage === 'contact' ? 'text-white font-semibold' : ''}`}>Contact</a>
+      <a href="/privacy" class={`hover:text-white transition-colors ${activePage === 'privacy' ? 'text-white font-semibold' : ''}`}>Privacy Policy</a>
+      <a href="/terms" class={`hover:text-white transition-colors ${activePage === 'terms' ? 'text-white font-semibold' : ''}`}>Terms &amp; Conditions</a>
+    </nav>
+  </div>
+  <p class="text-xs text-slate-500 font-sans mt-2">
+    &copy; 2026 FreeYTCourses. Free to use, no sign-up required.
+  </p>
+</footer>

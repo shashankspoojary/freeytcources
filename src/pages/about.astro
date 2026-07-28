@@ -1,0 +1,116 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = "About Us - Curated Free YouTube Courses Directory";
+const description = "Learn about FreeYTCourses, our mission to organize chaotic YouTube playlists into structured learning roadmaps, and our editorial curation standards.";
+---
+
+<Layout title={title} description={description} activePage="about">
+  <main class="max-w-4xl mx-auto px-6 py-10 md:py-16 text-slate-200">
+    <!-- Top Back Link -->
+    <div class="mb-6">
+      <a 
+        href="/" 
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors font-sans"
+      >
+        <span>&larr;</span> Back to Home
+      </a>
+    </div>
+
+
+    <header class="space-y-4 mb-12 border-b border-hairline pb-8">
+      <div class="inline-block font-mono text-xs text-primary uppercase tracking-[2.52px] bg-primary/10 px-3.5 py-1.5 rounded-pill border border-primary/30">
+        Our Mission & Platform
+      </div>
+      <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+        Democratizing Tech Education with Free YouTube Roadmaps
+      </h1>
+      <p class="text-slate-300 text-base md:text-lg leading-relaxed font-light">
+        FreeYTCourses was created to solve a universal developer problem: YouTube has the best technical education in the world, but finding complete, unfragmented, step-by-step learning paths can feel impossible.
+      </p>
+    </header>
+
+    <!-- Content Sections -->
+    <article class="space-y-12 leading-relaxed text-sm md:text-base font-light text-slate-300">
+      <!-- Section 1: The Problem & Solution -->
+      <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block shadow-[0_0_8px_#00d992]"></span>
+          Why FreeYTCourses Exists
+        </h2>
+        <p>
+          Millions of self-taught developers, video editors, and AI enthusiasts turn to YouTube every day. However, standard YouTube search algorithms prioritize engagement loops and clickbait over structured pedagogy. Beginners frequently start a tutorial series only to discover missing code repositories, broken video order, or abandoned multi-part playlists.
+        </p>
+        <p>
+          <strong class="text-white font-medium">FreeYTCourses</strong> serves as an independent editorial index. We evaluate raw YouTube video series, filter out incomplete content, and turn chaotic playlists into interactive course hubs complete with 200+ word editorial reviews, required software prerequisite lists, and detailed chapter breakdowns.
+        </p>
+      </section>
+
+      <!-- Section 2: Core Values Grid -->
+      <section class="space-y-6 pt-6 border-t border-slate-800">
+        <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block shadow-[0_0_8px_#00d992]"></span>
+          Our Curation Standards
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-[#121824] border border-slate-700/80 p-6 rounded-xl space-y-3">
+            <div class="font-mono text-xs text-primary font-bold uppercase tracking-wider">01. 100% Free Access</div>
+            <h3 class="text-lg font-bold text-white">Zero Paywalls</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Every course cataloged on FreeYTCourses is hosted on YouTube and entirely free to watch. We believe world-class technical education should never be locked behind expensive bootcamps or $1,000 subscriptions.
+            </p>
+          </div>
+
+          <div class="bg-[#121824] border border-slate-700/80 p-6 rounded-xl space-y-3">
+            <div class="font-mono text-xs text-primary font-bold uppercase tracking-wider">02. Verified Syllabi</div>
+            <h3 class="text-lg font-bold text-white">Structured Roadmaps</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Our editorial team manually verifies lesson sequences, checks source code links on GitHub, and organizes video timestamps so you know exactly what tools and prerequisites you need before starting.
+            </p>
+          </div>
+
+          <div class="bg-[#121824] border border-slate-700/80 p-6 rounded-xl space-y-3">
+            <div class="font-mono text-xs text-primary font-bold uppercase tracking-wider">03. Creator Highlight</div>
+            <h3 class="text-lg font-bold text-white">Empowering Instructors</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              We directly attribute all content to the original YouTube creators, driving subscriber growth, views, and recognition to the talented educators who make free learning possible.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Covered Disciplines -->
+      <section class="space-y-4 pt-6 border-t border-slate-800">
+        <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block shadow-[0_0_8px_#00d992]"></span>
+          High-Income Disciplines We Cover
+        </h2>
+        <p>
+          We focus on practical, high-value skills required by modern tech companies, creative studios, and freelance markets:
+        </p>
+        <ul class="list-disc list-inside space-y-2 text-slate-300 pl-2">
+          <li><strong class="text-white font-medium">Artificial Intelligence & LLMs:</strong> Machine Learning fundamentals, Python AI libraries (PyTorch, TensorFlow), Prompt Engineering, LangChain, and autonomous agents.</li>
+          <li><strong class="text-white font-medium">Full-Stack Software Engineering:</strong> Modern JavaScript, React, Astro, Node.js, Python bootcamps, and database architecture (PostgreSQL, Firebase, SQL).</li>
+          <li><strong class="text-white font-medium">Video Editing & Digital Media:</strong> DaVinci Resolve color grading, Adobe Premiere Pro editing workflows, After Effects motion graphics, and CapCut desktop tutorials.</li>
+        </ul>
+      </section>
+
+      <!-- Section 4: CTA Banner -->
+      <div class="bg-[#121824] border border-primary/40 rounded-xl p-8 text-center space-y-4 shadow-xl mt-8">
+        <h3 class="text-2xl font-bold text-white">Ready to Start Learning?</h3>
+        <p class="text-slate-300 text-sm max-w-xl mx-auto">
+          Explore hundreds of curated courses across coding, video editing, and artificial intelligence today—no account required.
+        </p>
+        <div class="pt-2 flex justify-center gap-4">
+          <a href="/courses" class="bg-primary text-on-primary font-mono text-xs uppercase font-bold tracking-wider py-3 px-6 rounded-sm hover:bg-primary-soft transition-all">
+            Explore Course Directory &rarr;
+          </a>
+          <a href="/contact" class="border border-hairline text-ink font-mono text-xs uppercase font-bold tracking-wider py-3 px-6 rounded-sm hover:border-primary hover:text-primary transition-all">
+            Get in Touch
+          </a>
+        </div>
+      </div>
+    </article>
+  </main>
+</Layout>

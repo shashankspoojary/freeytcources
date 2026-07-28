@@ -1,0 +1,114 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = "Terms of Service - FreeYTCourses";
+const description = "Read the official Terms of Service for FreeYTCourses. Understand our terms regarding educational content, intellectual property of YouTube creators, and website usage.";
+---
+
+<Layout title={title} description={description} activePage="terms">
+  <main class="max-w-4xl mx-auto px-6 py-10 md:py-16 text-slate-200">
+    <!-- Top Back Link -->
+    <div class="mb-6">
+      <a 
+        href="/" 
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors font-sans"
+      >
+        <span>&larr;</span> Back to Home
+      </a>
+    </div>
+
+
+    <header class="space-y-4 mb-12 border-b border-hairline pb-8">
+      <div class="inline-block font-mono text-xs text-primary uppercase tracking-[2.52px] bg-primary/10 px-3.5 py-1.5 rounded-pill border border-primary/30">
+        Legal Agreement
+      </div>
+      <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+        Terms of Service
+      </h1>
+      <p class="text-slate-400 text-xs font-mono">
+        Effective Date: July 27, 2026
+      </p>
+    </header>
+
+    <!-- Terms Content -->
+    <article class="space-y-10 leading-relaxed text-sm md:text-base font-light text-slate-300">
+      <p>
+        Welcome to <strong class="text-white font-medium">FreeYTCourses</strong>. By accessing or using our website located at <code class="text-xs font-mono text-primary bg-canvas-soft px-1.5 py-0.5 rounded">freeytcourses.com</code>, you agree to comply with and be bound by the following Terms of Service. Please read these terms carefully before using our platform.
+      </p>
+
+      <!-- Section 1 -->
+      <section class="space-y-4 pt-4 border-t border-slate-800">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block"></span>
+          1. Acceptance of Terms
+        </h2>
+        <p>
+          By browsing our course directory, using our search filters, or tracking progress on our platform, you acknowledge that you have read, understood, and agreed to these Terms of Service and our Privacy Policy. If you do not agree with any part of these terms, you must discontinue use of the site.
+        </p>
+      </section>
+
+      <!-- Section 2 -->
+      <section class="space-y-4 pt-4 border-t border-slate-800">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block"></span>
+          2. Educational Content & YouTube Intellectual Property
+        </h2>
+        <p>
+          FreeYTCourses is an independent directory and editorial platform. We do not host, re-upload, or claim ownership over any video content.
+        </p>
+        <ul class="list-disc list-inside space-y-2 text-slate-300 pl-2">
+          <li><strong class="text-white font-medium">YouTube Embedded Player Compliance:</strong> All video lessons displayed on FreeYTCourses are embedded directly via standard YouTube IFrame API players. Views, advertising revenue, and subscriber counts generated through embedded playback accrue directly to the official YouTube channel creators.</li>
+          <li><strong class="text-white font-medium">Intellectual Property Rights:</strong> All video content, thumbnails, instructor branding, and creator channel logos remain the sole intellectual property of their respective YouTube creators and copyright owners.</li>
+          <li><strong class="text-white font-medium">Editorial Reviews:</strong> Course summaries, editorial critiques, chapter outlines, and software prerequisite lists created by FreeYTCourses are protected under copyright law as original editorial commentary.</li>
+        </ul>
+      </section>
+
+      <!-- Section 3 -->
+      <section class="space-y-4 pt-4 border-t border-slate-800">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block"></span>
+          3. Permitted & Prohibited Conduct
+        </h2>
+        <p>You agree to use FreeYTCourses solely for lawful, non-commercial, personal educational purposes. You agree NOT to:</p>
+        <ul class="list-disc list-inside space-y-1.5 text-slate-300 pl-2">
+          <li>Use automated scrapers, bots, or data mining tools to extract our editorial syllabi or database records without prior written consent.</li>
+          <li>Attempt to bypass or disable any Security or IFrame playback restrictions imposed by YouTube or our platform.</li>
+          <li>Engage in conduct that degrades website performance or restricts other users from accessing the service.</li>
+        </ul>
+      </section>
+
+      <!-- Section 4 -->
+      <section class="space-y-4 pt-4 border-t border-slate-800">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block"></span>
+          4. Disclaimer of Warranties & Limitation of Liability
+        </h2>
+        <p>
+          FreeYTCourses is provided on an "AS IS" and "AS AVAILABLE" basis. While we strive for accuracy in our course syllabi and prerequisites, we make no guarantees regarding content availability, accuracy of external YouTube videos, or specific learning/career outcomes. We shall not be liable for any indirect, incidental, or consequential damages resulting from your use of the site.
+        </p>
+      </section>
+
+      <!-- Section 5 -->
+      <section class="space-y-4 pt-4 border-t border-slate-800">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block"></span>
+          5. Modifications to Terms
+        </h2>
+        <p>
+          We reserve the right to modify these Terms of Service at any time. Changes will take effect immediately upon posting to this page. Your continued use of the platform after updates constitutes acceptance of the modified terms.
+        </p>
+      </section>
+
+      <!-- Section 6 -->
+      <section class="space-y-4 pt-4 border-t border-slate-800">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block"></span>
+          6. Questions & Legal Contact
+        </h2>
+        <p>
+          For legal inquiries or questions regarding these Terms of Service, please contact us via our <a href="/contact" class="text-primary hover:underline font-medium">Contact Page</a>.
+        </p>
+      </section>
+    </article>
+  </main>
+</Layout>

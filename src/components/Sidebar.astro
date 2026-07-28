@@ -135,10 +135,17 @@ const creatorsList = Array.from(uniqueCreatorsMap.values());
 
     <div class="border-b border-hairline/60"></div>
 
-    <!-- Sidebar Footer -->
-    <div class="px-3 py-2 text-[10px] font-mono text-mute/60 leading-relaxed space-y-1">
-      <div>FreeYTCourses Hub</div>
-      <div>© 2026 YouTube Style Learning</div>
+    <!-- Sidebar Footer with MPA Navigation Links -->
+    <div class="px-3 py-2 text-[10.5px] font-mono text-mute space-y-2">
+      <div class="flex flex-wrap gap-x-3 gap-y-1 text-slate-400">
+        <a href="/about" class={`hover:text-primary transition-colors ${activePage === 'about' ? 'text-primary font-bold' : ''}`}>About</a>
+        <a href="/contact" class={`hover:text-primary transition-colors ${activePage === 'contact' ? 'text-primary font-bold' : ''}`}>Contact</a>
+        <a href="/privacy" class={`hover:text-primary transition-colors ${activePage === 'privacy' ? 'text-primary font-bold' : ''}`}>Privacy</a>
+        <a href="/terms" class={`hover:text-primary transition-colors ${activePage === 'terms' ? 'text-primary font-bold' : ''}`}>Terms</a>
+      </div>
+      <div class="text-[9.5px] text-mute/50 pt-1">
+        &copy; {new Date().getFullYear()} FreeYTCourses
+      </div>
     </div>
   </div>
 

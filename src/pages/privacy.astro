@@ -1,0 +1,122 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = "Privacy Policy - FreeYTCourses";
+const description = "Read the official Privacy Policy for FreeYTCourses. Learn how we handle client-side storage, authentication data, and third-party services like Google AdSense.";
+---
+
+<Layout title={title} description={description} activePage="privacy">
+  <main class="max-w-4xl mx-auto px-6 py-10 md:py-16 text-slate-200">
+    <!-- Top Back Link -->
+    <div class="mb-6">
+      <a 
+        href="/" 
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors font-sans"
+      >
+        <span>&larr;</span> Back to Home
+      </a>
+    </div>
+
+
+    <header class="space-y-4 mb-12 border-b border-hairline pb-8">
+      <div class="inline-block font-mono text-xs text-primary uppercase tracking-[2.52px] bg-primary/10 px-3.5 py-1.5 rounded-pill border border-primary/30">
+        Legal & Compliance
+      </div>
+      <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+        Privacy Policy
+      </h1>
+      <p class="text-slate-400 text-xs font-mono">
+        Last Updated: July 27, 2026
+      </p>
+    </header>
+
+    <!-- Policy Content -->
+    <article class="space-y-10 leading-relaxed text-sm md:text-base font-light text-slate-300">
+      <p>
+        At <strong class="text-white font-medium">FreeYTCourses</strong> ("we," "our," or "us"), accessible from <code class="text-xs font-mono text-primary bg-canvas-soft px-1.5 py-0.5 rounded">freeytcourses.com</code>, protecting the privacy of our visitors is one of our top priorities. This Privacy Policy outlines the types of information we collect, how it is used, and your choices regarding your data when accessing our free course directory.
+      </p>
+
+      <!-- Section 1 -->
+      <section class="space-y-4 pt-4 border-t border-slate-800">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block"></span>
+          1. Information We Collect
+        </h2>
+        <div class="space-y-3">
+          <h3 class="text-base font-semibold text-white">a. Client-Side Browser Storage (Local Storage)</h3>
+          <p>
+            FreeYTCourses operates primarily as a privacy-respecting static and server-rendered web application. To allow you to track completed course chapters and bookmark videos into your Watch Later list without registering an account, we store non-personally identifiable preference data directly in your browser's <code class="text-xs font-mono text-primary bg-canvas-soft px-1.5 py-0.5 rounded">localStorage</code>. This data never leaves your device unless you explicitly sign in.
+          </p>
+
+          <h3 class="text-base font-semibold text-white">b. Account Information (Optional Google Sign-In)</h3>
+          <p>
+            If you choose to create a account using Google Authentication (via Firebase Auth), we collect basic profile metadata supplied by Google, including your email address, display name, and profile avatar URL. This information is strictly used to sync your course progress across devices.
+          </p>
+
+          <h3 class="text-base font-semibold text-white">c. Automatically Collected Log Data</h3>
+          <p>
+            Like most websites, our hosting servers automatically log standard request metadata when you visit our pages, including your IP address, browser type, internet service provider (ISP), referring/exit pages, and timestamp. This data is aggregated to analyze platform performance, prevent abuse, and optimize page load speeds.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 2 -->
+      <section class="space-y-4 pt-4 border-t border-slate-800">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block"></span>
+          2. How We Use Your Information
+        </h2>
+        <p>We use the collected information for the following legitimate business purposes:</p>
+        <ul class="list-disc list-inside space-y-1.5 text-slate-300 pl-2">
+          <li>To provide, maintain, and improve our curated course directory and search features.</li>
+          <li>To remember your Watch Later list, channel subscriptions, and course completion states across visits.</li>
+          <li>To monitor system performance, fix technical glitches, and ensure fast page delivery.</li>
+          <li>To display non-intrusive advertisements via Google AdSense to keep our platform 100% free for users.</li>
+        </ul>
+      </section>
+
+      <!-- Section 3 -->
+      <section class="space-y-4 pt-4 border-t border-slate-800">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block"></span>
+          3. Third-Party Advertising & Cookies (Google AdSense & YouTube)
+        </h2>
+        <p>
+          FreeYTCourses displays third-party advertisements served by Google AdSense and embeds video players hosted by YouTube (Google LLC).
+        </p>
+        <div class="bg-[#121824] border border-slate-700/80 p-5 rounded-lg space-y-3">
+          <p class="text-xs text-slate-300 leading-relaxed">
+            <strong class="text-white font-medium">Google AdSense Cookie Disclosure:</strong> Google, as a third-party vendor, uses cookies (including the DoubleClick DART cookie) to serve ads based on your prior visits to our site or other websites on the internet. You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline font-mono">Google Ads Settings</a>.
+          </p>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            <strong class="text-white font-medium">YouTube Video Embeds:</strong> When you play a video roadmap on our platform, YouTube may place cookies on your browser to measure video performance, prevent fraud, and maintain your YouTube viewing history per Google's Privacy Policy.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 4 -->
+      <section class="space-y-4 pt-4 border-t border-slate-800">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block"></span>
+          4. Your Data Rights & Choices
+        </h2>
+        <p>You have full control over your data on FreeYTCourses:</p>
+        <ul class="list-disc list-inside space-y-1.5 text-slate-300 pl-2">
+          <li><strong class="text-white font-medium">Clear Local Storage:</strong> You can clear your course history or watch list at any time by clearing your browser's site data for <code class="text-xs font-mono text-primary bg-canvas-soft px-1 rounded">freeytcourses.com</code>.</li>
+          <li><strong class="text-white font-medium">Account Deletion:</strong> If you created an account, you may request deletion of your account and synced data by contacting us.</li>
+        </ul>
+      </section>
+
+      <!-- Section 5 -->
+      <section class="space-y-4 pt-4 border-t border-slate-800">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-primary inline-block"></span>
+          5. Contact Us About Privacy
+        </h2>
+        <p>
+          If you have questions, feedback, or data privacy requests regarding this Privacy Policy, please reach out via our <a href="/contact" class="text-primary hover:underline font-medium">Contact Form</a> or email us directly at <code class="text-xs font-mono text-primary bg-canvas-soft px-1.5 py-0.5 rounded">privacy@freeytcourses.com</code>.
+        </p>
+      </section>
+    </article>
+  </main>
+</Layout>

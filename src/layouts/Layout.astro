@@ -3,6 +3,7 @@ import HeaderNav from '../components/HeaderNav.astro';
 import Sidebar from '../components/Sidebar.astro';
 import ProfileModal from '../components/ProfileModal.astro';
 import GuestLoginPrompt from '../components/GuestLoginPrompt.astro';
+import Footer from '../components/Footer.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -118,8 +119,11 @@ const finalKeywords = keywords;
     {!hideSidebar && <Sidebar activePage={activePage} />}
 
     <!-- Main Page Content Wrapper with Responsive Margin Shift -->
-    <div class={`page-main-layout flex-1 pt-[60px] transition-all duration-200 ease-in-out ${hideSidebar ? 'no-sidebar !pl-0' : ''}`}>
-      <slot />
+    <div class={`page-main-layout flex-1 pt-[60px] flex flex-col justify-between transition-all duration-200 ease-in-out ${hideSidebar ? 'no-sidebar !pl-0' : ''}`}>
+      <div class="flex-1">
+        <slot />
+      </div>
+      <Footer activePage={activePage} />
     </div>
 
     <!-- Global User Profile Modal & Guest Login Prompt (Only on learner pages) -->
