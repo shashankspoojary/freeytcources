@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCourseBySlug, getCreatorSlug } from '../../lib/firebase.js';
+import { getCourseBySlug, getCreatorSlug, getYoutubeThumbnail } from '../../lib/firebase.js';
 
 const { slug } = Astro.params;
 
@@ -14,12 +14,14 @@ if (!course) {
   return Astro.redirect('/404');
 }
 
-// SEO title and description
-const title = `${course.title} - Free Course Review`;
-const description = `Read our full, detailed editorial critique and chapter breakdown for ${course.title}. Learn with required toolsets.`;
 ---
 
-<Layout title={title} description={description} activePage="courses">
+<Layout 
+  title={`${course.title} | FreeYTCourses`} 
+  description={course.description || course.overview} 
+  ogImage={course.thumbnail || getYoutubeThumbnail(course.sampleVideoId)} 
+  activePage="courses"
+>
 
 
   <main class="max-w-6xl mx-auto px-6 py-12 md:py-20">
@@ -216,14 +218,12 @@ const description = `Read our full, detailed editorial critique and chapter brea
               <span class="block text-[9px] font-mono text-mute/50 mt-0.5">{course.creatorSubscribers || "4.2M subscribers"}</span>
             </div>
             <div>
-              <span class="block text-[10px] font-mono text-mute uppercase">Rating score</span>
-              <span class="text-sm font-mono text-ink font-semibold flex items-center gap-1">
-                {course.rating.toFixed(1)} / 5.0
-              </span>
+              <span class="block text-[10px] font-mono text-mute uppercase">Category</span>
+              <span class="text-sm font-mono text-ink font-semibold">{course.category}</span>
             </div>
             <div>
-              <span class="block text-[10px] font-mono text-mute uppercase">Views tracked</span>
-              <span class="text-sm font-mono text-ink font-semibold">{course.views.toLocaleString()}</span>
+              <span class="block text-[10px] font-mono text-mute uppercase">Modules</span>
+              <span class="text-sm font-mono text-ink font-semibold">{course.chapters?.length || 0} Modules</span>
             </div>
           </div>
 
@@ -286,7 +286,7 @@ const description = `Read our full, detailed editorial critique and chapter brea
 
   <!-- Watch History & Playback Progress Engine -->
   <script>
-    import { getWatchLater, setWatchLater, getWatchHistory, setWatchHistory, getUserStorageKey } from '../../lib/userStorage.js';
+    import { getWatchLater, setWatchLater, getWatchHistory, setWatchHistory, getUserStorageKey, recordCourseSiteView } from '../../lib/userStorage.js';
 
     declare global {
       interface Window {
@@ -318,9 +318,10 @@ const description = `Read our full, detailed editorial critique and chapter brea
     let progressInterval: any = null;
     let apiPromise: Promise<any> | null = null;
     
-    // 1. History tracking logic
-    let history = getWatchHistory();
+    // 1. Record site view & history tracking logic
     if (courseSlug) {
+      recordCourseSiteView(courseSlug);
+      let history = getWatchHistory();
       history = history.filter((item: string) => item !== courseSlug);
       history.unshift(courseSlug);
       if (history.length > 4) {

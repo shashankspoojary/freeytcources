@@ -106,7 +106,7 @@ const description = "Sign in or create your FreeYTCourses account with Google or
                 minlength="6"
                 class="w-full bg-canvas-soft/80 border border-hairline text-ink rounded-full px-5 py-3 text-xs font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-mute/40"
               />
-              <p id="confirm-password-error" class="hidden text-[10px] text-red-400 font-mono mt-1 ml-3">❌ Passwords do not match.</p>
+              <p id="confirm-password-error" class="hidden text-[10px] text-red-400 font-mono mt-1 ml-3">Passwords do not match.</p>
             </div>
 
             <!-- Main Submit Button Pill -->
@@ -409,13 +409,13 @@ const description = "Sign in or create your FreeYTCourses account with Google or
 
       if (type === 'loading') {
         feedbackBox.classList.add('bg-primary/10', 'border-primary/30', 'text-primary');
-        feedbackBox.innerHTML = `<span class="animate-pulse">⌛ ${msg}</span>`;
+        feedbackBox.innerHTML = `<span class="animate-pulse">${msg}</span>`;
       } else if (type === 'error') {
         feedbackBox.classList.add('bg-red-500/10', 'border-red-500/30', 'text-red-400');
-        feedbackBox.innerHTML = `<span>❌ ${msg}</span>`;
+        feedbackBox.innerHTML = `<span>${msg}</span>`;
       } else if (type === 'success') {
         feedbackBox.classList.add('bg-green-500/10', 'border-green-500/30', 'text-green-400');
-        feedbackBox.innerHTML = `<span>✅ ${msg}</span>`;
+        feedbackBox.innerHTML = `<span>${msg}</span>`;
       }
     }
 

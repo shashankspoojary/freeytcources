@@ -42,7 +42,8 @@ const fullCanonicalUrl = canonicalUrl || Astro.url.href;
 const pageTitle = title.includes("FreeYTCourses") ? title : `${title} | FreeYTCourses`;
 const finalOgTitle = ogTitle || pageTitle;
 const finalOgDescription = ogDescription || description;
-const finalOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+const imagePath = ogImage || "/og-banner.jpg";
+const finalOgImage = imagePath.startsWith('http') ? imagePath : `${siteUrl}${imagePath}`;
 const finalKeywords = keywords;
 ---
 <!doctype html>

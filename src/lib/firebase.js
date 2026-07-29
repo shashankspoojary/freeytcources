@@ -19,6 +19,8 @@ import { courses as fallbackCourses } from "../data/courses.js";
  * @property {number} rating
  * @property {number} votes
  * @property {number} views
+ * @property {boolean} [featured]
+ * @property {number} [publishedYear]
  * @property {string} publishDate
  * @property {string} duration
  * @property {string} author
@@ -30,6 +32,9 @@ import { courses as fallbackCourses } from "../data/courses.js";
  * @property {string} sampleVideoId
  * @property {string} youtubeUrl
  * @property {string[]} tools
+ * @property {string} [summary]
+ * @property {string} [thumbnail]
+ * @property {'single' | 'multi'} [moduleType]
  * @property {string} overview
  * @property {Chapter[]} chapters
  */

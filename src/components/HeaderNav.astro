@@ -39,7 +39,7 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
   <!-- Center: Global Search Bar (hidden on admin pages) -->
   {!isAdmin && (
     <div id="search-container" class="relative flex-1 min-w-0 max-w-xs sm:max-w-md md:max-w-lg mx-2 sm:mx-auto flex items-center">
-      <form id="global-search-form" class="relative w-full flex items-center" action="/courses" method="GET">
+      <form id="global-search-form" class="relative w-full flex items-center" action="/" method="GET">
         <input 
           type="text" 
           id="search-input"
@@ -234,16 +234,16 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
 
     // Form submit
     form?.addEventListener('submit', (e) => {
-      const query = searchInput.value.trim();
-      const isBrowsePage = window.location.pathname === '/' || 
-                           window.location.pathname === '/courses' || 
-                           window.location.pathname === '/courses/';
-      if (isBrowsePage) {
-        e.preventDefault();
-        emitSearch(query);
+      e.preventDefault();
+      const searchQuery = searchInput.value.trim();
+      const isHomePage = window.location.pathname === '/';
+      if (isHomePage) {
+        emitSearch(searchQuery);
         const dropdown = document.getElementById('search-suggestions-dropdown');
         if (dropdown) dropdown.classList.add('hidden');
         document.getElementById('courses-section')?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.location.href = `/?q=${encodeURIComponent(searchQuery)}`;
       }
     });
 

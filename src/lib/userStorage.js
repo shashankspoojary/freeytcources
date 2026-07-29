@@ -112,3 +112,31 @@ export function setWatchHistory(history) {
   localStorage.setItem(key, JSON.stringify(history));
   window.dispatchEvent(new CustomEvent('watchHistoryChanged', { detail: history }));
 }
+
+export function getSiteViewsMap() {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = localStorage.getItem('freeyt_site_course_views');
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+export function getCourseSiteViews(slug) {
+  if (!slug || typeof window === 'undefined') return 0;
+  const viewsMap = getSiteViewsMap();
+  return Number(viewsMap[slug]) || 0;
+}
+
+export function recordCourseSiteView(slug) {
+  if (!slug || typeof window === 'undefined') return;
+  try {
+    const viewsMap = getSiteViewsMap();
+    viewsMap[slug] = (Number(viewsMap[slug]) || 0) + 1;
+    localStorage.setItem('freeyt_site_course_views', JSON.stringify(viewsMap));
+    window.dispatchEvent(new CustomEvent('siteViewsChanged', { detail: { slug, views: viewsMap[slug] } }));
+  } catch (e) {
+    console.error("Failed to record site view", e);
+  }
+}

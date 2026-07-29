@@ -2,7 +2,29 @@
 import Layout from '../layouts/Layout.astro';
 import { getAllCourses, getYoutubeThumbnail, getCreatorSlug } from '../lib/firebase.js';
 
-const courses = await getAllCourses();
+const allCourses = await getAllCourses();
+// Randomly shuffle courses for initial SSR render
+const courses = [...allCourses].sort(() => 0.5 - Math.random());
+
+// 1. Trending Courses: High engagement & view velocity
+const trendingCourses = [...allCourses]
+  .sort((a, b) => (b.views || 0) - (a.views || 0))
+  .slice(0, 4);
+
+// 2. Recently Added: Newest release dates first
+const recentlyAddedCourses = [...allCourses]
+  .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
+  .slice(0, 4);
+
+// 3. Editor's Picks: Handpicked featured courses
+const editorsPicks = allCourses
+  .filter(c => c.featured)
+  .slice(0, 4);
+
+// 4. Most Popular: Highest rated & views overall
+const mostPopularCourses = [...allCourses]
+  .sort((a, b) => (b.views || 0) * (b.rating || 4.5) - (a.views || 0) * (a.rating || 4.5))
+  .slice(0, 4);
 
 // Dynamically compute the set of unique languages present in all courses
 const languages = Array.from(new Set(courses.map(c => c.language || "English").filter(Boolean)));
@@ -10,14 +32,11 @@ const languages = Array.from(new Set(courses.map(c => c.language || "English").f
 // Define SEO title and description
 const title = "Free YouTube Courses & Structured Learning Roadmaps";
 const description = "Discover the best free YouTube courses for AI engineering, video editing, and coding. Access curated playlists, detailed syllabi, and top creator tutorials—100% free.";
-const ogTitle = "FreeYTCourses - Master AI, Coding & Video Editing for Free";
-const ogDescription = "Stop searching through chaotic playlists. Learn high-income tech skills with structured, step-by-step YouTube course roadmaps from top creators.";
-const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses and learning roadmaps.";
 ---
 
 <Layout 
-  title="Free YouTube Courses & Structured Learning Roadmaps | FreeYTCourses" 
-  description="Discover the best free YouTube courses for AI engineering, video editing, and coding. Access curated playlists, detailed syllabi, and top creator tutorials—100% free."
+  title={`${title} | FreeYTCourses`} 
+  description={description}
   ogImage="/og-banner.jpg"
   ogType="website"
   activePage="home"
@@ -32,9 +51,20 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
     <div class="text-3xl md:text-5xl lg:text-6xl font-light text-ink-strong tracking-[-0.65px] leading-tight max-w-4xl mx-auto mb-6">
       Free YouTube Courses & Curated Learning Roadmaps
     </div>
-    <p class="text-base md:text-lg text-body max-w-2xl mx-auto mb-8 font-light leading-relaxed">
+    <p class="text-base md:text-lg text-body max-w-2xl mx-auto mb-6 font-light leading-relaxed">
       No fluff, no paywalls. High-quality structured learning modules meticulously reviewed and organized by core developer tools.
     </p>
+
+    <!-- Silent Subdued Inline Links Row in Hero -->
+    <nav class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mb-8 text-[11px] font-sans text-slate-500/70">
+      <a href="/about" class="hover:text-slate-400 transition-colors">About Us</a>
+      <span class="text-slate-700/50 select-none">•</span>
+      <a href="/contact" class="hover:text-slate-400 transition-colors">Contact</a>
+      <span class="text-slate-700/50 select-none">•</span>
+      <a href="/privacy" class="hover:text-slate-400 transition-colors">Privacy Policy</a>
+      <span class="text-slate-700/50 select-none">•</span>
+      <a href="/terms" class="hover:text-slate-400 transition-colors">Terms &amp; Conditions</a>
+    </nav>
 
     <!-- Homepage Hero Search Bar -->
     <form id="hero-search-form" class="max-w-xl mx-auto mb-12 relative z-20" action="/courses" method="GET">
@@ -170,6 +200,223 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
   <!-- Courses Dashboard Area -->
   <main id="courses-section" class="max-w-6xl mx-auto px-6 pb-24 scroll-mt-24">
     
+    <!-- Curated Home Highlights Grid Sections -->
+    <div class="space-y-16 mb-16">
+
+      <!-- 1. Trending Courses Section -->
+      <section id="trending-section" class="space-y-4">
+        <div class="flex items-center justify-between border-b border-hairline pb-3">
+          <div class="flex items-center gap-2">
+            <svg class="h-5 w-5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            <h2 class="text-lg font-bold text-ink-strong font-mono uppercase tracking-wider">Trending Courses</h2>
+            <span class="text-[10px] font-mono uppercase bg-canvas-soft text-body border border-hairline px-2.5 py-0.5 rounded-sm font-semibold">Active Feed</span>
+          </div>
+          <a href="/courses" class="text-xs font-mono text-primary hover:underline flex items-center gap-1">Explore Directory &rarr;</a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {trendingCourses.map((course) => (
+            <article class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer" data-slug={course.slug}>
+              <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
+                <img src={getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <button type="button" class="watch-later-toggle-btn absolute top-2.5 left-2.5 z-30 bg-canvas/95 hover:bg-primary hover:text-on-primary text-ink px-2 py-0.5 rounded-sm transition-all shadow-md text-[10px] font-mono border border-hairline flex items-center gap-1" data-slug={course.slug} title="Save to Watch Later">
+                  <svg class="h-3 w-3 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <span class="wl-label pointer-events-none">Watch later</span>
+                </button>
+                <span class={`absolute top-2.5 right-2.5 text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold shadow-md ${course.type === 'paid' ? 'bg-amber-400 text-on-primary border border-amber-500/20' : 'bg-primary text-on-primary border border-primary-soft/20'}`}>{course.type || 'free'}</span>
+                <div class="absolute bottom-2 right-2 z-20 bg-canvas/90 backdrop-blur-sm text-ink-strong border border-hairline px-2 py-0.5 rounded-sm text-[10px] font-mono flex items-center gap-1 shadow-md">
+                  <span>{course.chapters?.length || 1} Modules</span>
+                </div>
+              </div>
+              <div class="p-4 flex flex-col justify-between flex-grow">
+                <div>
+                  <div class="flex items-center gap-1.5 mb-2 flex-wrap">
+                    <span class="text-[9px] font-mono uppercase bg-canvas border border-hairline px-2 py-0.5 rounded text-body">{course.category}</span>
+                    <span class="text-[9px] font-mono uppercase bg-canvas border border-hairline/85 px-1.5 py-0.5 rounded text-mute">{course.language || 'English'}</span>
+                  </div>
+                  <h3 class="text-sm font-semibold text-ink-strong mb-2 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                    <a href={`/courses/${course.slug}`} class="focus:outline-none after:absolute after:inset-0">{course.title}</a>
+                  </h3>
+                  <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="flex items-center gap-1.5 hover:text-primary transition-colors group/creator shrink-0 relative z-30">
+                    <img src={course.creatorLogo} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" />
+                    <span class="text-[11px] font-mono text-mute group-hover/creator:text-primary transition-colors leading-none">{course.creatorName}</span>
+                  </a>
+                </div>
+                <div class="pt-3 border-t border-hairline flex justify-between items-center text-[10px] font-mono text-mute mt-3">
+                  <span class="text-[10px] font-mono text-mute">Curated Course</span>
+                  <a href={`/courses/${course.slug}`} class="inline-flex items-center gap-1 bg-primary/10 hover:bg-primary border border-primary/30 text-primary hover:text-on-primary px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold uppercase transition-all relative z-30 shrink-0">
+                    <span>Watch Now</span>
+                  </a>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <!-- 2. Editor's Picks Section -->
+      <section id="editors-picks-section" class="space-y-4">
+        <div class="flex items-center justify-between border-b border-hairline pb-3">
+          <div class="flex items-center gap-2">
+            <svg class="h-5 w-5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            </svg>
+            <h2 class="text-lg font-bold text-ink-strong font-mono uppercase tracking-wider">Editor's Picks</h2>
+            <span class="text-[10px] font-mono uppercase bg-canvas-soft text-body border border-hairline px-2.5 py-0.5 rounded-sm font-semibold">Curated</span>
+          </div>
+          <a href="/courses" class="text-xs font-mono text-primary hover:underline flex items-center gap-1">Explore Directory &rarr;</a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {editorsPicks.map((course) => (
+            <article class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer" data-slug={course.slug}>
+              <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
+                <img src={getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <button type="button" class="watch-later-toggle-btn absolute top-2.5 left-2.5 z-30 bg-canvas/95 hover:bg-primary hover:text-on-primary text-ink px-2 py-0.5 rounded-sm transition-all shadow-md text-[10px] font-mono border border-hairline flex items-center gap-1" data-slug={course.slug} title="Save to Watch Later">
+                  <svg class="h-3 w-3 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <span class="wl-label pointer-events-none">Watch later</span>
+                </button>
+                <span class={`absolute top-2.5 right-2.5 text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold shadow-md ${course.type === 'paid' ? 'bg-amber-400 text-on-primary border border-amber-500/20' : 'bg-primary text-on-primary border border-primary-soft/20'}`}>{course.type || 'free'}</span>
+                <div class="absolute bottom-2 right-2 z-20 bg-canvas/90 backdrop-blur-sm text-ink-strong border border-hairline px-2 py-0.5 rounded-sm text-[10px] font-mono flex items-center gap-1 shadow-md">
+                  <span>{course.chapters?.length || 1} Modules</span>
+                </div>
+              </div>
+              <div class="p-4 flex flex-col justify-between flex-grow">
+                <div>
+                  <div class="flex items-center gap-1.5 mb-2 flex-wrap">
+                    <span class="text-[9px] font-mono uppercase bg-canvas border border-hairline px-2 py-0.5 rounded text-body">{course.category}</span>
+                    <span class="text-[9px] font-mono uppercase bg-canvas border border-hairline/85 px-1.5 py-0.5 rounded text-mute">{course.language || 'English'}</span>
+                  </div>
+                  <h3 class="text-sm font-semibold text-ink-strong mb-2 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                    <a href={`/courses/${course.slug}`} class="focus:outline-none after:absolute after:inset-0">{course.title}</a>
+                  </h3>
+                  <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="flex items-center gap-1.5 hover:text-primary transition-colors group/creator shrink-0 relative z-30">
+                    <img src={course.creatorLogo} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" />
+                    <span class="text-[11px] font-mono text-mute group-hover/creator:text-primary transition-colors leading-none">{course.creatorName}</span>
+                  </a>
+                </div>
+                <div class="pt-3 border-t border-hairline flex justify-between items-center text-[10px] font-mono text-mute mt-3">
+                  <span class="text-[10px] font-mono text-mute">Curated Course</span>
+                  <a href={`/courses/${course.slug}`} class="inline-flex items-center gap-1 bg-primary/10 hover:bg-primary border border-primary/30 text-primary hover:text-on-primary px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold uppercase transition-all relative z-30 shrink-0">
+                    <span>Watch Now</span>
+                  </a>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <!-- 3. Recently Added Section -->
+      <section id="recently-added-section" class="space-y-4">
+        <div class="flex items-center justify-between border-b border-hairline pb-3">
+          <div class="flex items-center gap-2">
+            <svg class="h-5 w-5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 class="text-lg font-bold text-ink-strong font-mono uppercase tracking-wider">Recently Added</h2>
+            <span class="text-[10px] font-mono uppercase bg-canvas-soft text-body border border-hairline px-2.5 py-0.5 rounded-sm font-semibold">New Additions</span>
+          </div>
+          <a href="/courses" class="text-xs font-mono text-primary hover:underline flex items-center gap-1">Explore Directory &rarr;</a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {recentlyAddedCourses.map((course) => (
+            <article class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer" data-slug={course.slug}>
+              <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
+                <img src={getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <button type="button" class="watch-later-toggle-btn absolute top-2.5 left-2.5 z-30 bg-canvas/95 hover:bg-primary hover:text-on-primary text-ink px-2 py-0.5 rounded-sm transition-all shadow-md text-[10px] font-mono border border-hairline flex items-center gap-1" data-slug={course.slug} title="Save to Watch Later">
+                  <svg class="h-3 w-3 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <span class="wl-label pointer-events-none">Watch later</span>
+                </button>
+                <span class={`absolute top-2.5 right-2.5 text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold shadow-md ${course.type === 'paid' ? 'bg-amber-400 text-on-primary border border-amber-500/20' : 'bg-primary text-on-primary border border-primary-soft/20'}`}>{course.type || 'free'}</span>
+                <div class="absolute bottom-2 right-2 z-20 bg-canvas/90 backdrop-blur-sm text-ink-strong border border-hairline px-2 py-0.5 rounded-sm text-[10px] font-mono flex items-center gap-1 shadow-md">
+                  <span>{course.chapters?.length || 1} Modules</span>
+                </div>
+              </div>
+              <div class="p-4 flex flex-col justify-between flex-grow">
+                <div>
+                  <div class="flex items-center gap-1.5 mb-2 flex-wrap">
+                    <span class="text-[9px] font-mono uppercase bg-canvas border border-hairline px-2 py-0.5 rounded text-body">{course.category}</span>
+                    <span class="text-[9px] font-mono uppercase bg-canvas border border-hairline/85 px-1.5 py-0.5 rounded text-mute">{course.language || 'English'}</span>
+                  </div>
+                  <h3 class="text-sm font-semibold text-ink-strong mb-2 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                    <a href={`/courses/${course.slug}`} class="focus:outline-none after:absolute after:inset-0">{course.title}</a>
+                  </h3>
+                  <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="flex items-center gap-1.5 hover:text-primary transition-colors group/creator shrink-0 relative z-30">
+                    <img src={course.creatorLogo} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" />
+                    <span class="text-[11px] font-mono text-mute group-hover/creator:text-primary transition-colors leading-none">{course.creatorName}</span>
+                  </a>
+                </div>
+                <div class="pt-3 border-t border-hairline flex justify-between items-center text-[10px] font-mono text-mute mt-3">
+                  <span class="text-[10px] font-mono text-mute">Curated Course</span>
+                  <a href={`/courses/${course.slug}`} class="inline-flex items-center gap-1 bg-primary/10 hover:bg-primary border border-primary/30 text-primary hover:text-on-primary px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold uppercase transition-all relative z-30 shrink-0">
+                    <span>Watch Now</span>
+                  </a>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <!-- 4. Most Popular Section -->
+      <section id="most-popular-section" class="space-y-4">
+        <div class="flex items-center justify-between border-b border-hairline pb-3">
+          <div class="flex items-center gap-2">
+            <svg class="h-5 w-5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <h2 class="text-lg font-bold text-ink-strong font-mono uppercase tracking-wider">Most Popular</h2>
+            <span class="text-[10px] font-mono uppercase bg-canvas-soft text-body border border-hairline px-2.5 py-0.5 rounded-sm font-semibold">Top Watched</span>
+          </div>
+          <a href="/courses" class="text-xs font-mono text-primary hover:underline flex items-center gap-1">Explore Directory &rarr;</a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {mostPopularCourses.map((course) => (
+            <article class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer" data-slug={course.slug}>
+              <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
+                <img src={getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <button type="button" class="watch-later-toggle-btn absolute top-2.5 left-2.5 z-30 bg-canvas/95 hover:bg-primary hover:text-on-primary text-ink px-2 py-0.5 rounded-sm transition-all shadow-md text-[10px] font-mono border border-hairline flex items-center gap-1" data-slug={course.slug} title="Save to Watch Later">
+                  <svg class="h-3 w-3 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <span class="wl-label pointer-events-none">Watch later</span>
+                </button>
+                <span class={`absolute top-2.5 right-2.5 text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold shadow-md ${course.type === 'paid' ? 'bg-amber-400 text-on-primary border border-amber-500/20' : 'bg-primary text-on-primary border border-primary-soft/20'}`}>{course.type || 'free'}</span>
+                <div class="absolute bottom-2 right-2 z-20 bg-canvas/90 backdrop-blur-sm text-ink-strong border border-hairline px-2 py-0.5 rounded-sm text-[10px] font-mono flex items-center gap-1 shadow-md">
+                  <span>{course.chapters?.length || 1} Modules</span>
+                </div>
+              </div>
+              <div class="p-4 flex flex-col justify-between flex-grow">
+                <div>
+                  <div class="flex items-center gap-1.5 mb-2 flex-wrap">
+                    <span class="text-[9px] font-mono uppercase bg-canvas border border-hairline px-2 py-0.5 rounded text-body">{course.category}</span>
+                    <span class="text-[9px] font-mono uppercase bg-canvas border border-hairline/85 px-1.5 py-0.5 rounded text-mute">{course.language || 'English'}</span>
+                  </div>
+                  <h3 class="text-sm font-semibold text-ink-strong mb-2 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                    <a href={`/courses/${course.slug}`} class="focus:outline-none after:absolute after:inset-0">{course.title}</a>
+                  </h3>
+                  <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="flex items-center gap-1.5 hover:text-primary transition-colors group/creator shrink-0 relative z-30">
+                    <img src={course.creatorLogo} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" />
+                    <span class="text-[11px] font-mono text-mute group-hover/creator:text-primary transition-colors leading-none">{course.creatorName}</span>
+                  </a>
+                </div>
+                <div class="pt-3 border-t border-hairline flex justify-between items-center text-[10px] font-mono text-mute mt-3">
+                  <span class="text-[10px] font-mono text-mute">Curated Course</span>
+                  <a href={`/courses/${course.slug}`} class="inline-flex items-center gap-1 bg-primary/10 hover:bg-primary border border-primary/30 text-primary hover:text-on-primary px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold uppercase transition-all relative z-30 shrink-0">
+                    <span>Watch Now</span>
+                  </a>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+    </div>
+    
     <!-- User Retention (Watch History Engine): Continue Learning Section -->
     <section id="continue-learning-section" class="hidden mb-12 bg-canvas border border-hairline rounded-md p-6">
       <div class="flex items-center gap-2 mb-4">
@@ -231,6 +478,26 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
           </div>
         </div>
 
+        <!-- Module Structure Filter Dropdown -->
+        <div class="flex items-center gap-2">
+          <label for="module-filter-select" class="text-xs font-mono uppercase tracking-wider text-mute font-semibold shrink-0">Modules:</label>
+          <div class="relative flex-1 sm:flex-initial">
+            <select 
+              id="module-filter-select" 
+              class="w-full sm:w-44 appearance-none bg-canvas border border-hairline text-ink rounded-sm pl-3.5 pr-9 py-2 text-xs font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
+            >
+              <option value="All" selected>All Modules</option>
+              <option value="single">Single Module (1)</option>
+              <option value="multi">Multi Module (2+)</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-mute">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Sort By Dropdown -->
@@ -239,11 +506,11 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
         <div class="relative flex-1 sm:flex-initial">
           <select 
             id="sort-filter-select" 
-            class="w-full sm:w-40 appearance-none bg-canvas border border-hairline text-ink rounded-sm pl-3.5 pr-9 py-2 text-xs font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
+            class="w-full sm:w-56 appearance-none bg-canvas border border-hairline text-ink rounded-sm pl-3.5 pr-9 py-2 text-xs font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
           >
-            <option value="latest" selected>Latest</option>
-            <option value="popular">Most Popular</option>
-            <option value="top-rated">Top Rated</option>
+            <option value="shuffled" selected>Shuffled Feed (Discovery)</option>
+            <option value="most-watched">Most Watched on Site</option>
+            <option value="latest">Latest</option>
           </select>
           <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-mute">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -267,9 +534,12 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
           data-views={course.views}
           data-votes={course.votes}
           data-rating={course.rating}
+          data-featured={course.featured ? 'true' : 'false'}
+          data-published-year={course.publishedYear || 2026}
           data-date={course.publishDate}
           data-creator={course.creatorName}
           data-slug={course.slug}
+          data-module-type={course.moduleType || (course.chapters && course.chapters.length === 1 ? 'single' : 'multi')}
         >
           <!-- Prominent Thumbnail & Promo Badge -->
           <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
@@ -308,7 +578,12 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
             <div>
               <!-- Header Category / Duration Tag -->
               <div class="flex justify-between items-center mb-3">
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  {course.featured && (
+                    <span class="text-[10px] font-mono uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-pill font-semibold">
+                      Featured
+                    </span>
+                  )}
                   <span class="text-[10px] font-mono uppercase bg-canvas border border-hairline px-2.5 py-0.5 rounded-pill text-body">
                     {course.category}
                   </span>
@@ -327,7 +602,7 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
               </h2>
 
               <!-- Creator Row -->
-              <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="flex items-center gap-2 mb-4 hover:text-primary transition-colors group/creator shrink-0 relative z-30">
+              <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="flex items-center gap-2 hover:text-primary transition-colors group/creator shrink-0 relative z-30">
                 <img 
                   src={course.creatorLogo} 
                   alt={course.creatorName} 
@@ -338,30 +613,22 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
                   <span class="text-[9px] font-mono text-mute/50 leading-none mt-1">{course.creatorSubscribers || "4.2M subscribers"}</span>
                 </div>
               </a>
-
-              <!-- Excerpt -->
-              <p class="text-xs text-body mb-5 line-clamp-2 leading-relaxed">
-                {course.description}
-              </p>
             </div>
 
             <div>
-              <!-- Metrics Footer inside Card -->
-              <div class="pt-3.5 border-t border-hairline flex justify-between items-center text-[11px] font-mono text-mute">
-                <!-- Rating & Votes -->
-                <div class="flex items-center gap-1">
-                  <svg class="h-3.5 w-3.5 text-primary fill-current" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              <!-- Card Footer with Watch Now Action Button -->
+              <div class="pt-3.5 border-t border-hairline flex justify-between items-center text-[11px] font-mono text-mute mt-4">
+                <span class="text-xs text-mute font-mono">Curated Course</span>
+                <a 
+                  href={`/courses/${course.slug}`}
+                  class="inline-flex items-center gap-1.5 bg-primary/10 hover:bg-primary border border-primary/30 hover:border-primary text-primary hover:text-on-primary px-3.5 py-1.5 rounded-sm text-xs font-mono font-bold uppercase transition-all duration-200 cursor-pointer relative z-30 shrink-0 shadow-sm group/btn"
+                >
+                  <span>Watch Now</span>
+                  <svg class="h-3.5 w-3.5 transition-transform duration-200 group-hover/btn:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span class="text-ink font-semibold">{course.rating.toFixed(1)}</span>
-                  <span class="text-[10px]">({course.votes})</span>
-                </div>
-                
-                <!-- Views -->
-                <div class="flex items-center gap-1">
-                  <span class="text-ink font-semibold">{course.views.toLocaleString()}</span>
-                  <span class="text-[10px]">views</span>
-                </div>
+                </a>
               </div>
             </div>
           </div>
@@ -821,7 +1088,7 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
 
   <!-- Client-Side Filter, Search, Sort & History Script -->
   <script>
-    import { getSubscriptions, getWatchLater, setWatchLater, getWatchHistory, setWatchHistory, getUserStorageKey } from '../lib/userStorage.js';
+    import { getSubscriptions, getWatchLater, setWatchLater, getWatchHistory, setWatchHistory, getUserStorageKey, getCourseSiteViews, recordCourseSiteView } from '../lib/userStorage.js';
 
     // Dropdown Filter Elements
     const skillSelect = document.getElementById('skill-filter-select') as HTMLSelectElement;
@@ -845,11 +1112,18 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
     
     let activeFilter = 'All';
     let activeLanguage = 'All';
-    let activeSort = 'latest';
+    let activeModuleType = 'All';
+    let activeSort = 'shuffled';
 
     // Retrieve courses from data block
     const coursesDataEl = document.getElementById('courses-data');
     const allCourses = JSON.parse(coursesDataEl?.getAttribute('data-courses') || '[]');
+
+    // Generate random shuffle seed map per session/page load
+    const cardShuffleSeedMap = new Map<string, number>();
+    allCourses.forEach((c: any) => {
+      cardShuffleSeedMap.set(c.slug, Math.random());
+    });
 
     /**
      * 1. Search Query Tokenization & Normalization
@@ -866,64 +1140,64 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
     }
 
     /**
-     * 2. Multi-Field Weighted Relevance Scoring Algorithm
-     * - Exact Full Title Match: +15 points
-     * - Token Match in Title (course.title): +10 points per token
-     * - Token Match in Tags Array (course.tags): +8 points per token
-     * - Token Match in Creator Name (course.creatorName / course.creator): +7 points per token
-     * - Token Match in Primary Category (course.category): +6 points per token
-     * - Token Match in Software Tools Array (course.tools): +5 points per token
-     * - Token Match in Review / Summary (course.description / course.summary): +2 points per token
-     *
-     * 3. Result Filtering & Ranking (AND Logic):
-     * - Requires ALL query tokens match at least one field of the course.
-     * - If any query token fails to match, relevanceScore = 0.
+     * Base Course Rank Function
+     * Calculates internal ranking score driven by internal site watch/views on our platform:
+     * - Featured Bonus: course.featured ? 25 : 0
+     * - Site Watch Score: Math.min((siteViews || 0) * 10, 50)
+     * - Recency Score: course.publishedYear >= 2025 ? 25 : 15
      */
-    function calculateRelevanceScore(course: any, rawQuery: string): number {
+    function calculateCourseRank(course: any): number {
+      if (!course) return 0;
+      const siteViews = getCourseSiteViews(course.slug);
+      const featuredBonus = course.featured ? 25 : 0;
+      const siteViewsScore = Math.min((siteViews || 0) * 10, 50);
+      const year = typeof course.publishedYear === 'number' 
+        ? course.publishedYear 
+        : (course.publishDate ? new Date(course.publishDate).getFullYear() : 0);
+      const recencyScore = year >= 2025 ? 25 : 15;
+      return featuredBonus + siteViewsScore + recencyScore;
+    }
+
+    /**
+     * Multi-Field Weighted Relevance Scoring Algorithm
+     * - Title token match: +10 pts per token
+     * - Tags token match: +8 pts per token
+     * - Creator token match: +7 pts per token
+     * - Category token match: +6 pts per token
+     * - Tools token match: +5 pts per token
+     */
+    function calculateRelevanceScore(course: any, rawQuery: string): { relevanceScore: number; allTokensMatch: boolean } {
       const queryTokens = tokenize(rawQuery);
-      if (queryTokens.length === 0) return 0;
+      if (queryTokens.length === 0) return { relevanceScore: 0, allTokensMatch: false };
 
-      const normQuery = rawQuery.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
-      const titleStr = course.title || '';
-      const normTitle = titleStr.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
-      const creatorStr = course.creatorName || course.creator || '';
-      const categoryStr = course.category || '';
-      const summaryStr = course.description || course.summary || '';
-      const tagsArr: string[] = Array.isArray(course.tags) ? course.tags : [];
-      const toolsArr: string[] = Array.isArray(course.tools) ? course.tools : [];
-
-      // AND logic: Every token in queryTokens must match at least one field
-      for (const token of queryTokens) {
-        const titleMatch = normTitle.includes(token);
-        const tagsMatch = tagsArr.some(t => String(t).toLowerCase().includes(token));
-        const creatorMatch = creatorStr.toLowerCase().includes(token);
-        const categoryMatch = categoryStr.toLowerCase().includes(token);
-        const toolsMatch = toolsArr.some(t => String(t).toLowerCase().includes(token));
-        const summaryMatch = summaryStr.toLowerCase().includes(token);
-
-        if (!(titleMatch || tagsMatch || creatorMatch || categoryMatch || toolsMatch || summaryMatch)) {
-          return 0; // Filter out course where relevanceScore === 0
-        }
-      }
+      const titleStr = String(course.title || '').toLowerCase();
+      const creatorStr = String(course.creatorName || course.creator || course.author || '').toLowerCase();
+      const categoryStr = String(course.category || '').toLowerCase();
+      const tagsArr: string[] = Array.isArray(course.tags) ? course.tags : (course.tags ? [course.tags] : []);
+      const toolsArr: string[] = Array.isArray(course.tools) ? course.tools : (course.tools ? [course.tools] : []);
 
       let score = 0;
+      let allTokensMatch = true;
 
-      // Exact Full Title Match: +15 points
-      if (normQuery.length > 0 && normTitle === normQuery) {
-        score += 15;
-      }
-
-      // Token matches per field
       for (const token of queryTokens) {
-        if (normTitle.includes(token)) score += 10;
-        if (tagsArr.some(t => String(t).toLowerCase().includes(token))) score += 8;
-        if (creatorStr.toLowerCase().includes(token)) score += 7;
-        if (categoryStr.toLowerCase().includes(token)) score += 6;
-        if (toolsArr.some(t => String(t).toLowerCase().includes(token))) score += 5;
-        if (summaryStr.toLowerCase().includes(token)) score += 2;
+        const titleMatch = titleStr.includes(token);
+        const tagsMatch = tagsArr.some(t => String(t).toLowerCase().includes(token));
+        const creatorMatch = creatorStr.includes(token);
+        const categoryMatch = categoryStr.includes(token);
+        const toolsMatch = toolsArr.some(t => String(t).toLowerCase().includes(token));
+
+        if (!(titleMatch || tagsMatch || creatorMatch || categoryMatch || toolsMatch)) {
+          allTokensMatch = false;
+        }
+
+        if (titleMatch) score += 10;
+        if (tagsMatch) score += 8;
+        if (creatorMatch) score += 7;
+        if (categoryMatch) score += 6;
+        if (toolsMatch) score += 5;
       }
 
-      return score;
+      return { relevanceScore: score, allTokensMatch };
     }
 
     // Populate skill/category dropdown dynamically from stored categories
@@ -1139,7 +1413,12 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
       }
 
       const scoredMatches = allCourses
-        .map((c: any) => ({ course: c, score: calculateRelevanceScore(c, query) }))
+        .map((c: any) => {
+          const { relevanceScore, allTokensMatch } = calculateRelevanceScore(c, query);
+          if (relevanceScore === 0 || !allTokensMatch) return { course: c, score: 0 };
+          const baseRank = calculateCourseRank(c);
+          return { course: c, score: relevanceScore + (baseRank * 0.2) };
+        })
         .filter((item: any) => item.score > 0)
         .sort((a: any, b: any) => b.score - a.score)
         .map((item: any) => item.course);
@@ -1302,15 +1581,27 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
       applyFiltersAndSort();
     }
 
+    function setModuleType(modType: string) {
+      activeModuleType = modType;
+      const moduleSelect = document.getElementById('module-filter-select') as HTMLSelectElement;
+      if (moduleSelect) moduleSelect.value = modType;
+      applyFiltersAndSort();
+    }
+
+    const moduleSelect = document.getElementById('module-filter-select') as HTMLSelectElement;
+    moduleSelect?.addEventListener('change', (e) => {
+      setModuleType((e.target as HTMLSelectElement).value);
+    });
+
     (window as any).setFilter = setFilter;
     (window as any).setSort = setSort;
     (window as any).setLanguage = setLanguage;
+    (window as any).setModuleType = setModuleType;
 
     function applyFiltersAndSort() {
       if (!courseGrid) return;
       const cards = Array.from(courseGrid.getElementsByClassName('course-card')) as HTMLElement[];
       const currentQuery = (searchInput?.value || heroSearchInput?.value || '').trim();
-      const queryTokens = tokenize(currentQuery);
 
       const scoredCards: { card: HTMLElement; score: number }[] = [];
       let visibleCount = 0;
@@ -1318,21 +1609,30 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
       cards.forEach((card) => {
         const cat = card.getAttribute('data-category');
         const lang = card.getAttribute('data-language') || 'English';
+        const modType = card.getAttribute('data-module-type') || 'multi';
         const slug = card.getAttribute('data-slug');
         const course = allCourses.find((c: any) => c.slug === slug);
 
         const matchesCategory = activeFilter === 'All' || cat === activeFilter;
         const matchesLanguage = activeLanguage === 'All' || lang === activeLanguage;
+        const matchesModuleType = activeModuleType === 'All' || modType === activeModuleType;
 
         let score = 0;
         let matchesSearch = true;
 
-        if (queryTokens.length > 0 && course) {
-          score = calculateRelevanceScore(course, currentQuery);
-          matchesSearch = score > 0;
+        if (currentQuery.length > 0 && course) {
+          const { relevanceScore, allTokensMatch } = calculateRelevanceScore(course, currentQuery);
+          if (relevanceScore === 0 || !allTokensMatch) {
+            matchesSearch = false;
+          } else {
+            const baseRank = calculateCourseRank(course);
+            score = relevanceScore + (baseRank * 0.2);
+          }
+        } else if (course) {
+          score = calculateCourseRank(course);
         }
 
-        if (matchesCategory && matchesLanguage && matchesSearch) {
+        if (matchesCategory && matchesLanguage && matchesModuleType && matchesSearch) {
           card.classList.remove('hidden');
           scoredCards.push({ card, score });
           visibleCount++;
@@ -1362,36 +1662,48 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
       }
 
       scoredCards.sort((a, b) => {
-        if (queryTokens.length > 0) {
+        if (currentQuery.length > 0) {
           if (b.score !== a.score) {
             return b.score - a.score;
           }
+        } else {
+          if (activeSort === 'shuffled') {
+            const slugA = a.card.getAttribute('data-slug') || '';
+            const slugB = b.card.getAttribute('data-slug') || '';
+            const seedA = cardShuffleSeedMap.get(slugA) || 0;
+            const seedB = cardShuffleSeedMap.get(slugB) || 0;
+            return seedA - seedB;
+          } else if (activeSort === 'latest') {
+            const cardA = a.card;
+            const cardB = b.card;
+            const dateA = new Date(cardA.getAttribute('data-date') || '');
+            const dateB = new Date(cardB.getAttribute('data-date') || '');
+            return dateB.getTime() - dateA.getTime();
+          } else if (activeSort === 'most-watched') {
+            if (b.score !== a.score) {
+              return b.score - a.score;
+            }
+          }
         }
-
-        const cardA = a.card;
-        const cardB = b.card;
-        if (activeSort === 'latest') {
-          const dateA = new Date(cardA.getAttribute('data-date') || '');
-          const dateB = new Date(cardB.getAttribute('data-date') || '');
-          return dateB.getTime() - dateA.getTime();
-        } else if (activeSort === 'popular') {
-          const viewsA = Number(cardA.getAttribute('data-views') || 0);
-          const viewsB = Number(cardB.getAttribute('data-views') || 0);
-          return viewsB - viewsA;
-        } else if (activeSort === 'top-rated') {
-          const ratingA = Number(cardA.getAttribute('data-rating') || 0);
-          const votesA = Number(cardA.getAttribute('data-votes') || 0);
-          const ratingB = Number(cardB.getAttribute('data-rating') || 0);
-          const votesB = Number(cardB.getAttribute('data-votes') || 0);
-          const scoreA = ratingA * Math.log10(votesA + 1);
-          const scoreB = ratingB * Math.log10(votesB + 1);
-          return scoreB - scoreA;
-        }
-        return 0;
+        return b.score - a.score;
       });
 
+      const HOMEPAGE_LIMIT = 18;
+      let renderedCount = 0;
+
       scoredCards.forEach((item) => {
-        courseGrid.appendChild(item.card);
+        if (activeSort === 'shuffled' && currentQuery === '' && activeFilter === 'All' && activeLanguage === 'All' && activeModuleType === 'All') {
+          if (renderedCount < HOMEPAGE_LIMIT) {
+            item.card.classList.remove('hidden');
+            courseGrid.appendChild(item.card);
+            renderedCount++;
+          } else {
+            item.card.classList.add('hidden');
+          }
+        } else {
+          item.card.classList.remove('hidden');
+          courseGrid.appendChild(item.card);
+        }
       });
     }
 
@@ -1637,6 +1949,20 @@ const ogImageAlt = "FreeYTCourses homepage showing curated free YouTube courses 
         setWatchLater(wl);
         updateWatchLaterButtons();
       });
+    });
+
+    document.querySelectorAll('.course-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        const slug = card.getAttribute('data-slug');
+        if (slug) {
+          recordCourseSiteView(slug);
+          addToHistory(slug);
+        }
+      });
+    });
+
+    window.addEventListener('siteViewsChanged', () => {
+      applyFiltersAndSort();
     });
 
     // Run on page load
