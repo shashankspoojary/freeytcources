@@ -1,0 +1,426 @@
+---
+// Minimal PiP player page — served from our own origin so YouTube embeds work
+// Query params: v (videoId), t (start time in seconds), title (lesson title)
+const videoId = Astro.url.searchParams.get('v') || '';
+const startTime = Astro.url.searchParams.get('t') || '0';
+const lessonTitle = Astro.url.searchParams.get('title') || 'Course Video';
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{lessonTitle} — PiP</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Inter, system-ui, -apple-system, sans-serif; user-select: none; }
+    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; color: #f2f2f2; }
+
+    .player-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .video-wrapper {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #pip-yt-player {
+      width: 100%;
+      height: 100%;
+      border: none;
+      pointer-events: none;
+    }
+
+    .hover-control-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      background: linear-gradient(to bottom, rgba(16,16,16,0.85) 0%, transparent 25%, transparent 75%, rgba(16,16,16,0.9) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 14px 18px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease-in-out;
+    }
+
+    .player-container:hover .hover-control-layer,
+    .player-container.force-show .hover-control-layer {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-family: 'SF Mono', monospace;
+    }
+
+    .lesson-title {
+      font-weight: 600;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 75%;
+    }
+
+    .pip-badge {
+      background: rgba(0, 217, 146, 0.15);
+      border: 1px solid rgba(0, 217, 146, 0.3);
+      color: #00d992;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .center-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .action-btn {
+      background: rgba(16, 16, 16, 0.75);
+      border: 1px solid #3d3a39;
+      color: #ffffff;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: #00d992;
+      color: #101010;
+      border-color: #00d992;
+      transform: scale(1.1);
+    }
+
+    .skip-btn {
+      background: rgba(16, 16, 16, 0.6);
+      border: 1px solid #3d3a39;
+      color: #fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .skip-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    .bottom-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .seek-track {
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .seek-fill {
+      height: 100%;
+      background: #00d992;
+      width: 0%;
+      border-radius: 3px;
+      transition: width 0.15s linear;
+    }
+
+    .controls-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'SF Mono', monospace;
+      font-size: 11px;
+      color: #bdbdbd;
+    }
+
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .text-btn {
+      background: transparent;
+      border: none;
+      color: #bdbdbd;
+      font-size: 11px;
+      font-family: 'SF Mono', monospace;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .text-btn:hover {
+      color: #00d992;
+    }
+
+    .close-pip-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #3d3a39;
+      color: #ffffff;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: 'SF Mono', monospace;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .close-pip-btn:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #f87171;
+    }
+  </style>
+</head>
+<body>
+  <div class="player-container" id="container">
+    <div class="video-wrapper">
+      <iframe
+        id="pip-yt-player"
+        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&start=${startTime}&enablejsapi=1&rel=0&modestbranding=1&playsinline=1&origin=${Astro.url.origin}`}
+        allow="autoplay; encrypted-media; picture-in-picture"
+      ></iframe>
+    </div>
+
+    <div class="hover-control-layer" id="overlay">
+      <div class="top-row">
+        <span class="lesson-title" id="pip-lesson-title">{lessonTitle}</span>
+        <span class="pip-badge">PiP Active</span>
+      </div>
+
+      <div class="center-action">
+        <button class="skip-btn" id="skip-back-btn" title="Skip backward 10s">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" /></svg>
+        </button>
+        <button class="action-btn" id="play-pause-btn" title="Toggle Play/Pause">
+          <svg id="play-icon" style="display:none" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg id="pause-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <button class="skip-btn" id="skip-forward-btn" title="Skip forward 10s">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 17l5-5-5-5M6 17l5-5-5-5" /></svg>
+        </button>
+      </div>
+
+      <div class="bottom-row">
+        <div class="seek-track" id="seek-track">
+          <div class="seek-fill" id="seek-fill"></div>
+        </div>
+        <div class="controls-meta">
+          <span id="time-display">0:00 / 0:00</span>
+          <div class="btn-group">
+            <button class="text-btn" id="speed-btn">1x</button>
+            <button class="text-btn" id="mute-btn">Mute</button>
+            <button class="close-pip-btn" id="close-btn">Return to Page ↗</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const container = document.getElementById('container')!;
+    const iframe = document.getElementById('pip-yt-player') as HTMLIFrameElement;
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const playIcon = document.getElementById('play-icon');
+    const pauseIcon = document.getElementById('pause-icon');
+    const seekTrack = document.getElementById('seek-track');
+    const seekFill = document.getElementById('seek-fill');
+    const timeDisplay = document.getElementById('time-display');
+    const speedBtn = document.getElementById('speed-btn');
+    const muteBtn = document.getElementById('mute-btn');
+    const closeBtn = document.getElementById('close-btn');
+    const skipBackBtn = document.getElementById('skip-back-btn');
+    const skipForwardBtn = document.getElementById('skip-forward-btn');
+
+    let isPlaying = true;
+    let isMuted = false;
+    const speeds = [1, 1.25, 1.5, 2];
+    let speedIdx = 0;
+    let duration = 0;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentSec = parseInt(urlParams.get('t') || '0', 10);
+    let hideTimeout: any = null;
+
+    const sendCommand = (func: string, args: any[] = []) => {
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage(JSON.stringify({
+          event: 'command',
+          func,
+          args,
+        }), '*');
+      }
+    };
+
+    // Tell YouTube iframe we are listening so it starts sending infoDelivery messages
+    iframe.addEventListener('load', () => {
+      if (iframe.contentWindow) {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
+      }
+    });
+
+    // Hover controls
+    container.addEventListener('mousemove', () => {
+      container.classList.add('force-show');
+      if (hideTimeout) clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => {
+        container.classList.remove('force-show');
+      }, 2500);
+    });
+
+    container.addEventListener('mouseleave', () => {
+      if (hideTimeout) clearTimeout(hideTimeout);
+      container.classList.remove('force-show');
+    });
+
+    playPauseBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isPlaying) {
+        sendCommand('pauseVideo');
+        isPlaying = false;
+        if (playIcon) playIcon.style.display = 'block';
+        if (pauseIcon) pauseIcon.style.display = 'none';
+      } else {
+        sendCommand('playVideo');
+        isPlaying = true;
+        if (playIcon) playIcon.style.display = 'none';
+        if (pauseIcon) pauseIcon.style.display = 'block';
+      }
+    });
+
+    skipBackBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const newTime = Math.max(0, currentSec - 10);
+      sendCommand('seekTo', [newTime, true]);
+      currentSec = newTime; // optimistic update
+    });
+
+    skipForwardBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!duration) return;
+      const newTime = Math.min(duration, currentSec + 10);
+      sendCommand('seekTo', [newTime, true]);
+      currentSec = newTime; // optimistic update
+    });
+
+    speedBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      speedIdx = (speedIdx + 1) % speeds.length;
+      const rate = speeds[speedIdx];
+      sendCommand('setPlaybackRate', [rate]);
+      if (speedBtn) speedBtn.textContent = rate + 'x';
+    });
+
+    muteBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isMuted) {
+        sendCommand('unMute');
+        isMuted = false;
+        if (muteBtn) muteBtn.textContent = 'Mute';
+      } else {
+        sendCommand('mute');
+        isMuted = true;
+        if (muteBtn) muteBtn.textContent = 'Unmute';
+      }
+    });
+
+    // BroadcastChannel for communicating with parent (works in both popup and Document PiP iframe)
+    const pipChannel = new BroadcastChannel('freeyt-pip-channel');
+
+    function notifyClosing() {
+      const msg = { type: 'pip-closing', currentTime: currentSec };
+      try { pipChannel.postMessage(msg); } catch(e) {}
+      if (window.opener) {
+        try { window.opener.postMessage(msg, '*'); } catch(e) {}
+      }
+    }
+
+    closeBtn?.addEventListener('click', () => {
+      notifyClosing();
+      // Small delay to ensure BroadcastChannel message is sent before window closes
+      // In Document PiP iframe: window.close() won't work, main page closes the PiP window
+      // In popup: window.close() works directly
+      setTimeout(() => {
+        try { pipChannel.close(); } catch(e) {}
+        try { window.close(); } catch(e) {}
+      }, 100);
+    });
+
+    seekTrack?.addEventListener('click', (e: MouseEvent) => {
+      e.stopPropagation();
+      if (!duration || !seekTrack || !seekFill) return;
+      const rect = seekTrack.getBoundingClientRect();
+      const pos = (e.clientX - rect.left) / rect.width;
+      const targetSec = pos * duration;
+      sendCommand('seekTo', [targetSec, true]);
+      seekFill.style.width = (pos * 100) + '%';
+    });
+
+    // Listen for YouTube player messages
+    window.addEventListener('message', (msg: MessageEvent) => {
+      try {
+        const data = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data;
+        if (data && data.event === 'infoDelivery' && data.info) {
+          if (typeof data.info.currentTime === 'number') {
+            currentSec = data.info.currentTime;
+          }
+          if (typeof data.info.duration === 'number') {
+            duration = data.info.duration;
+          }
+          if (duration > 0 && seekFill && timeDisplay) {
+            const pct = (currentSec / duration) * 100;
+            seekFill.style.width = pct + '%';
+            const curMin = Math.floor(currentSec / 60);
+            const curS = Math.floor(currentSec % 60).toString().padStart(2, '0');
+            const durMin = Math.floor(duration / 60);
+            const durS = Math.floor(duration % 60).toString().padStart(2, '0');
+            timeDisplay.textContent = `${curMin}:${curS} / ${durMin}:${durS}`;
+          }
+        }
+      } catch (err) {}
+    });
+
+    // Notify parent on beforeunload (window close / navigation)
+    window.addEventListener('beforeunload', () => {
+      notifyClosing();
+      try { pipChannel.close(); } catch(e) {}
+    });
+  </script>
+</body>
+</html>

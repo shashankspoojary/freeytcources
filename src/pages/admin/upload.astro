@@ -413,8 +413,7 @@ const description = "Manually ingest new courses and syllabus layouts into the c
   const adminSubmitBtn = document.getElementById('admin-submit-btn') as HTMLButtonElement;
 
   // DOM Elements
-  const authCheckingScreen = document.getElementById('auth-checking');
-  const authStatusMsg = document.getElementById('auth-status-msg');
+
   const adminConsole = document.getElementById('admin-console');
   const lockConsoleBtn = document.getElementById('lock-console-btn');
   const uploadForm = document.getElementById('upload-form') as HTMLFormElement;
@@ -661,6 +660,7 @@ const description = "Manually ingest new courses and syllabus layouts into the c
   let extractedChannelId = '';
   let extractedSubscribers = '';
   let extractedViews = 12450;
+  let extractedPublishDate = '';
 
   function redirectToLoginImmediately() {
     window.location.replace('/login');
@@ -929,13 +929,13 @@ const description = "Manually ingest new courses and syllabus layouts into the c
       language: langVal,
       rating: 5.0,
       votes: 1,
-      publishDate: new Date().toISOString().split('T')[0],
+      publishDate: extractedPublishDate || new Date().toISOString().split('T')[0],
       duration: "1h 30m",
       author: authorVal.trim(),
       creatorName: authorVal.trim(),
       creatorLogo: extractedCreatorLogo || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120",
       channelId: extractedChannelId || '',
-      creatorSubscribers: extractedSubscribers || '4.2M subscribers',
+      creatorSubscribers: extractedSubscribers || 'Verified Channel',
       views: extractedViews || 12450,
       type: "free",
       sampleVideoId,
@@ -963,6 +963,7 @@ const description = "Manually ingest new courses and syllabus layouts into the c
         extractedChannelId = '';
         extractedSubscribers = '';
         extractedViews = 12450;
+        extractedPublishDate = '';
         currentTags = [];
         renderTagChips();
         if (authorAvatarPreview) authorAvatarPreview.classList.add('hidden');
@@ -1054,6 +1055,14 @@ const description = "Manually ingest new courses and syllabus layouts into the c
         throw new Error('Failed to resolve channel info');
       }
       const data = await res.json();
+
+      if (data.isEmbeddable === false) {
+        authorAvatarStatus.textContent = "❌ Embed Disabled by Creator!";
+        authorAvatarStatus.className = "text-[10px] font-mono text-red-500 font-bold";
+        alert("This video does not allow embedding and cannot be monetized on our site. Please choose a different course.");
+        if (youtubeLinkInput) youtubeLinkInput.value = '';
+        return;
+      }
       
       if (data.channelName) {
         if (authorInput) {
@@ -1061,8 +1070,9 @@ const description = "Manually ingest new courses and syllabus layouts into the c
         }
         extractedCreatorLogo = data.creatorLogo;
         extractedChannelId = data.channelId;
-        extractedSubscribers = data.subscribers || '4.2M subscribers';
+        extractedSubscribers = data.subscribers || 'Verified Channel';
         extractedViews = data.views || 12450;
+        extractedPublishDate = data.publishDate || '';
         
         if (authorAvatarPreview) {
           authorAvatarPreview.src = data.creatorLogo;

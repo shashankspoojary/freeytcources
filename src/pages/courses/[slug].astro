@@ -1,45 +1,58 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { getCourseBySlug, getCreatorSlug, getYoutubeThumbnail } from '../../lib/firebase.js';
+import Layout from "../../layouts/Layout.astro";
+import {
+  getCourseBySlug,
+  getCreatorSlug,
+  getYoutubeThumbnail,
+} from "../../lib/firebase.js";
 
 const { slug } = Astro.params;
 
 if (!slug) {
-  return Astro.redirect('/404');
+  return Astro.redirect("/404");
 }
 
 const course = await getCourseBySlug(slug);
 
 if (!course) {
-  return Astro.redirect('/404');
+  return Astro.redirect("/404");
 }
-
 ---
 
-<Layout 
-  title={`${course.title} | FreeYTCourses`} 
-  description={course.description || course.overview} 
-  ogImage={course.thumbnail || getYoutubeThumbnail(course.sampleVideoId)} 
+<Layout
+  title={`${course.title} | FreeYTCourses`}
+  description={course.description || course.overview}
+  ogImage={course.thumbnail || getYoutubeThumbnail(course.sampleVideoId)}
   activePage="courses"
 >
-
-
   <main class="max-w-6xl mx-auto px-6 py-12 md:py-20">
     <!-- Course Title & Category Eyebrow -->
 
     <header class="mb-12 border-b border-hairline pb-8">
       <div class="flex flex-wrap items-center gap-3 mb-4">
-        <span class="text-xs font-mono uppercase bg-primary/10 border border-primary/20 text-primary px-3 py-1 rounded-pill">
+        <span
+          class="text-xs font-mono uppercase bg-primary/10 border border-primary/20 text-primary px-3 py-1 rounded-pill"
+        >
           {course.category}
         </span>
         <span class="text-xs font-mono text-mute border-l border-hairline pl-3">
-          Published {new Date(course.publishDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+          Published {
+            new Date(course.publishDate).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          }
         </span>
       </div>
-      <h1 class="text-3xl md:text-5xl font-light text-ink-strong tracking-tight leading-tight mb-4">
+      <h1
+        class="text-3xl md:text-5xl font-light text-ink-strong tracking-tight leading-tight mb-4"
+      >
         {course.title}
       </h1>
-      <p class="text-base md:text-lg text-body font-light leading-relaxed max-w-4xl">
+      <p
+        class="text-base md:text-lg text-body font-light leading-relaxed max-w-4xl"
+      >
         {course.description}
       </p>
     </header>
@@ -48,75 +61,189 @@ if (!course) {
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
       <!-- Left Column: Editorial Overview & Chapter Outline (AdSense Focus) -->
       <section class="lg:col-span-2 space-y-12">
-        
         <!-- Embedded Video Player Area -->
-        <div id="video-player-container" class="border border-hairline bg-canvas rounded-md overflow-hidden relative shadow-2xl transition-all duration-300">
-          <div class="aspect-video w-full bg-canvas-soft relative">
-            <div id="youtube-player" class="absolute inset-0 w-full h-full"></div>
-            <div id="video-poster-overlay" class="absolute inset-0 w-full h-full bg-cover bg-center flex flex-col items-center justify-center p-6 bg-canvas/80 text-center transition-opacity duration-300 z-10" style={`background-image: linear-gradient(rgba(16,16,16,0.85), rgba(16,16,16,0.85)), url(https://img.youtube.com/vi/${course.sampleVideoId}/maxresdefault.jpg)`}>
-              <div class="h-16 w-16 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-primary mb-4 hover:bg-primary/20 hover:scale-110 transition-all duration-300 cursor-pointer shadow-lg shadow-primary/10" id="start-video-btn">
-                <svg class="h-8 w-8 fill-current translate-x-0.5" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
+        <div id="video-player-wrapper" class="relative">
+          <div
+            id="video-player-container"
+            class="border border-hairline bg-canvas rounded-md overflow-hidden relative shadow-2xl transition-all duration-300"
+          >
+            <div class="aspect-video w-full bg-canvas-soft relative">
+              <div id="youtube-player" class="absolute inset-0 w-full h-full">
               </div>
-              <h3 id="poster-chapter-title" class="text-lg font-semibold text-ink-strong tracking-tight max-w-md line-clamp-1 mb-1 font-mono uppercase">
-                {course.chapters[0]?.title || "Start Course"}
-              </h3>
-              <p class="text-xs text-mute font-mono uppercase tracking-wider mb-4">
-                Click to play course video on site
-              </p>
-              <div id="resume-banner" class="hidden text-xs bg-primary/10 border border-primary/20 rounded px-3 py-1.5 font-mono text-primary animate-pulse">
-                Resume from <span id="resume-chapter-name">Chapter 1</span> at <span id="resume-chapter-time">0:00</span>
+              <div
+                id="video-poster-overlay"
+                class="absolute inset-0 w-full h-full bg-cover bg-center flex flex-col items-center justify-center p-6 bg-canvas/80 text-center transition-opacity duration-300 z-10"
+                style={`background-image: linear-gradient(rgba(16,16,16,0.85), rgba(16,16,16,0.85)), url(https://img.youtube.com/vi/${course.sampleVideoId}/maxresdefault.jpg)`}
+              >
+                <div
+                  class="h-16 w-16 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-primary mb-4 hover:bg-primary/20 hover:scale-110 transition-all duration-300 cursor-pointer shadow-lg shadow-primary/10"
+                  id="start-video-btn"
+                >
+                  <svg
+                    class="h-8 w-8 fill-current translate-x-0.5"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M8 5v14l11-7z"></path>
+                  </svg>
+                </div>
+                <h3
+                  id="poster-chapter-title"
+                  class="text-lg font-semibold text-ink-strong tracking-tight max-w-md line-clamp-1 mb-1 font-mono uppercase"
+                >
+                  {course.chapters[0]?.title || "Start Course"}
+                </h3>
+                <p
+                  class="text-xs text-mute font-mono uppercase tracking-wider mb-4"
+                >
+                  Click to play course video on site
+                </p>
+                <div
+                  id="resume-banner"
+                  class="hidden text-xs bg-primary/10 border border-primary/20 rounded px-3 py-1.5 font-mono text-primary animate-pulse"
+                >
+                  Resume from <span id="resume-chapter-name">Chapter 1</span> at <span
+                    id="resume-chapter-time">0:00</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div
+              class="border-t border-hairline px-4 py-3 bg-canvas-soft/95 backdrop-blur-md flex flex-wrap justify-between items-center gap-4 text-xs font-mono absolute bottom-0 left-0 right-0 z-20 opacity-0 pointer-events-none transition-opacity duration-300 shadow-xl"
+              id="video-controls-bar"
+            >
+              <div class="flex items-center gap-2">
+                <span
+                  class="inline-block h-2 w-2 rounded-full bg-primary animate-ping"
+                ></span>
+                <span class="text-mute">ACTIVE LESSON:</span>
+                <span
+                  id="active-chapter-title-display"
+                  class="text-ink font-semibold line-clamp-1 max-w-[200px] sm:max-w-xs"
+                  >{course.chapters[0]?.title}</span
+                >
+              </div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Picture-in-Picture (Native OS-level floating window) -->
+                <button
+                  id="pip-toggle-btn"
+                  type="button"
+                  class="px-2.5 py-1 bg-canvas border border-hairline text-mute hover:text-primary hover:border-primary transition-all rounded-xs flex items-center gap-1.5 cursor-pointer"
+                  title="Pop video out into a floating window that stays on top of VS Code and other apps"
+                >
+                  <svg
+                    class="h-3.5 w-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <rect
+                      x="11"
+                      y="10"
+                      width="9"
+                      height="6"
+                      rx="1"
+                      ry="1"
+                      fill="currentColor"
+                      opacity="0.3"></rect>
+                  </svg>
+                  <span id="pip-btn-text">Picture in Picture</span>
+                </button>
+
+                <button
+                  id="hero-watch-later-btn"
+                  type="button"
+                  class="px-2.5 py-1 bg-canvas border border-hairline text-mute hover:text-primary hover:border-primary transition-all rounded-xs flex items-center gap-1 cursor-pointer"
+                  data-slug={course.slug}
+                >
+                  <svg
+                    class="h-3.5 w-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span id="hero-watch-later-text">Watch Later</span>
+                </button>
+
+                <button
+                  id="mark-complete-btn"
+                  class="px-2.5 py-1 bg-canvas border border-hairline text-mute hover:text-primary hover:border-primary transition-all rounded-xs flex items-center gap-1 cursor-pointer"
+                >
+                  <svg
+                    class="h-3.5 w-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M5 13l4 4L19 7"></path>
+                  </svg>
+                  <span>Mark Completed</span>
+                </button>
               </div>
             </div>
           </div>
-          <div class="border-t border-hairline px-4 py-3 bg-canvas-soft flex flex-wrap justify-between items-center gap-4 text-xs font-mono">
-            <div class="flex items-center gap-2">
-              <span class="inline-block h-2 w-2 rounded-full bg-primary animate-ping"></span>
-              <span class="text-mute">ACTIVE LESSON:</span>
-              <span id="active-chapter-title-display" class="text-ink font-semibold line-clamp-1 max-w-[200px] sm:max-w-xs">{course.chapters[0]?.title}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <button 
-                id="hero-watch-later-btn" 
-                type="button" 
-                class="px-2.5 py-1 bg-canvas border border-hairline text-mute hover:text-primary hover:border-primary transition-all rounded-xs flex items-center gap-1 cursor-pointer"
-                data-slug={course.slug}
-              >
-                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span id="hero-watch-later-text">Watch Later</span>
-              </button>
 
-              <button id="mark-complete-btn" class="px-2.5 py-1 bg-canvas border border-hairline text-mute hover:text-primary hover:border-primary transition-all rounded-xs flex items-center gap-1 cursor-pointer">
-                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Mark Completed</span>
-              </button>
+          <!-- Placeholder shown when video is in PiP mode -->
+          <div id="video-pip-placeholder" class="hidden border border-hairline border-dashed rounded-md bg-canvas-soft p-12 text-center flex flex-col items-center justify-center gap-3 min-h-[300px]">
+            <div class="h-12 w-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <rect x="11" y="10" width="9" height="6" rx="1" ry="1" fill="currentColor" opacity="0.4"></rect>
+              </svg>
             </div>
+            <p class="text-sm font-mono text-ink font-semibold">Video is playing in Picture-in-Picture</p>
+            <p class="text-xs font-mono text-mute max-w-sm">The floating window stays on top of other applications. Close the PiP window to return the video here.</p>
           </div>
         </div>
 
         <!-- AdSense-Compliant Course Overview & Review Section -->
-        <article class="p-6 md:p-8 bg-canvas-soft border border-hairline rounded-md">
+        <article
+          class="p-6 md:p-8 bg-canvas-soft border border-hairline rounded-md"
+        >
           <div class="flex items-center gap-2 mb-6">
-            <svg class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <svg
+              class="h-5 w-5 text-primary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              ></path>
             </svg>
-            <h2 class="text-lg font-mono uppercase tracking-wider text-ink-strong font-semibold">
+            <h2
+              class="text-lg font-mono uppercase tracking-wider text-ink-strong font-semibold"
+            >
               Course Overview & Review
             </h2>
           </div>
-          
+
           <!-- Detailed text critique (>200 words) -->
-          <div class="text-body text-sm md:text-base leading-relaxed space-y-4 font-light">
+          <div
+            class="text-body text-sm md:text-base leading-relaxed space-y-4 font-light"
+          >
             <p>
               {course.overview}
             </p>
-            <p class="border-t border-hairline/50 pt-4 mt-4 text-xs text-mute font-mono">
-              VERIFICATION STATUS: Curated curriculum meets our quality threshold. Free access validated. No hidden costs detected.
+            <p
+              class="border-t border-hairline/50 pt-4 mt-4 text-xs text-mute font-mono"
+            >
+              VERIFICATION STATUS: Curated curriculum meets our quality
+              threshold. Free access validated. No hidden costs detected.
             </p>
           </div>
         </article>
@@ -124,126 +251,198 @@ if (!course) {
         <!-- Chapter Outline Block -->
         <div class="space-y-6">
           <div class="flex items-center gap-2">
-            <svg class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            <svg
+              class="h-5 w-5 text-primary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
             </svg>
-            <h2 class="text-lg font-mono uppercase tracking-wider text-ink-strong font-semibold">
+            <h2
+              class="text-lg font-mono uppercase tracking-wider text-ink-strong font-semibold"
+            >
               Syllabus & Chapter Outline
             </h2>
           </div>
 
-          <div class="border border-hairline rounded-md overflow-hidden bg-canvas divide-y divide-hairline">
-            {course.chapters.map((chapter, index) => (
-              <button 
-                type="button"
-                class="chapter-row w-full text-left p-4 flex justify-between items-center hover:bg-canvas-soft border-none bg-transparent cursor-pointer transition-all focus:outline-none border-b border-hairline last:border-b-0"
-                data-index={index}
-                data-video-id={chapter.videoId || course.sampleVideoId}
-                data-title={chapter.title}
-              >
-                <div class="flex items-center gap-4">
-                  <div class="chapter-status-icon shrink-0">
-                    <span class="font-mono text-xs text-primary bg-primary/10 border border-primary/20 h-6 w-6 rounded-full flex items-center justify-center font-bold">
-                      {index + 1}
+          <div
+            class="border border-hairline rounded-md overflow-hidden bg-canvas divide-y divide-hairline"
+          >
+            {
+              course.chapters.map((chapter, index) => (
+                <button
+                  type="button"
+                  class="chapter-row w-full text-left p-4 flex justify-between items-center hover:bg-canvas-soft border-none bg-transparent cursor-pointer transition-all focus:outline-none border-b border-hairline last:border-b-0"
+                  data-index={index}
+                  data-video-id={chapter.videoId || course.sampleVideoId}
+                  data-title={chapter.title}
+                >
+                  <div class="flex items-center gap-4">
+                    <div class="chapter-status-icon shrink-0">
+                      <span class="font-mono text-xs text-primary bg-primary/10 border border-primary/20 h-6 w-6 rounded-full flex items-center justify-center font-bold">
+                        {index + 1}
+                      </span>
+                    </div>
+                    <div class="flex flex-col text-left">
+                      <span class="text-sm text-ink font-medium transition-colors chapter-title-text">
+                        {chapter.title}
+                      </span>
+                      <span class="chapter-progress-lbl text-[10px] text-mute font-mono mt-0.5 hidden">
+                        0% watched
+                      </span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-16 h-1 bg-canvas border border-hairline rounded-sm overflow-hidden hidden sm:block chapter-progress-bar-container invisible">
+                      <div
+                        class="chapter-progress-bar-fill h-full bg-primary"
+                        style="width: 0%"
+                      />
+                    </div>
+                    <span class="font-mono text-xs text-mute shrink-0">
+                      {chapter.duration}
                     </span>
                   </div>
-                  <div class="flex flex-col text-left">
-                    <span class="text-sm text-ink font-medium transition-colors chapter-title-text">{chapter.title}</span>
-                    <span class="chapter-progress-lbl text-[10px] text-mute font-mono mt-0.5 hidden">0% watched</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-3">
-                  <div class="w-16 h-1 bg-canvas border border-hairline rounded-sm overflow-hidden hidden sm:block chapter-progress-bar-container invisible">
-                    <div class="chapter-progress-bar-fill h-full bg-primary" style="width: 0%"></div>
-                  </div>
-                  <span class="font-mono text-xs text-mute shrink-0">{chapter.duration}</span>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))
+            }
           </div>
         </div>
-
       </section>
 
       <!-- Right Column: Sidebar Actions & Technical Specs -->
       <aside class="space-y-6 lg:sticky lg:top-24">
         <!-- Main Actions Card -->
-        <div class="bg-canvas-soft border border-hairline rounded-md p-6 space-y-6">
+        <div
+          class="bg-canvas-soft border border-hairline rounded-md p-6 space-y-6"
+        >
           <!-- CTA Action Button -->
-          <button 
-            id="main-cta-btn" 
+          <button
+            id="main-cta-btn"
             class="w-full text-center block bg-primary text-on-primary font-mono uppercase text-sm font-bold tracking-wider py-3.5 px-4 rounded-sm hover:bg-primary-soft transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-canvas cursor-pointer"
           >
             Start Course
           </button>
 
           <!-- Course Progress Panel -->
-          <div id="course-progress-panel" class="hidden border border-hairline bg-canvas p-4 rounded-sm space-y-3">
+          <div
+            id="course-progress-panel"
+            class="hidden border border-hairline bg-canvas p-4 rounded-sm space-y-3"
+          >
             <div class="flex justify-between items-center text-xs font-mono">
               <span class="text-mute">COURSE COMPLETED:</span>
-              <span id="course-progress-percent" class="text-primary font-bold">0%</span>
+              <span id="course-progress-percent" class="text-primary font-bold"
+                >0%</span
+              >
             </div>
-            <div class="w-full h-2 bg-canvas-soft border border-hairline rounded-sm overflow-hidden">
-              <div id="course-progress-bar" class="h-full bg-primary transition-all duration-300" style="width: 0%"></div>
+            <div
+              class="w-full h-2 bg-canvas-soft border border-hairline rounded-sm overflow-hidden"
+            >
+              <div
+                id="course-progress-bar"
+                class="h-full bg-primary transition-all duration-300"
+                style="width: 0%"
+              >
+              </div>
             </div>
-            <div class="flex justify-between items-center text-[10px] font-mono text-mute">
+            <div
+              class="flex justify-between items-center text-[10px] font-mono text-mute"
+            >
               <span id="course-progress-status">0 of 5 modules completed</span>
-              <button id="reset-course-btn" class="hover:text-red-400 transition-colors bg-transparent border-none cursor-pointer focus:outline-none">Reset</button>
+              <button
+                id="reset-course-btn"
+                class="hover:text-red-400 transition-colors bg-transparent border-none cursor-pointer focus:outline-none"
+                >Reset</button
+              >
             </div>
           </div>
 
-          <a 
-            href={course.youtubeUrl} 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            href={course.youtubeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             class="block text-center text-[10px] font-mono text-mute hover:text-primary transition-colors mt-2"
           >
             Watch on YouTube directly ↗
           </a>
 
           <!-- Quick Stats Monospace Grid -->
-          <div class="border-t border-hairline pt-6 grid grid-cols-2 gap-4 text-left">
+          <div
+            class="border-t border-hairline pt-6 grid grid-cols-2 gap-4 text-left"
+          >
             <div>
-              <span class="block text-[10px] font-mono text-mute uppercase">Duration</span>
-              <span class="text-sm font-mono text-ink font-semibold">{course.duration}</span>
+              <span class="block text-[10px] font-mono text-mute uppercase"
+                >Duration</span
+              >
+              <span class="text-sm font-mono text-ink font-semibold"
+                >{course.duration}</span
+              >
             </div>
             <div>
-              <span class="block text-[10px] font-mono text-mute uppercase">Author</span>
-              <a 
-                href={`/creators/${getCreatorSlug(course.creatorName)}`} 
+              <span class="block text-[10px] font-mono text-mute uppercase"
+                >Author</span
+              >
+              <a
+                href={`/creators/${getCreatorSlug(course.creatorName)}`}
                 class="text-sm font-mono text-ink font-semibold line-clamp-1 hover:text-primary transition-colors duration-200"
               >
                 {course.author}
               </a>
-              <span class="block text-[9px] font-mono text-mute/50 mt-0.5">{course.creatorSubscribers || "4.2M subscribers"}</span>
+              <span class="block text-[9px] font-mono text-mute/50 mt-0.5"
+                >{course.creatorSubscribers || "Verified Channel"}</span
+              >
             </div>
             <div>
-              <span class="block text-[10px] font-mono text-mute uppercase">Category</span>
-              <span class="text-sm font-mono text-ink font-semibold">{course.category}</span>
+              <span class="block text-[10px] font-mono text-mute uppercase"
+                >Category</span
+              >
+              <span class="text-sm font-mono text-ink font-semibold"
+                >{course.category}</span
+              >
             </div>
             <div>
-              <span class="block text-[10px] font-mono text-mute uppercase">Modules</span>
-              <span class="text-sm font-mono text-ink font-semibold">{course.chapters?.length || 0} Modules</span>
+              <span class="block text-[10px] font-mono text-mute uppercase"
+                >Modules</span
+              >
+              <span class="text-sm font-mono text-ink font-semibold"
+                >{course.chapters?.length || 0} Modules</span
+              >
             </div>
           </div>
 
           <!-- Required Tool Tags Block -->
           <div class="border-t border-hairline pt-6">
-            <span class="block text-[10px] font-mono text-mute uppercase mb-3">Required Tools & Stack</span>
+            <span class="block text-[10px] font-mono text-mute uppercase mb-3"
+              >Required Tools & Stack</span
+            >
             <div class="flex flex-wrap gap-1.5">
-              {course.tools.map((tool) => (
-                <span class="text-xs font-mono bg-canvas text-canvas-text-soft border border-hairline px-3 py-1 rounded-sm">
-                  {tool}
-                </span>
-              ))}
+              {
+                course.tools.map((tool) => (
+                  <span class="text-xs font-mono bg-canvas text-canvas-text-soft border border-hairline px-3 py-1 rounded-sm">
+                    {tool}
+                  </span>
+                ))
+              }
             </div>
           </div>
         </div>
 
         <!-- AdSense Placement Notice Block (Safe, compliant style) -->
-        <div class="bg-canvas border border-hairline border-dashed rounded-md p-4 text-center">
-          <span class="font-mono text-[10px] text-mute uppercase tracking-widest block mb-2">Advertisement</span>
-          <div class="h-32 border border-hairline/50 rounded flex items-center justify-center bg-canvas-soft/30 text-mute text-xs font-mono">
+        <div
+          class="bg-canvas border border-hairline border-dashed rounded-md p-4 text-center"
+        >
+          <span
+            class="font-mono text-[10px] text-mute uppercase tracking-widest block mb-2"
+            >Advertisement</span
+          >
+          <div
+            class="h-32 border border-hairline/50 rounded flex items-center justify-center bg-canvas-soft/30 text-mute text-xs font-mono"
+          >
             Placeholder for AdSense Unit
           </div>
         </div>
@@ -257,36 +456,44 @@ if (!course) {
   <!-- Related Content / Notice -->
   <section class="max-w-6xl mx-auto px-6 pb-24 text-left">
     <div class="max-w-4xl">
-      <h3 class="text-lg font-mono uppercase tracking-wider text-ink-strong mb-4 font-semibold">
+      <h3
+        class="text-lg font-mono uppercase tracking-wider text-ink-strong mb-4 font-semibold"
+      >
         AdSense Text Quality Assurance Notice
       </h3>
       <p class="text-sm text-body leading-relaxed mb-4">
-        To maintain absolute adherence to search engine quality guidelines, this curriculum details the structure, length, and review comments for the specific YouTube course shown. This prevents search engine spiders from categorizing the directory template as a 'Thin Content' layout or link gateway.
+        To maintain absolute adherence to search engine quality guidelines, this
+        curriculum details the structure, length, and review comments for the
+        specific YouTube course shown. This prevents search engine spiders from
+        categorizing the directory template as a 'Thin Content' layout or link
+        gateway.
       </p>
       <p class="text-sm text-body leading-relaxed">
-        All outbound resources lead to verified educational series. No scraping or automated summarization tools have been used to generate this page.
+        All outbound resources lead to verified educational series. No scraping
+        or automated summarization tools have been used to generate this page.
       </p>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="bg-canvas border-t border-hairline py-12 px-6 text-center text-xs font-mono text-mute">
-    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-      <div>
-        &copy; {new Date().getFullYear()} FreeYTCourses. Structured learning directory.
-      </div>
-      <div class="flex gap-6">
-        <a href="/" class="hover:text-ink transition-colors">Directory Dashboard</a>
-        <a href="#" class="hover:text-ink transition-colors">Curator Submission</a>
-      </div>
-    </div>
-  </footer>
-
-  <div id="course-page-data" data-slug={course.slug} data-chapters={JSON.stringify(course.chapters)} data-video-id={course.sampleVideoId} class="hidden"></div>
+  <div
+    id="course-page-data"
+    data-slug={course.slug}
+    data-chapters={JSON.stringify(course.chapters)}
+    data-video-id={course.sampleVideoId}
+    class="hidden"
+  >
+  </div>
 
   <!-- Watch History & Playback Progress Engine -->
   <script>
-    import { getWatchLater, setWatchLater, getWatchHistory, setWatchHistory, getUserStorageKey, recordCourseSiteView } from '../../lib/userStorage.js';
+    import {
+      getWatchLater,
+      setWatchLater,
+      getWatchHistory,
+      setWatchHistory,
+      getUserStorageKey,
+      recordCourseSiteView,
+    } from "../../lib/userStorage.js";
 
     declare global {
       interface Window {
@@ -304,12 +511,12 @@ if (!course) {
       lastActiveIndex: number;
     }
 
-    const dataEl = document.getElementById('course-page-data');
-    const courseSlug = dataEl?.getAttribute('data-slug') || '';
-    const courseVideoId = dataEl?.getAttribute('data-video-id') || '';
+    const dataEl = document.getElementById("course-page-data");
+    const courseSlug = dataEl?.getAttribute("data-slug") || "";
+    const courseVideoId = dataEl?.getAttribute("data-video-id") || "";
     let chaptersData: any[] = [];
     try {
-      chaptersData = JSON.parse(dataEl?.getAttribute('data-chapters') || '[]');
+      chaptersData = JSON.parse(dataEl?.getAttribute("data-chapters") || "[]");
     } catch (e) {
       chaptersData = [];
     }
@@ -317,7 +524,7 @@ if (!course) {
     let player: any = null;
     let progressInterval: any = null;
     let apiPromise: Promise<any> | null = null;
-    
+
     // 1. Record site view & history tracking logic
     if (courseSlug) {
       recordCourseSiteView(courseSlug);
@@ -332,14 +539,14 @@ if (!course) {
 
     // 2. Video Player & Progress Tracking Logic
     const PROGRESS_KEY = getUserStorageKey(`freeyt_progress_${courseSlug}`);
-    
+
     // Load state
     let progressState: ProgressState = {
       completedChapters: [],
       chapterPositions: {},
       chapterDurations: {},
       chapterPercentages: {},
-      lastActiveIndex: 0
+      lastActiveIndex: 0,
     };
 
     try {
@@ -352,11 +559,25 @@ if (!course) {
     }
 
     // Ensure state integrity
-    if (!Array.isArray(progressState.completedChapters)) progressState.completedChapters = [];
-    if (!progressState.chapterPositions || typeof progressState.chapterPositions !== 'object') progressState.chapterPositions = {};
-    if (!progressState.chapterDurations || typeof progressState.chapterDurations !== 'object') progressState.chapterDurations = {};
-    if (!progressState.chapterPercentages || typeof progressState.chapterPercentages !== 'object') progressState.chapterPercentages = {};
-    if (typeof progressState.lastActiveIndex !== 'number') progressState.lastActiveIndex = 0;
+    if (!Array.isArray(progressState.completedChapters))
+      progressState.completedChapters = [];
+    if (
+      !progressState.chapterPositions ||
+      typeof progressState.chapterPositions !== "object"
+    )
+      progressState.chapterPositions = {};
+    if (
+      !progressState.chapterDurations ||
+      typeof progressState.chapterDurations !== "object"
+    )
+      progressState.chapterDurations = {};
+    if (
+      !progressState.chapterPercentages ||
+      typeof progressState.chapterPercentages !== "object"
+    )
+      progressState.chapterPercentages = {};
+    if (typeof progressState.lastActiveIndex !== "number")
+      progressState.lastActiveIndex = 0;
 
     let activeChapterIndex = progressState.lastActiveIndex;
 
@@ -368,16 +589,16 @@ if (!course) {
           resolve(window.YT);
           return;
         }
-        
-        const tag = document.createElement('script');
-        tag.src = 'https://www.youtube.com/iframe_api';
-        const firstScriptTag = document.getElementsByTagName('script')[0];
+
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName("script")[0];
         if (firstScriptTag && firstScriptTag.parentNode) {
           firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         } else {
           document.head.appendChild(tag);
         }
-        
+
         window.onYouTubeIframeAPIReady = () => {
           resolve(window.YT);
         };
@@ -388,16 +609,16 @@ if (!course) {
     async function initPlayer(videoId: string, startSeconds = 0): Promise<any> {
       const YT = await loadYoutubeAPI();
       return new Promise((resolve) => {
-        player = new YT.Player('youtube-player', {
-          height: '100%',
-          width: '100%',
+        player = new YT.Player("youtube-player", {
+          height: "100%",
+          width: "100%",
           videoId: videoId,
           playerVars: {
             autoplay: 1,
             playsinline: 1,
             rel: 0,
             modestbranding: 1,
-            start: Math.floor(startSeconds)
+            start: Math.floor(startSeconds),
           },
           events: {
             onReady: () => {
@@ -409,13 +630,13 @@ if (!course) {
               } else {
                 stopProgressTracking();
               }
-              
+
               if (event.data === YT.PlayerState.ENDED) {
                 markActiveChapterCompleted();
                 autoAdvanceToNextChapter();
               }
-            }
-          }
+            },
+          },
         });
       });
     }
@@ -427,7 +648,7 @@ if (!course) {
     function startProgressTracking() {
       if (progressInterval) clearInterval(progressInterval);
       progressInterval = setInterval(() => {
-        if (!player || typeof player.getCurrentTime !== 'function') return;
+        if (!player || typeof player.getCurrentTime !== "function") return;
         const currentTime = player.getCurrentTime();
         const duration = player.getDuration();
         if (!duration || duration <= 0) return;
@@ -439,7 +660,10 @@ if (!course) {
         progressState.chapterPercentages[activeChapterIndex] = percent;
 
         // Auto complete if watched > 90%
-        if (percent >= 90 && !progressState.completedChapters.includes(activeChapterIndex)) {
+        if (
+          percent >= 90 &&
+          !progressState.completedChapters.includes(activeChapterIndex)
+        ) {
           progressState.completedChapters.push(activeChapterIndex);
         }
 
@@ -449,7 +673,7 @@ if (!course) {
     }
 
     // Export progress metrics dynamically to window object for other components
-    window.getPlaybackProgress = function() {
+    window.getPlaybackProgress = function () {
       return progressState;
     };
 
@@ -488,11 +712,13 @@ if (!course) {
       const videoId = chapter.videoId || courseVideoId;
 
       // Hide poster overlay
-      const overlay = document.getElementById('video-poster-overlay');
-      if (overlay) overlay.classList.add('hidden');
+      const overlay = document.getElementById("video-poster-overlay");
+      if (overlay) overlay.classList.add("hidden");
 
       // Update Sub-Bar title
-      const activeTitleDisplay = document.getElementById('active-chapter-title-display');
+      const activeTitleDisplay = document.getElementById(
+        "active-chapter-title-display",
+      );
       if (activeTitleDisplay) activeTitleDisplay.textContent = chapter.title;
 
       const savedTime = progressState.chapterPositions[index] || 0;
@@ -504,7 +730,7 @@ if (!course) {
       } else {
         player.loadVideoById({
           videoId: videoId,
-          startSeconds: Math.floor(savedTime)
+          startSeconds: Math.floor(savedTime),
         });
       }
 
@@ -512,38 +738,42 @@ if (!course) {
     }
 
     function updateActiveChapterRowHighlight() {
-      document.querySelectorAll('.chapter-row').forEach((row) => {
-        const idx = parseInt(row.getAttribute('data-index') || '0', 10);
-        const titleText = row.querySelector('.chapter-title-text');
-        
+      document.querySelectorAll(".chapter-row").forEach((row) => {
+        const idx = parseInt(row.getAttribute("data-index") || "0", 10);
+        const titleText = row.querySelector(".chapter-title-text");
+
         if (idx === activeChapterIndex) {
-          row.classList.add('border-primary/30', 'bg-canvas-soft/80');
-          row.classList.remove('hover:bg-canvas-soft');
+          row.classList.add("border-primary/30", "bg-canvas-soft/80");
+          row.classList.remove("hover:bg-canvas-soft");
           if (titleText) {
-            titleText.classList.add('text-primary');
-            titleText.classList.remove('text-ink');
+            titleText.classList.add("text-primary");
+            titleText.classList.remove("text-ink");
           }
         } else {
-          row.classList.remove('border-primary/30', 'bg-canvas-soft/80');
-          row.classList.add('hover:bg-canvas-soft');
+          row.classList.remove("border-primary/30", "bg-canvas-soft/80");
+          row.classList.add("hover:bg-canvas-soft");
           if (titleText) {
-            titleText.classList.remove('text-primary');
-            titleText.classList.add('text-ink');
+            titleText.classList.remove("text-primary");
+            titleText.classList.add("text-ink");
           }
         }
       });
     }
 
     function updateUI() {
-      document.querySelectorAll('.chapter-row').forEach((row) => {
-        const idx = parseInt(row.getAttribute('data-index') || '0', 10);
+      document.querySelectorAll(".chapter-row").forEach((row) => {
+        const idx = parseInt(row.getAttribute("data-index") || "0", 10);
         const completed = progressState.completedChapters.includes(idx);
         const percent = progressState.chapterPercentages[idx] || 0;
 
-        const statusIconEl = row.querySelector('.chapter-status-icon');
-        const progressLabelEl = row.querySelector('.chapter-progress-lbl');
-        const progressBarContainer = row.querySelector('.chapter-progress-bar-container');
-        const progressBarFill = row.querySelector('.chapter-progress-bar-fill') as HTMLElement;
+        const statusIconEl = row.querySelector(".chapter-status-icon");
+        const progressLabelEl = row.querySelector(".chapter-progress-lbl");
+        const progressBarContainer = row.querySelector(
+          ".chapter-progress-bar-container",
+        );
+        const progressBarFill = row.querySelector(
+          ".chapter-progress-bar-fill",
+        ) as HTMLElement;
 
         if (statusIconEl) {
           if (completed) {
@@ -574,10 +804,10 @@ if (!course) {
         if (percent > 0 && !completed) {
           if (progressLabelEl) {
             progressLabelEl.textContent = `${percent}% watched`;
-            progressLabelEl.classList.remove('hidden');
+            progressLabelEl.classList.remove("hidden");
           }
           if (progressBarContainer) {
-            progressBarContainer.classList.remove('invisible');
+            progressBarContainer.classList.remove("invisible");
           }
           if (progressBarFill) {
             progressBarFill.style.width = `${percent}%`;
@@ -585,168 +815,228 @@ if (!course) {
         } else if (completed) {
           if (progressLabelEl) {
             progressLabelEl.textContent = `Completed`;
-            progressLabelEl.classList.remove('hidden');
-            progressLabelEl.classList.add('text-primary');
-            progressLabelEl.classList.remove('text-mute');
+            progressLabelEl.classList.remove("hidden");
+            progressLabelEl.classList.add("text-primary");
+            progressLabelEl.classList.remove("text-mute");
           }
           if (progressBarContainer) {
-            progressBarContainer.classList.add('invisible');
+            progressBarContainer.classList.add("invisible");
           }
         } else {
           if (progressLabelEl) {
-            progressLabelEl.classList.add('hidden');
+            progressLabelEl.classList.add("hidden");
           }
           if (progressBarContainer) {
-            progressBarContainer.classList.add('invisible');
+            progressBarContainer.classList.add("invisible");
           }
         }
       });
 
       const totalChapters = chaptersData.length;
       const completedCount = progressState.completedChapters.length;
-      const coursePercent = totalChapters > 0 ? Math.round((completedCount / totalChapters) * 100) : 0;
+      let coursePercent = 0;
+      let progressStatusText = "";
 
-      const progressPanel = document.getElementById('course-progress-panel');
-      const progressPercentDisplay = document.getElementById('course-progress-percent');
-      const progressBarDisplay = document.getElementById('course-progress-bar');
-      const progressStatusDisplay = document.getElementById('course-progress-status');
-      const mainCtaBtn = document.getElementById('main-cta-btn');
-
-      const hasHistory = completedCount > 0 || Object.keys(progressState.chapterPositions).length > 0;
-
-      if (hasHistory) {
-        if (progressPanel) progressPanel.classList.remove('hidden');
-        if (progressPercentDisplay) progressPercentDisplay.textContent = `${coursePercent}%`;
-        if (progressBarDisplay) progressBarDisplay.style.width = `${coursePercent}%`;
-        if (progressStatusDisplay) progressStatusDisplay.textContent = `${completedCount} of ${totalChapters} modules completed`;
-        
-        if (mainCtaBtn) {
-          const activeChTitle = chaptersData[activeChapterIndex]?.title || "";
-          mainCtaBtn.textContent = `Resume: ${activeChTitle.split(':')[0] || 'Learning'}`;
-        }
+      if (totalChapters > 1) {
+        coursePercent = Math.round((completedCount / totalChapters) * 100);
+        progressStatusText = `${completedCount} of ${totalChapters} modules completed`;
       } else {
-        if (progressPanel) progressPanel.classList.add('hidden');
-        if (mainCtaBtn) mainCtaBtn.textContent = 'Start Course';
+        coursePercent = Math.round(progressState.chapterPercentages[0] || 0);
+        const watchedSecs = progressState.chapterPositions[0] || 0;
+        const totalSecs = progressState.chapterDurations[0] || 0;
+        
+        if (totalSecs > 0) {
+          const formatTime = (secs: number) => {
+            const h = Math.floor(secs / 3600);
+            const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+            const s = Math.floor(secs % 60).toString().padStart(2, '0');
+            if (h > 0) return `${h}:${m}:${s}`;
+            return `${m}:${s}`;
+          };
+          progressStatusText = `${formatTime(watchedSecs)} of ${formatTime(totalSecs)} watched`;
+        } else {
+          progressStatusText = `${coursePercent}% watched`;
+        }
       }
 
-      const markCompleteBtn = document.getElementById('mark-complete-btn');
+      const progressPanel = document.getElementById("course-progress-panel");
+      const progressPercentDisplay = document.getElementById(
+        "course-progress-percent",
+      );
+      const progressBarDisplay = document.getElementById("course-progress-bar");
+      const progressStatusDisplay = document.getElementById(
+        "course-progress-status",
+      );
+      const mainCtaBtn = document.getElementById("main-cta-btn");
+
+      const hasHistory =
+        completedCount > 0 ||
+        Object.keys(progressState.chapterPositions).length > 0;
+
+      if (hasHistory) {
+        if (progressPanel) progressPanel.classList.remove("hidden");
+        if (progressPercentDisplay)
+          progressPercentDisplay.textContent = `${coursePercent}%`;
+        if (progressBarDisplay)
+          progressBarDisplay.style.width = `${coursePercent}%`;
+        if (progressStatusDisplay)
+          progressStatusDisplay.textContent = progressStatusText;
+
+        if (mainCtaBtn) {
+          const activeChTitle = chaptersData[activeChapterIndex]?.title || "";
+          mainCtaBtn.textContent = `Resume: ${activeChTitle.split(":")[0] || "Learning"}`;
+        }
+      } else {
+        if (progressPanel) progressPanel.classList.add("hidden");
+        if (mainCtaBtn) mainCtaBtn.textContent = "Start Course";
+      }
+
+      const markCompleteBtn = document.getElementById("mark-complete-btn");
       if (markCompleteBtn) {
-        const activeCompleted = progressState.completedChapters.includes(activeChapterIndex);
+        const activeCompleted =
+          progressState.completedChapters.includes(activeChapterIndex);
         if (activeCompleted) {
-          markCompleteBtn.classList.add('border-primary/20', 'bg-primary/10', 'text-primary');
-          markCompleteBtn.classList.remove('text-mute', 'border-hairline');
-          const span = markCompleteBtn.querySelector('span');
-          if (span) span.textContent = 'Completed';
+          markCompleteBtn.classList.add(
+            "border-primary/20",
+            "bg-primary/10",
+            "text-primary",
+          );
+          markCompleteBtn.classList.remove("text-mute", "border-hairline");
+          const span = markCompleteBtn.querySelector("span");
+          if (span) span.textContent = "Completed";
         } else {
-          markCompleteBtn.classList.remove('border-primary/20', 'bg-primary/10', 'text-primary');
-          markCompleteBtn.classList.add('text-mute', 'border-hairline');
-          const span = markCompleteBtn.querySelector('span');
-          if (span) span.textContent = 'Mark Completed';
+          markCompleteBtn.classList.remove(
+            "border-primary/20",
+            "bg-primary/10",
+            "text-primary",
+          );
+          markCompleteBtn.classList.add("text-mute", "border-hairline");
+          const span = markCompleteBtn.querySelector("span");
+          if (span) span.textContent = "Mark Completed";
         }
       }
     }
 
     function showResumeBannerOnPoster() {
-      const resumeBanner = document.getElementById('resume-banner');
-      const resumeChName = document.getElementById('resume-chapter-name');
-      const resumeChTime = document.getElementById('resume-chapter-time');
-      
+      const resumeBanner = document.getElementById("resume-banner");
+      const resumeChName = document.getElementById("resume-chapter-name");
+      const resumeChTime = document.getElementById("resume-chapter-time");
+
       const lastIdx = progressState.lastActiveIndex;
       const lastTime = progressState.chapterPositions[lastIdx] || 0;
-      
+
       if (lastTime > 2 && resumeBanner && resumeChName && resumeChTime) {
-        resumeBanner.classList.remove('hidden');
+        resumeBanner.classList.remove("hidden");
         const activeChTitle = chaptersData[lastIdx]?.title || "Chapter";
-        resumeChName.textContent = activeChTitle.split(':')[0] || activeChTitle;
-        
+        resumeChName.textContent = activeChTitle.split(":")[0] || activeChTitle;
+
         const minutes = Math.floor(lastTime / 60);
         const seconds = Math.floor(lastTime % 60);
-        resumeChTime.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-        
+        resumeChTime.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
         activeChapterIndex = lastIdx;
-        
-        const posterChapterTitle = document.getElementById('poster-chapter-title');
+
+        const posterChapterTitle = document.getElementById(
+          "poster-chapter-title",
+        );
         if (posterChapterTitle) posterChapterTitle.textContent = activeChTitle;
       }
     }
 
     // Attach row listeners
-    document.querySelectorAll('.chapter-row').forEach((row) => {
-      row.addEventListener('click', () => {
-        const idx = parseInt(row.getAttribute('data-index') || '0', 10);
+    document.querySelectorAll(".chapter-row").forEach((row) => {
+      row.addEventListener("click", () => {
+        const idx = parseInt(row.getAttribute("data-index") || "0", 10);
         playChapter(idx);
       });
     });
 
     // Start video from poster overlay
-    document.getElementById('start-video-btn')?.addEventListener('click', () => {
-      playChapter(activeChapterIndex);
-    });
+    document
+      .getElementById("start-video-btn")
+      ?.addEventListener("click", () => {
+        playChapter(activeChapterIndex);
+      });
 
     // Mark active completed
-    document.getElementById('mark-complete-btn')?.addEventListener('click', () => {
-      if (progressState.completedChapters.includes(activeChapterIndex)) {
-        progressState.completedChapters = progressState.completedChapters.filter(i => i !== activeChapterIndex);
-        progressState.chapterPercentages[activeChapterIndex] = 0;
-      } else {
-        progressState.completedChapters.push(activeChapterIndex);
-        progressState.chapterPercentages[activeChapterIndex] = 100;
-      }
-      saveProgressToStorage();
-      updateUI();
-    });
+    document
+      .getElementById("mark-complete-btn")
+      ?.addEventListener("click", () => {
+        if (progressState.completedChapters.includes(activeChapterIndex)) {
+          progressState.completedChapters =
+            progressState.completedChapters.filter(
+              (i) => i !== activeChapterIndex,
+            );
+          progressState.chapterPercentages[activeChapterIndex] = 0;
+        } else {
+          progressState.completedChapters.push(activeChapterIndex);
+          progressState.chapterPercentages[activeChapterIndex] = 100;
+        }
+        saveProgressToStorage();
+        updateUI();
+      });
 
     // Main CTA button trigger
-    document.getElementById('main-cta-btn')?.addEventListener('click', () => {
-      const playerContainer = document.getElementById('video-player-container');
+    document.getElementById("main-cta-btn")?.addEventListener("click", () => {
+      const playerContainer = document.getElementById("video-player-container");
       if (playerContainer) {
-        playerContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        playerContainer.scrollIntoView({ behavior: "smooth", block: "center" });
         playChapter(activeChapterIndex);
       }
     });
 
     // Reset progress trigger
-    document.getElementById('reset-course-btn')?.addEventListener('click', () => {
-      if (confirm('Are you sure you want to reset all progress for this course?')) {
-        localStorage.removeItem(PROGRESS_KEY);
-        progressState.completedChapters = [];
-        progressState.chapterPositions = {};
-        progressState.chapterDurations = {};
-        progressState.chapterPercentages = {};
-        progressState.lastActiveIndex = 0;
-        activeChapterIndex = 0;
+    document
+      .getElementById("reset-course-btn")
+      ?.addEventListener("click", () => {
+        if (
+          confirm(
+            "Are you sure you want to reset all progress for this course?",
+          )
+        ) {
+          localStorage.removeItem(PROGRESS_KEY);
+          progressState.completedChapters = [];
+          progressState.chapterPositions = {};
+          progressState.chapterDurations = {};
+          progressState.chapterPercentages = {};
+          progressState.lastActiveIndex = 0;
+          activeChapterIndex = 0;
 
-        if (player) {
-          try {
-            player.stopVideo();
-          } catch (e) {}
+          if (player) {
+            try {
+              player.stopVideo();
+            } catch (e) {}
+          }
+
+          const overlay = document.getElementById("video-poster-overlay");
+          if (overlay) overlay.classList.remove("hidden");
+
+          const resumeBanner = document.getElementById("resume-banner");
+          if (resumeBanner) resumeBanner.classList.add("hidden");
+
+          const posterChapterTitle = document.getElementById(
+            "poster-chapter-title",
+          );
+          if (posterChapterTitle)
+            posterChapterTitle.textContent =
+              chaptersData[0]?.title || "Start Course";
+
+          updateUI();
+          updateActiveChapterRowHighlight();
         }
-
-        const overlay = document.getElementById('video-poster-overlay');
-        if (overlay) overlay.classList.remove('hidden');
-
-        const resumeBanner = document.getElementById('resume-banner');
-        if (resumeBanner) resumeBanner.classList.add('hidden');
-
-        const posterChapterTitle = document.getElementById('poster-chapter-title');
-        if (posterChapterTitle) posterChapterTitle.textContent = chaptersData[0]?.title || "Start Course";
-
-        updateUI();
-        updateActiveChapterRowHighlight();
-      }
-    });
+      });
 
     // Update Subscriptions Navbar badge on course page
-    const navSubBadge = document.getElementById('nav-sub-badge');
+    const navSubBadge = document.getElementById("nav-sub-badge");
     if (navSubBadge) {
       try {
-        const raw = localStorage.getItem('freeyt_subscribed_creators');
+        const raw = localStorage.getItem("freeyt_subscribed_creators");
         const subs = raw ? JSON.parse(raw) : [];
         if (subs.length > 0) {
           navSubBadge.textContent = String(subs.length);
-          navSubBadge.classList.remove('hidden');
+          navSubBadge.classList.remove("hidden");
         } else {
-          navSubBadge.classList.add('hidden');
+          navSubBadge.classList.add("hidden");
         }
       } catch (e) {
         console.error(e);
@@ -754,23 +1044,25 @@ if (!course) {
     }
 
     // Watch Later Button Logic on Course Detail Page
-    const wlBtn = document.getElementById('hero-watch-later-btn');
-    const wlText = document.getElementById('hero-watch-later-text');
+    const wlBtn = document.getElementById("hero-watch-later-btn");
+    const wlText = document.getElementById("hero-watch-later-text");
 
     function updateHeroWatchLater() {
       if (!wlBtn || !wlText) return;
       const wl = getWatchLater();
 
       if (Array.isArray(wl) && wl.includes(courseSlug)) {
-        wlBtn.className = "px-2.5 py-1 bg-primary/20 border border-primary text-primary font-semibold transition-all rounded-xs flex items-center gap-1 cursor-pointer";
+        wlBtn.className =
+          "px-2.5 py-1 bg-primary/20 border border-primary text-primary font-semibold transition-all rounded-xs flex items-center gap-1 cursor-pointer";
         wlText.textContent = "Saved to Watch Later";
       } else {
-        wlBtn.className = "px-2.5 py-1 bg-canvas border border-hairline text-mute hover:text-primary hover:border-primary transition-all rounded-xs flex items-center gap-1 cursor-pointer";
+        wlBtn.className =
+          "px-2.5 py-1 bg-canvas border border-hairline text-mute hover:text-primary hover:border-primary transition-all rounded-xs flex items-center gap-1 cursor-pointer";
         wlText.textContent = "Watch Later";
       }
     }
 
-    wlBtn?.addEventListener('click', () => {
+    wlBtn?.addEventListener("click", () => {
       let wl = getWatchLater();
 
       if (wl.includes(courseSlug)) {
@@ -784,7 +1076,260 @@ if (!course) {
     });
 
     updateHeroWatchLater();
-    window.addEventListener('watchLaterChanged', updateHeroWatchLater);
+    window.addEventListener("watchLaterChanged", updateHeroWatchLater);
+
+    // ═══════════════════════════════════════════════════════════════
+    // Picture-in-Picture — Uses Document PiP API for true always-on-top window
+    // Loads pip-player.astro inside an iframe within the Document PiP window
+    // Falls back to popup window for unsupported browsers
+    // ═══════════════════════════════════════════════════════════════
+    const pipBtn = document.getElementById("pip-toggle-btn");
+    const pipText = document.getElementById("pip-btn-text");
+    let pipWindow: Window | null = null;
+    let pipCheckInterval: any = null;
+    let pipChannel: BroadcastChannel | null = null;
+    let pipClosing = false; // Guard against double-execution from pagehide + BroadcastChannel race
+
+    function resetPipButtonState() {
+      if (pipBtn) {
+        pipBtn.classList.remove(
+          "bg-primary/20",
+          "border-primary",
+          "text-primary",
+          "font-semibold",
+        );
+      }
+      if (pipText) pipText.textContent = "Picture in Picture";
+      if (pipCheckInterval) {
+        clearInterval(pipCheckInterval);
+        pipCheckInterval = null;
+      }
+    }
+
+    function handlePipClose(currentTime?: number) {
+      if (pipClosing) return; // Already handling close
+      pipClosing = true;
+
+      // Close the PiP window if still open
+      if (pipWindow && !pipWindow.closed) {
+        try { pipWindow.close(); } catch(e) {}
+      }
+
+      // Clean up channel first
+      if (pipChannel) {
+        try { pipChannel.close(); } catch(e) {}
+        pipChannel = null;
+      }
+
+      // Restore the main player UI
+      restoreMainPlayer();
+      resetPipButtonState();
+      pipWindow = null;
+
+      // Seek main player to where PiP left off
+      // The YouTube iframe needs time to recover after being restored from display:none
+      // so we retry the seek at increasing delays to ensure it takes effect
+      if (typeof currentTime === 'number' && currentTime > 0) {
+        const doSeek = () => {
+          if (player && typeof player.seekTo === 'function') {
+            try { 
+              player.seekTo(currentTime, true); 
+              if (typeof player.playVideo === 'function') {
+                player.playVideo();
+              }
+            } catch(e) {}
+          }
+        };
+        setTimeout(doSeek, 300);
+        setTimeout(doSeek, 800);
+        setTimeout(doSeek, 1500);
+      }
+    }
+
+    // Blank out main player (hide video, show placeholder)
+    function blankMainPlayer() {
+      const playerContainer = document.getElementById('video-player-container');
+      const placeholder = document.getElementById('video-pip-placeholder');
+      if (playerContainer) playerContainer.style.display = 'none';
+      if (placeholder) placeholder.classList.remove('hidden');
+    }
+
+    // Restore main player (show video, hide placeholder)
+    function restoreMainPlayer() {
+      const playerContainer = document.getElementById('video-player-container');
+      const placeholder = document.getElementById('video-pip-placeholder');
+      if (playerContainer) playerContainer.style.display = '';
+      if (placeholder) placeholder.classList.add('hidden');
+    }
+
+    // Get the current playing video ID from the YouTube player
+    function getCurrentVideoId(): string {
+      if (player && typeof player.getVideoUrl === 'function') {
+        try {
+          const url = player.getVideoUrl();
+          const match = url.match(/[?&]v=([^&]+)/);
+          if (match) return match[1];
+        } catch (e) {}
+      }
+      const activeChapter = chaptersData[activeChapterIndex];
+      return activeChapter?.videoId || courseVideoId;
+    }
+
+    // ── Main PiP open function ──
+    async function openPictureInPicture() {
+      if (pipWindow && !pipWindow.closed) {
+        pipWindow.focus();
+        return;
+      }
+
+      const videoId = getCurrentVideoId();
+      if (!videoId) {
+        alert('Please start playing a video first.');
+        return;
+      }
+
+      let currentTime = 0;
+      if (player && typeof player.getCurrentTime === 'function') {
+        currentTime = Math.floor(player.getCurrentTime());
+      }
+
+      const activeTitle = document.getElementById('active-chapter-title-display');
+      const title = activeTitle?.textContent || 'Course Video';
+      const pipUrl = `/pip-player?v=${encodeURIComponent(videoId)}&t=${currentTime}&title=${encodeURIComponent(title)}`;
+
+      // Reset close guard for new PiP session
+      pipClosing = false;
+
+      // Set up BroadcastChannel to listen for closing message from pip-player
+      pipChannel = new BroadcastChannel('freeyt-pip-channel');
+      pipChannel.addEventListener('message', (e: MessageEvent) => {
+        if (e.data?.type === 'pip-closing' && typeof e.data.currentTime === 'number') {
+          handlePipClose(e.data.currentTime);
+        }
+      });
+
+      // ── Try Document Picture-in-Picture API (true always-on-top) ──
+      if ('documentPictureInPicture' in window) {
+        try {
+          const docPip = (window as any).documentPictureInPicture;
+          const pipWin: Window = await docPip.requestWindow({
+            width: 640,
+            height: 360,
+          });
+
+          // Style the Document PiP window body
+          const style = pipWin.document.createElement('style');
+          style.textContent = '* { margin: 0; padding: 0; } html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }';
+          pipWin.document.head.appendChild(style);
+
+          // Load pip-player inside an iframe (YouTube works fine from pip-player's same-origin context)
+          const frame = pipWin.document.createElement('iframe');
+          frame.src = pipUrl;
+          frame.style.cssText = 'width: 100%; height: 100%; border: none; display: block;';
+          frame.allow = 'autoplay; encrypted-media; picture-in-picture';
+          pipWin.document.body.appendChild(frame);
+
+          pipWindow = pipWin;
+
+          // Pause main player & blank it out
+          if (player && typeof player.pauseVideo === 'function') player.pauseVideo();
+          blankMainPlayer();
+
+          // Update button state
+          if (pipBtn) pipBtn.classList.add('bg-primary/20', 'border-primary', 'text-primary', 'font-semibold');
+          if (pipText) pipText.textContent = 'PiP Active';
+
+          // Detect Document PiP window close (fallback if BroadcastChannel message wasn't received)
+          pipWin.addEventListener('pagehide', () => {
+            // Small delay to let BroadcastChannel message arrive first (it has the time)
+            setTimeout(() => handlePipClose(), 200);
+          });
+
+          return; // Success — don't fall through to popup
+        } catch (e) {
+          console.warn('Document PiP failed, falling back to popup window:', e);
+        }
+      }
+
+      // ── Fallback: popup window (not always-on-top) ──
+      const popupWidth = 640;
+      const popupHeight = 360;
+      const left = screen.width - popupWidth - 20;
+      const top = screen.height - popupHeight - 100;
+
+      pipWindow = window.open(
+        pipUrl,
+        'freeyt_pip_player',
+        `popup=yes,width=${popupWidth},height=${popupHeight},left=${left},top=${top}`
+      );
+
+      if (!pipWindow) {
+        if (pipChannel) { try { pipChannel.close(); } catch(e) {} pipChannel = null; }
+        const msg = document.createElement('div');
+        msg.className = 'fixed bottom-6 right-6 z-[9999] bg-canvas border-2 border-primary rounded-lg p-4 shadow-2xl max-w-sm font-mono text-sm';
+        msg.innerHTML = `<div class="flex items-start gap-3"><svg class="h-5 w-5 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><div><p class="text-ink font-semibold mb-1">Popup Blocked</p><p class="text-mute text-xs leading-relaxed">Please allow popups for this site.</p></div><button onclick="this.closest('div.fixed').remove()" class="text-mute hover:text-ink cursor-pointer shrink-0"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button></div>`;
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 6000);
+        return;
+      }
+
+      // Pause main player & blank it out
+      if (player && typeof player.pauseVideo === 'function') player.pauseVideo();
+      blankMainPlayer();
+
+      // Update button state
+      if (pipBtn) pipBtn.classList.add('bg-primary/20', 'border-primary', 'text-primary', 'font-semibold');
+      if (pipText) pipText.textContent = 'PiP Active';
+
+      // Also listen via postMessage for backward compat with popup
+      const onPipMessage = (msg: MessageEvent) => {
+        if (msg.data?.type === 'pip-closing' && typeof msg.data.currentTime === 'number') {
+          handlePipClose(msg.data.currentTime);
+          window.removeEventListener('message', onPipMessage);
+        }
+      };
+      window.addEventListener('message', onPipMessage);
+
+      // Poll to detect popup window closed (fallback)
+      pipCheckInterval = setInterval(() => {
+        if (!pipWindow || pipWindow.closed) {
+          handlePipClose();
+          window.removeEventListener('message', onPipMessage);
+        }
+      }, 500);
+    }
+
+    pipBtn?.addEventListener("click", openPictureInPicture);
+
+    // Main video player hover controls
+    const mainPlayerContainer = document.getElementById("video-player-container");
+    const mainControlsBar = document.getElementById("video-controls-bar");
+    let mainHideTimeout: any = null;
+
+    if (mainPlayerContainer && mainControlsBar) {
+      mainPlayerContainer.addEventListener("mousemove", () => {
+        mainControlsBar.classList.remove("opacity-0", "pointer-events-none");
+        mainControlsBar.classList.add("opacity-100", "pointer-events-auto");
+        if (mainHideTimeout) clearTimeout(mainHideTimeout);
+        mainHideTimeout = setTimeout(() => {
+          mainControlsBar.classList.add("opacity-0", "pointer-events-none");
+          mainControlsBar.classList.remove("opacity-100", "pointer-events-auto");
+        }, 2500);
+      });
+
+      mainPlayerContainer.addEventListener("mouseleave", () => {
+        if (mainHideTimeout) clearTimeout(mainHideTimeout);
+        mainControlsBar.classList.add("opacity-0", "pointer-events-none");
+        mainControlsBar.classList.remove("opacity-100", "pointer-events-auto");
+      });
+    }
+
+    // Clean up on page unload
+    window.addEventListener("beforeunload", () => {
+      if (pipWindow && !pipWindow.closed) {
+        pipWindow.close();
+      }
+    });
 
     // Load initial views
     updateUI();

@@ -46,6 +46,7 @@ export async function GET({ request }) {
   let avatarUrl = null;
   let subscribers = '1.5M subscribers';
   let videoViews = 12450;
+  let publishDate = null;
 
   // Helper to clean JSON-escaped URLs
   function cleanUrl(rawUrl) {
@@ -66,11 +67,19 @@ export async function GET({ request }) {
     console.warn("YouTube official oEmbed failed:", e);
   }
 
+  let isEmbeddable = true;
+
   // 2. Fetch Video Page HTML (contains creator avatar in ytInitialData)
   try {
     const videoRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, { headers: defaultHeaders });
     if (videoRes.ok) {
       const videoHtml = await videoRes.text();
+
+      // Check if embedding is explicitly disabled
+      if (videoHtml.includes('"playableInEmbed":false') || 
+          videoHtml.includes('Playback on other websites has been disabled')) {
+        isEmbeddable = false;
+      }
 
       // Channel Name fallback
       if (!channelName) {
@@ -103,6 +112,14 @@ export async function GET({ request }) {
                           videoHtml.match(/"avatar"\s*:\s*\{\s*"thumbnails"\s*:\s*\[\s*\{\s*"url"\s*:\s*"([^"]+)"/i);
       if (avatarMatch) {
         avatarUrl = cleanUrl(avatarMatch[1]);
+      }
+
+      // Publish Date
+      const dateMatch = videoHtml.match(/<meta\s+itemprop="uploadDate"\s+content="([^"]+)"/i) ||
+                        videoHtml.match(/<meta\s+itemprop="datePublished"\s+content="([^"]+)"/i) ||
+                        videoHtml.match(/"publishDate"\s*:\s*"([^"]+)"/i);
+      if (dateMatch) {
+        publishDate = dateMatch[1].split('T')[0];
       }
 
       // Subscribers count
@@ -161,7 +178,9 @@ export async function GET({ request }) {
     channelId,
     creatorLogo: avatarUrl || fallbackLogo,
     subscribers,
-    views: videoViews
+    views: videoViews,
+    isEmbeddable,
+    publishDate
   }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' }
