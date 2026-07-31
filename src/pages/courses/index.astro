@@ -421,6 +421,12 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
       searchInput.value = initialQuery;
       searchQuery = initialQuery;
     }
+    
+    const initialSkill = urlParams.get('skill');
+    if (initialSkill && skillSelect) {
+      skillSelect.value = initialSkill;
+      activeFilter = initialSkill;
+    }
 
     // Listen for live search events
     function handleSearchEvent(e: Event) {

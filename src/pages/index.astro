@@ -2009,6 +2009,16 @@ const description = "Discover the best free YouTube courses for AI engineering, 
       });
     });
 
+    // Dashboard Filter Cards Logic
+    document.querySelectorAll('.filter-card').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filterVal = btn.getAttribute('data-filter-value');
+        if (filterVal) {
+          window.location.href = `/courses?skill=${encodeURIComponent(filterVal)}`;
+        }
+      });
+    });
+
     // Run on page load
     populateCategoryOptions();
     updateSubscriptionsUI();

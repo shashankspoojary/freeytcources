@@ -51,15 +51,7 @@ export function getSubscriptions() {
     const raw = localStorage.getItem(key);
     let subs = raw ? JSON.parse(raw) : null;
     if (!Array.isArray(subs)) {
-      const defaultSubs = [
-        'dr-angela-thorne', 
-        'marcus-sterling', 
-        'elena-rostova', 
-        'julian-kade', 
-        'sarah-lindqvist', 
-        'prof-alan-vance'
-      ];
-      subs = defaultSubs;
+      subs = [];
       localStorage.setItem(key, JSON.stringify(subs));
     }
     return subs;
