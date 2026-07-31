@@ -200,8 +200,16 @@ const description = "Discover the best free YouTube courses for AI engineering, 
   <!-- Courses Dashboard Area -->
   <main id="courses-section" class="max-w-6xl mx-auto px-6 pb-24 scroll-mt-24">
     
+    <!-- YouTube-style Chip Navigation -->
+    <nav id="home-feed-chips" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 mb-8 -mx-6 px-6 md:mx-0 md:px-0 scroll-smooth">
+      <button class="chip-btn active bg-ink text-canvas hover:bg-ink-strong px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors" data-target="trending-section">Trending Courses</button>
+      <button class="chip-btn bg-canvas-soft hover:bg-hairline/50 text-ink px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors" data-target="editors-picks-section">Editor's Picks</button>
+      <button class="chip-btn bg-canvas-soft hover:bg-hairline/50 text-ink px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors" data-target="recently-added-section">Recently Added</button>
+      <button class="chip-btn bg-canvas-soft hover:bg-hairline/50 text-ink px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors" data-target="most-popular-section">Most Popular</button>
+    </nav>
+
     <!-- Curated Home Highlights Grid Sections -->
-    <div class="space-y-16 mb-16">
+    <div id="home-feed-container" class="space-y-16 mb-16">
 
       <!-- 1. Trending Courses Section -->
       <section id="trending-section" class="space-y-4">
@@ -257,7 +265,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
       </section>
 
       <!-- 2. Editor's Picks Section -->
-      <section id="editors-picks-section" class="space-y-4">
+      <section id="editors-picks-section" class="space-y-4 hidden">
         <div class="flex items-center justify-between border-b border-hairline pb-3">
           <div class="flex items-center gap-2">
             <svg class="h-5 w-5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -310,7 +318,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
       </section>
 
       <!-- 3. Recently Added Section -->
-      <section id="recently-added-section" class="space-y-4">
+      <section id="recently-added-section" class="space-y-4 hidden">
         <div class="flex items-center justify-between border-b border-hairline pb-3">
           <div class="flex items-center gap-2">
             <svg class="h-5 w-5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -363,7 +371,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
       </section>
 
       <!-- 4. Most Popular Section -->
-      <section id="most-popular-section" class="space-y-4">
+      <section id="most-popular-section" class="space-y-4 hidden">
         <div class="flex items-center justify-between border-b border-hairline pb-3">
           <div class="flex items-center gap-2">
             <svg class="h-5 w-5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -1963,6 +1971,42 @@ const description = "Discover the best free YouTube courses for AI engineering, 
 
     window.addEventListener('siteViewsChanged', () => {
       applyFiltersAndSort();
+    });
+
+    // YouTube-style Chip Navigation Logic
+    const chipBtns = document.querySelectorAll('.chip-btn');
+    const feedContainer = document.getElementById('home-feed-container');
+    
+    chipBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-target');
+        if (!target) return;
+
+        // Reset all chips to inactive state
+        chipBtns.forEach(c => {
+          c.classList.remove('active', 'bg-ink', 'text-canvas', 'hover:bg-ink-strong');
+          c.classList.add('bg-canvas-soft', 'hover:bg-hairline/50', 'text-ink');
+        });
+
+        // Set clicked chip to active state
+        btn.classList.remove('bg-canvas-soft', 'hover:bg-hairline/50', 'text-ink');
+        btn.classList.add('active', 'bg-ink', 'text-canvas', 'hover:bg-ink-strong');
+
+        // Filter sections
+        const sections = ['trending-section', 'editors-picks-section', 'recently-added-section', 'most-popular-section'];
+        
+        sections.forEach(id => {
+          const sec = document.getElementById(id);
+          if (sec) {
+            if (id === target) {
+              sec.classList.remove('hidden');
+            } else {
+              sec.classList.add('hidden');
+            }
+          }
+        });
+        feedContainer?.classList.remove('space-y-16');
+      });
     });
 
     // Run on page load
