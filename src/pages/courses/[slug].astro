@@ -1184,24 +1184,20 @@ if (!course) {
       resetPipButtonState();
       pipWindow = null;
 
-      // Seek main player to where PiP left off
-      // The YouTube iframe needs time to recover after being restored from display:none
-      // so we retry the seek at increasing delays to ensure it takes effect
-      if (typeof currentTime === 'number' && currentTime >= 0) {
-        const doSeek = () => {
-          if (player && typeof player.seekTo === 'function') {
-            try { 
-              player.seekTo(currentTime, true); 
-              if (typeof player.playVideo === 'function') {
-                player.playVideo();
-              }
-            } catch(e) {}
-          }
-        };
-        setTimeout(doSeek, 300);
-        setTimeout(doSeek, 800);
-        setTimeout(doSeek, 1500);
-      }
+      // Since the main player was acting as the audio source, it is already perfectly in sync!
+      // We just need to ensure it is playing (which was the behavior of the Return to Page button).
+      const doResume = () => {
+        if (player && typeof player.playVideo === 'function') {
+          try { player.playVideo(); } catch(e) {}
+        }
+      };
+      
+      // Call it immediately and retry slightly later just in case the iframe needs a moment to render
+      doResume();
+      setTimeout(doResume, 300);
+      
+      // Also clean up local storage if we used it
+      localStorage.removeItem('freeyt_pip_time');
     }
 
     // Blank out main player (hide video, show placeholder)
