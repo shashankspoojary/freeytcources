@@ -297,10 +297,16 @@ const description = "Manage, view, and search all cataloged and submitted course
           <td class="py-3.5 pr-4 hidden md:table-cell text-mute font-mono text-[11px]">${course.language || 'English'}</td>
           <td class="py-3.5 pr-4 hidden md:table-cell text-mute">${course.category || 'N/A'}</td>
           <td class="py-3.5 pr-4 hidden sm:table-cell text-mute">${course.author || 'N/A'}</td>
-          <td class="py-3.5 text-right">
+          <td class="py-3.5 text-right whitespace-nowrap">
+            <a 
+              href="/admin/upload?edit=${course.slug}" 
+              class="text-xs font-mono uppercase text-primary hover:text-primary-soft border border-primary/20 hover:border-primary/50 px-2.5 py-1.5 rounded-sm bg-primary/5 transition-all cursor-pointer mr-1 inline-block"
+            >
+              Edit
+            </a>
             <button 
               type="button" 
-              class="delete-course-btn text-xs font-mono uppercase text-red-500 hover:text-red-400 border border-red-500/20 hover:border-red-500/50 px-2.5 py-1 rounded-sm bg-red-500/5 transition-all cursor-pointer"
+              class="delete-course-btn text-xs font-mono uppercase text-red-500 hover:text-red-400 border border-red-500/20 hover:border-red-500/50 px-2.5 py-1 rounded-sm bg-red-500/5 transition-all cursor-pointer inline-block"
               data-slug="${course.slug}"
               data-title="${course.title}"
             >

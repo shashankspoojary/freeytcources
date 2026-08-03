@@ -1477,7 +1477,7 @@ if (!course) {
         return;
       }
       const state = player.getPlayerState();
-      if (state === YT.PlayerState.PLAYING) {
+      if (state === 1) { // 1 = YT.PlayerState.PLAYING
         player.pauseVideo();
       } else {
         player.playVideo();
