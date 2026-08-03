@@ -213,7 +213,7 @@ const lessonTitle = Astro.url.searchParams.get('title') || 'Course Video';
     <div class="video-wrapper">
       <iframe
         id="pip-yt-player"
-        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&start=${startTime}&enablejsapi=1&rel=0&modestbranding=1&playsinline=1&origin=${Astro.url.origin}`}
+        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&start=${startTime}&enablejsapi=1&rel=0&modestbranding=1&playsinline=1&origin=${Astro.url.origin}`}
         allow="autoplay; encrypted-media; picture-in-picture"
       ></iframe>
     </div>
@@ -278,14 +278,18 @@ const lessonTitle = Astro.url.searchParams.get('title') || 'Course Video';
     let currentSec = parseInt(urlParams.get('t') || '0', 10);
     let hideTimeout: any = null;
 
-    const sendCommand = (func: string, args: any[] = []) => {
+    // Utility to send commands to both the local PiP iframe AND the main window (for audio sync)
+    function sendCommand(func: string, args: any[] = []) {
       if (iframe && iframe.contentWindow) {
         iframe.contentWindow.postMessage(JSON.stringify({
           event: 'command',
           func,
-          args,
+          args
         }), '*');
       }
+      try {
+        pipChannel.postMessage({ type: 'sync-command', func, args });
+      } catch(e) {}
     };
 
     // Tell YouTube iframe we are listening so it starts sending infoDelivery messages
@@ -392,11 +396,39 @@ const lessonTitle = Astro.url.searchParams.get('title') || 'Course Video';
       seekFill.style.width = (pos * 100) + '%';
     });
 
-    // Listen for YouTube player messages
+    let hasSentReady = false;
+
+    // Listen for YouTube player messages and parent window commands
     window.addEventListener('message', (msg: MessageEvent) => {
       try {
+        if (msg.data?.type === 'forward-command') {
+          sendCommand(msg.data.func, msg.data.args || []);
+          return;
+        }
+
         const data = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data;
+        if (data && (data.event === 'onReady' || data.event === 'initialDelivery')) {
+          sendCommand('playVideo');
+        }
         if (data && data.event === 'infoDelivery' && data.info) {
+          if (!hasSentReady) {
+            hasSentReady = true;
+            try { pipChannel.postMessage({ type: 'pip-ready' }); } catch(e) {}
+            if (window.opener) {
+              try { window.opener.postMessage({ type: 'pip-ready' }, '*'); } catch(e) {}
+            }
+          }
+          if (typeof data.info.playerState === 'number') {
+            if (data.info.playerState === 1) { // Playing
+              isPlaying = true;
+              if (playIcon) playIcon.style.display = 'none';
+              if (pauseIcon) pauseIcon.style.display = 'block';
+            } else if (data.info.playerState === 2 || data.info.playerState === -1 || data.info.playerState === 5) { // Paused / Unstarted / Cued
+              isPlaying = false;
+              if (playIcon) playIcon.style.display = 'block';
+              if (pauseIcon) pauseIcon.style.display = 'none';
+            }
+          }
           if (typeof data.info.currentTime === 'number') {
             currentSec = data.info.currentTime;
           }
