@@ -40,7 +40,6 @@ if (!course) {
             new Date(course.publishDate).toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",
-              day: "numeric",
             })
           }
         </span>
@@ -636,6 +635,22 @@ if (!course) {
                 autoAdvanceToNextChapter();
               }
             },
+            onError: async (event: any) => {
+              if (event.data === 101 || event.data === 150) {
+                console.warn("Video cannot be embedded. Auto-migrating to external directory...");
+                try {
+                  await fetch('/api/update-embed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ slug: courseSlug, isEmbeddable: false })
+                  });
+                } catch (e) {
+                  console.error("Failed to update embed status:", e);
+                }
+                alert("This roadmap has been moved to our External directory.");
+                window.location.href = '/external';
+              }
+            },
           },
         });
       });
@@ -1026,22 +1041,6 @@ if (!course) {
         }
       });
 
-    // Update Subscriptions Navbar badge on course page
-    const navSubBadge = document.getElementById("nav-sub-badge");
-    if (navSubBadge) {
-      try {
-        const raw = localStorage.getItem("freeyt_subscribed_creators");
-        const subs = raw ? JSON.parse(raw) : [];
-        if (subs.length > 0) {
-          navSubBadge.textContent = String(subs.length);
-          navSubBadge.classList.remove("hidden");
-        } else {
-          navSubBadge.classList.add("hidden");
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
 
     // Watch Later Button Logic on Course Detail Page
     const wlBtn = document.getElementById("hero-watch-later-btn");

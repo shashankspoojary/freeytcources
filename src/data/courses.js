@@ -303,5 +303,5 @@ export const courses = [
 ];
 
 export function getYoutubeThumbnail(videoId) {
-  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+  return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 }

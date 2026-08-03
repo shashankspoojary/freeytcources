@@ -55,9 +55,6 @@ const description = "Manage, view, and search all cataloged and submitted course
           <div class="flex items-center gap-2">
             <h2 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold">Cataloged Submissions Index</h2>
           </div>
-          <span class="text-xs font-mono text-mute">
-            Total Courses: <span id="total-courses-count" class="text-primary font-bold">0</span>
-          </span>
         </div>
 
         <!-- Admin Search Bar -->
@@ -230,7 +227,6 @@ const description = "Manage, view, and search all cataloged and submitted course
       window.location.href = '/login';
     });
 
-    const totalCountEl = document.getElementById('total-courses-count');
 
     async function loadCourses() {
       const adminCoursesList = document.getElementById('admin-courses-list');
@@ -278,8 +274,6 @@ const description = "Manage, view, and search all cataloged and submitted course
     function renderCoursesTable(courses: any[]) {
       const adminCoursesList = document.getElementById('admin-courses-list');
       if (!adminCoursesList) return;
-
-      if (totalCountEl) totalCountEl.textContent = String(courses.length);
 
       if (courses.length === 0) {
         adminCoursesList.innerHTML = `

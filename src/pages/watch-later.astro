@@ -22,7 +22,6 @@ const description = "Access your saved YouTube courses and video tutorials to wa
         <div>
           <h1 class="text-2xl font-light text-ink-strong tracking-tight flex items-center gap-3">
             Watch Later 
-            <span id="watch-later-count-badge" class="text-xs font-mono bg-primary/15 text-primary border border-primary/30 px-2.5 py-0.5 rounded-full font-bold">0 videos</span>
           </h1>
           <p class="text-xs font-mono text-mute mt-0.5">Your saved list of curated courses to view anytime.</p>
         </div>
@@ -90,7 +89,6 @@ const description = "Access your saved YouTube courses and video tutorials to wa
 
     const grid = document.getElementById('watch-later-grid');
     const emptyState = document.getElementById('watch-later-empty');
-    const badge = document.getElementById('watch-later-count-badge');
     const actions = document.getElementById('watch-later-actions');
     const clearBtn = document.getElementById('clear-all-watch-later');
 
@@ -112,10 +110,6 @@ const description = "Access your saved YouTube courses and video tutorials to wa
       if (!grid || !emptyState) return;
       const slugs = getWatchLater();
 
-      if (badge) {
-        badge.textContent = `${slugs.length} video${slugs.length === 1 ? '' : 's'}`;
-      }
-
       if (slugs.length === 0) {
         grid.classList.add('hidden');
         emptyState.classList.remove('hidden');
@@ -133,7 +127,7 @@ const description = "Access your saved YouTube courses and video tutorials to wa
         if (!course) return;
 
         const videoId = course.sampleVideoId;
-        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
         const creatorSlug = getCreatorSlug(course.creatorName);
 
         const card = document.createElement('article');

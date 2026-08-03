@@ -3,26 +3,27 @@ import Layout from '../layouts/Layout.astro';
 import { getAllCourses, getYoutubeThumbnail, getCreatorSlug } from '../lib/firebase.js';
 
 const allCourses = await getAllCourses();
+const embeddableCourses = allCourses.filter(course => course.isEmbeddable !== false);
 // Randomly shuffle courses for initial SSR render
-const courses = [...allCourses].sort(() => 0.5 - Math.random());
+const courses = [...embeddableCourses].sort(() => 0.5 - Math.random());
 
 // 1. Trending Courses: High engagement & view velocity
-const trendingCourses = [...allCourses]
+const trendingCourses = [...embeddableCourses]
   .sort((a, b) => (b.views || 0) - (a.views || 0))
   .slice(0, 4);
 
 // 2. Recently Added: Newest release dates first
-const recentlyAddedCourses = [...allCourses]
+const recentlyAddedCourses = [...embeddableCourses]
   .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
   .slice(0, 4);
 
 // 3. Editor's Picks: Handpicked featured courses
-const editorsPicks = allCourses
+const editorsPicks = embeddableCourses
   .filter(c => c.featured)
   .slice(0, 4);
 
 // 4. Most Popular: Highest rated & views overall
-const mostPopularCourses = [...allCourses]
+const mostPopularCourses = [...embeddableCourses]
   .sort((a, b) => (b.views || 0) * (b.rating || 4.5) - (a.views || 0) * (a.rating || 4.5))
   .slice(0, 4);
 
@@ -1107,8 +1108,6 @@ const description = "Discover the best free YouTube courses for AI engineering, 
     const courseGrid = document.getElementById('course-grid');
     const emptyState = document.getElementById('empty-state');
     
-    // Subscription Elements
-    const navSubBadge = document.getElementById('nav-sub-badge');
     
     // Search Elements (HeaderNav & Hero Input)
     const searchContainer = document.getElementById('search-container');

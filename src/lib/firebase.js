@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { courses as fallbackCourses } from "../data/courses.js";
 
 /**
  * @typedef {Object} Chapter
@@ -76,13 +75,13 @@ if (isValidConfig) {
 }
 
 /**
- * Fetches all courses from Firestore. Falls back to static courses list.
+ * Fetches all courses from Firestore.
  * @returns {Promise<Course[]>}
  */
 export async function getAllCourses() {
   if (!db) {
-    console.info("Firestore not configured/active. Using static local data.");
-    return fallbackCourses;
+    console.info("Firestore not configured/active. Returning empty array.");
+    return [];
   }
 
   try {
@@ -92,25 +91,21 @@ export async function getAllCourses() {
       fetched.push({ id: doc.id, ...doc.data() });
     });
     
-    if (fetched.length > 0) {
-      return fetched;
-    }
-    console.warn("Firestore 'courses' collection is empty. Falling back to local data.");
-    return fallbackCourses;
+    return fetched;
   } catch (e) {
-    console.warn("Failed to fetch courses from Firestore. Falling back to local data.", e);
-    return fallbackCourses;
+    console.warn("Failed to fetch courses from Firestore.", e);
+    return [];
   }
 }
 
 /**
- * Fetches a single course matching the slug parameter from Firestore. Falls back to static list.
+ * Fetches a single course matching the slug parameter from Firestore.
  * @param {string} slug
  * @returns {Promise<Course|undefined>}
  */
 export async function getCourseBySlug(slug) {
   if (!db) {
-    return fallbackCourses.find((c) => c.slug === slug);
+    return undefined;
   }
 
   try {
@@ -121,11 +116,11 @@ export async function getCourseBySlug(slug) {
       const doc = querySnapshot.docs[0];
       return { id: doc.id, ...doc.data() };
     }
-    console.warn(`Course slug '${slug}' not found in Firestore. Falling back to local search.`);
-    return fallbackCourses.find((c) => c.slug === slug);
+    console.warn(`Course slug '${slug}' not found in Firestore.`);
+    return undefined;
   } catch (e) {
-    console.warn(`Failed to fetch course slug '${slug}' from Firestore. Falling back to local search.`, e);
-    return fallbackCourses.find((c) => c.slug === slug);
+    console.warn(`Failed to fetch course slug '${slug}' from Firestore.`, e);
+    return undefined;
   }
 }
 
@@ -133,7 +128,7 @@ export async function getCourseBySlug(slug) {
  * Translates a sampleVideoId to YouTube's standard static maxresdefault thumbnail URL.
  */
 export function getYoutubeThumbnail(videoId) {
-  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+  return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 }
 
 /**

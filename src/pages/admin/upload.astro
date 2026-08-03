@@ -406,7 +406,7 @@ const description = "Manually ingest new courses and syllabus layouts into the c
 
 <script>
   import { db, auth } from '../../lib/firebase.js';
-  import { doc, setDoc } from 'firebase/firestore';
+  import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
   import { onAuthStateChanged, signOut } from 'firebase/auth';
 
   const PUBLIC_ADMIN_UID = import.meta.env.PUBLIC_ADMIN_UID || 'L3hLhdVxWBRkPk4GQg5KIZGFrx63';
@@ -448,6 +448,7 @@ const description = "Manually ingest new courses and syllabus layouts into the c
   const addTagBtn = document.getElementById('add-tag-btn');
   const tagsChipsContainer = document.getElementById('tags-chips-container');
   let currentTags: string[] = [];
+  let extractedIsEmbeddable = true;
 
   function renderTagChips() {
     if (!tagsChipsContainer) return;
@@ -853,6 +854,7 @@ const description = "Manually ingest new courses and syllabus layouts into the c
       extractedChannelId = '';
       extractedSubscribers = '';
       extractedViews = 12450;
+      extractedIsEmbeddable = true;
       if (authorAvatarPreview) authorAvatarPreview.classList.add('hidden');
       if (authorAvatarStatus) authorAvatarStatus.textContent = '';
       createModuleRow();
@@ -944,7 +946,8 @@ const description = "Manually ingest new courses and syllabus layouts into the c
       featured: (document.getElementById('featured-checkbox') as HTMLInputElement)?.checked || false,
       moduleType: computedModuleType,
       overview: overviewVal.trim(),
-      chapters
+      chapters,
+      isEmbeddable: extractedIsEmbeddable
     };
 
     console.log("Writing payload to Firestore:", coursePayload);
@@ -964,6 +967,7 @@ const description = "Manually ingest new courses and syllabus layouts into the c
         extractedSubscribers = '';
         extractedViews = 12450;
         extractedPublishDate = '';
+        extractedIsEmbeddable = true;
         currentTags = [];
         renderTagChips();
         if (authorAvatarPreview) authorAvatarPreview.classList.add('hidden');
@@ -1055,13 +1059,30 @@ const description = "Manually ingest new courses and syllabus layouts into the c
         throw new Error('Failed to resolve channel info');
       }
       const data = await res.json();
+      
+      let isDuplicate = false;
+      try {
+        if (db) {
+          const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+          const match = urlOrId.match(regExp);
+          const videoId = (match && match[2].length === 11) ? match[2] : urlOrId;
+          
+          const qVid = query(collection(db, "courses"), where("sampleVideoId", "==", videoId));
+          const snap = await getDocs(qVid);
+          if (!snap.empty) {
+            isDuplicate = true;
+            alert("Warning: A course with this exact YouTube video already exists in the database. Are you sure you want to add it again?");
+          }
+        }
+      } catch (err) {
+        console.warn("Could not verify duplicates:", err);
+      }
+      
+      extractedIsEmbeddable = data.isEmbeddable !== false;
 
       if (data.isEmbeddable === false) {
-        authorAvatarStatus.textContent = "❌ Embed Disabled by Creator!";
-        authorAvatarStatus.className = "text-[10px] font-mono text-red-500 font-bold";
-        alert("This video does not allow embedding and cannot be monetized on our site. Please choose a different course.");
-        if (youtubeLinkInput) youtubeLinkInput.value = '';
-        return;
+        authorAvatarStatus.textContent = "Notice: This video cannot be embedded inside the app. It will be published to the 'External Roadmaps' directory.";
+        authorAvatarStatus.className = "text-[10px] font-mono text-amber-500 font-bold";
       }
       
       if (data.channelName) {
@@ -1079,11 +1100,13 @@ const description = "Manually ingest new courses and syllabus layouts into the c
           authorAvatarPreview.classList.remove('hidden');
         }
         
-        let statusMsg = "✅ Resolved!";
-        if (data.subscribers) statusMsg += ` (${data.subscribers})`;
-        if (data.views) statusMsg += ` • ${Number(data.views).toLocaleString()} video views`;
-        authorAvatarStatus.textContent = statusMsg;
-        authorAvatarStatus.className = "text-[10px] font-mono text-green-400";
+        if (data.isEmbeddable !== false) {
+          let statusMsg = isDuplicate ? "⚠️ DUPLICATE! ✅ Resolved!" : "✅ Resolved!";
+          if (data.subscribers) statusMsg += ` (${data.subscribers})`;
+          if (data.views) statusMsg += ` • ${Number(data.views).toLocaleString()} video views`;
+          authorAvatarStatus.textContent = statusMsg;
+          authorAvatarStatus.className = isDuplicate ? "text-[10px] font-mono text-amber-500 font-bold" : "text-[10px] font-mono text-green-400";
+        }
       } else {
         authorAvatarStatus.textContent = "⚠️ Could not resolve channel info.";
         authorAvatarStatus.className = "text-[10px] font-mono text-mute";

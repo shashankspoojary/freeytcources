@@ -2,8 +2,8 @@
 import Layout from '../../layouts/Layout.astro';
 import { getAllCourses, getYoutubeThumbnail, getCreatorSlug } from '../../lib/firebase.js';
 
-const courses = await getAllCourses();
-
+const allCourses = await getAllCourses();
+const courses = allCourses.filter(course => course.isEmbeddable !== false);
 // Dynamically compute unique languages
 const languages = Array.from(new Set(courses.map(c => c.language || "English").filter(Boolean)));
 
@@ -19,9 +19,6 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
       <div>
         <h1 class="text-2xl font-light text-ink-strong tracking-tight flex items-center gap-3">
           Courses Directory
-          <span class="text-xs font-mono bg-primary/15 text-primary border border-primary/30 px-2.5 py-0.5 rounded-full font-bold">
-            {courses.length} courses
-          </span>
         </h1>
         <p class="text-xs font-mono text-mute mt-1">Structured learning modules filtered by skills, language, and ratings.</p>
       </div>
