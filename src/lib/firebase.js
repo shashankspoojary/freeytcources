@@ -7,6 +7,8 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
  * @property {string} title
  * @property {string} duration
  * @property {string} [videoId]
+ * @property {string} [creatorDescription]
+ * @property {Array<{title: string, url: string}>} [practiceAssets]
  * 
  * @typedef {Object} Course
  * @property {string|number} id
@@ -35,7 +37,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
  * @property {string} [thumbnail]
  * @property {'single' | 'multi'} [moduleType]
  * @property {string} overview
+ * @property {boolean} [isEmbeddable]
+ * @property {string} [creatorDescription]
+ * @property {Array<{title: string, url: string}>} [practiceAssets]
  * @property {Chapter[]} chapters
+ * @property {Chapter[]} [modules]
+ * @property {string} [videoUrl]
+ * @property {string} [youtubeId]
  */
 
 // Firebase Config initialized using Astro env system

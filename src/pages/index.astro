@@ -30,6 +30,11 @@ const mostPopularCourses = [...embeddableCourses]
 // Dynamically compute the set of unique languages present in all courses
 const languages = Array.from(new Set(courses.map(c => c.language || "English").filter(Boolean)));
 
+// Compute category counts for the filter cards
+const aiCoursesCount = embeddableCourses.filter(c => c.category === 'AI Engineering').length;
+const videoCoursesCount = embeddableCourses.filter(c => c.category === 'Video Editing').length;
+const codingCoursesCount = embeddableCourses.filter(c => c.category === 'Coding Skills').length;
+
 // Define SEO title and description
 const title = "Free YouTube Courses & Structured Learning Roadmaps";
 const description = "Discover the best free YouTube courses for AI engineering, video editing, and coding. Access curated playlists, detailed syllabi, and top creator tutorials—100% free.";
@@ -124,7 +129,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
         <p class="text-sm text-body line-clamp-2">LangChain, PyTorch, Vector DBs, and agentic workflows.</p>
         <div class="mt-4 pt-4 border-t border-hairline flex items-center gap-1.5 text-xs font-mono text-mute">
           <span>Active courses:</span>
-          <span class="text-ink font-semibold">2</span>
+          <span class="text-ink font-semibold">{aiCoursesCount}</span>
         </div>
       </button>
 
@@ -146,7 +151,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
         <p class="text-sm text-body line-clamp-2">DaVinci Resolve, Premiere Pro, motion graphics, and audio mastering.</p>
         <div class="mt-4 pt-4 border-t border-hairline flex items-center gap-1.5 text-xs font-mono text-mute">
           <span>Active courses:</span>
-          <span class="text-ink font-semibold">2</span>
+          <span class="text-ink font-semibold">{videoCoursesCount}</span>
         </div>
       </button>
 
@@ -168,7 +173,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
         <p class="text-sm text-body line-clamp-2">Python design patterns, concurrent programming, Vite, and Tailwind v4.</p>
         <div class="mt-4 pt-4 border-t border-hairline flex items-center gap-1.5 text-xs font-mono text-mute">
           <span>Active courses:</span>
-          <span class="text-ink font-semibold">2</span>
+          <span class="text-ink font-semibold">{codingCoursesCount}</span>
         </div>
       </button>
     </div>
@@ -1548,6 +1553,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
 
     function updateSubscriptionsUI() {
       const subs = getSubscriptions();
+      const navSubBadge = document.getElementById('nav-sub-badge');
       if (navSubBadge) {
         if (subs.length > 0) {
           navSubBadge.textContent = String(subs.length);

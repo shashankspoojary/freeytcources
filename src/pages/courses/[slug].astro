@@ -17,6 +17,17 @@ const course = await getCourseBySlug(slug);
 if (!course) {
   return Astro.redirect("/404");
 }
+
+const modules = (course?.chapters && course.chapters.length > 0)
+  ? course.chapters
+  : (course?.modules && course.modules.length > 0)
+    ? course.modules
+    : [{
+        title: course?.title || 'Full Course Video',
+        videoId: course?.videoUrl || course?.youtubeId || course?.sampleVideoId || '',
+        creatorDescription: course?.creatorDescription || course?.description || '',
+        practiceAssets: course?.practiceAssets || []
+      }];
 ---
 
 <Layout
@@ -49,11 +60,6 @@ if (!course) {
       >
         {course.title}
       </h1>
-      <p
-        class="text-base md:text-lg text-body font-light leading-relaxed max-w-4xl"
-      >
-        {course.description}
-      </p>
     </header>
 
     <!-- Content Layout Grid -->
@@ -89,7 +95,7 @@ if (!course) {
                   id="poster-chapter-title"
                   class="text-lg font-semibold text-white tracking-tight max-w-md line-clamp-1 mb-1 font-mono uppercase"
                 >
-                  {course.chapters[0]?.title || "Start Course"}
+                  {modules[0]?.title || "Start Course"}
                 </h3>
                 <p
                   class="text-xs text-white/70 font-mono uppercase tracking-wider mb-4"
@@ -217,6 +223,97 @@ if (!course) {
           </div>
         </div>
 
+        <!-- Module Details Tabbed Panel (Description, Assets, Syllabus) -->
+        <div class="mt-8 border border-hairline rounded-md bg-canvas-soft overflow-hidden" id="module-details-container">
+          <div class="flex border-b border-hairline bg-canvas overflow-x-auto">
+            <button type="button" id="tab-desc-btn" class="flex-1 py-3 px-4 text-xs font-mono uppercase tracking-wider text-mute hover:text-ink font-semibold border-b-2 border-transparent hover:bg-canvas-soft transition-colors focus:outline-none cursor-pointer whitespace-nowrap">
+              Creator Description
+            </button>
+            <button type="button" id="tab-assets-btn" class="flex-1 py-3 px-4 text-xs font-mono uppercase tracking-wider text-mute hover:text-ink font-semibold border-b-2 border-transparent hover:bg-canvas-soft transition-colors focus:outline-none cursor-pointer whitespace-nowrap">
+              Practice Assets
+            </button>
+            <button type="button" id="tab-syllabus-btn" class="flex-1 py-3 px-4 text-xs font-mono uppercase tracking-wider text-mute hover:text-ink font-semibold border-b-2 border-transparent hover:bg-canvas-soft transition-colors focus:outline-none cursor-pointer whitespace-nowrap">
+              Syllabus
+            </button>
+          </div>
+          
+          <div class="p-0">
+            <!-- Creator Description Content -->
+            <div id="module-description-content" class="p-6 text-sm text-body font-light whitespace-pre-line leading-relaxed hidden">
+              {modules[0]?.creatorDescription || course?.creatorDescription || course?.description || "ℹ️ No description provided by creator for this lesson."}
+            </div>
+
+            <!-- Practice Assets Content -->
+            <div id="module-assets-content" class="p-6 space-y-3 hidden">
+              {(!(modules[0]?.practiceAssets && modules[0].practiceAssets.length > 0) && !(course?.practiceAssets && course.practiceAssets.length > 0)) ? (
+                <div class="text-sm text-body font-light">📂 No extra practice files required for this module.</div>
+              ) : (
+                (modules[0]?.practiceAssets && modules[0].practiceAssets.length > 0 ? modules[0].practiceAssets : (course?.practiceAssets || [])).map((asset: any) => {
+                  let icon = `<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>`;
+                  if (asset.url.includes("github.com")) {
+                    icon = `<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>`;
+                  } else if (asset.url.includes("drive.google.com")) {
+                    icon = `<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5M9.73 15L16.29 3.5H23l-6.57 11.5M11.96 18.91l-3.28-5.69h13.14l-3.28 5.69"></path></svg>`;
+                  }
+                  return (
+                    <a href={asset.url} target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 bg-canvas border border-hairline rounded-sm hover:border-primary/50 transition-colors group">
+                      <div class="flex items-center gap-3">
+                        <span class="text-mute group-hover:text-primary transition-colors" set:html={icon} />
+                        <span class="text-xs font-mono text-ink-strong">{asset.title}</span>
+                      </div>
+                      <span class="text-[10px] font-mono text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity">Access &nearr;</span>
+                    </a>
+                  );
+                })
+              )}
+            </div>
+
+            <!-- Syllabus Content -->
+            <div id="module-syllabus-content" class="hidden">
+              <div class="bg-canvas divide-y divide-hairline">
+                {
+                  modules.map((chapter: any, index: number) => (
+                    <button
+                      type="button"
+                      class="chapter-row w-full text-left p-4 flex justify-between items-center hover:bg-canvas-soft border-none bg-transparent cursor-pointer transition-all focus:outline-none border-b border-hairline last:border-b-0"
+                      data-index={index}
+                      data-video-id={chapter.videoId || course.sampleVideoId}
+                      data-title={chapter.title}
+                    >
+                      <div class="flex items-center gap-4">
+                        <div class="chapter-status-icon shrink-0">
+                          <span class="font-mono text-xs text-primary bg-primary/10 border border-primary/20 h-6 w-6 rounded-full flex items-center justify-center font-bold">
+                            {index + 1}
+                          </span>
+                        </div>
+                        <div class="flex flex-col text-left">
+                          <span class="text-sm text-ink font-medium transition-colors chapter-title-text">
+                            {chapter.title}
+                          </span>
+                          <span class="chapter-progress-lbl text-[10px] text-mute font-mono mt-0.5 hidden">
+                            0% watched
+                          </span>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <div class="w-16 h-1 bg-canvas border border-hairline rounded-sm overflow-hidden hidden sm:block chapter-progress-bar-container invisible">
+                          <div
+                            class="chapter-progress-bar-fill h-full bg-primary"
+                            style="width: 0%"
+                          />
+                        </div>
+                        <span class="font-mono text-xs text-mute shrink-0">
+                          {chapter.duration}
+                        </span>
+                      </div>
+                    </button>
+                  ))
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- AdSense-Compliant Course Overview & Review Section -->
         <article
           class="p-6 md:p-8 bg-canvas-soft border border-hairline rounded-md"
@@ -258,71 +355,6 @@ if (!course) {
           </div>
         </article>
 
-        <!-- Chapter Outline Block -->
-        <div class="space-y-6">
-          <div class="flex items-center gap-2">
-            <svg
-              class="h-5 w-5 text-primary"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-            </svg>
-            <h2
-              class="text-lg font-mono uppercase tracking-wider text-ink-strong font-semibold"
-            >
-              Syllabus & Chapter Outline
-            </h2>
-          </div>
-
-          <div
-            class="border border-hairline rounded-md overflow-hidden bg-canvas divide-y divide-hairline"
-          >
-            {
-              course.chapters.map((chapter, index) => (
-                <button
-                  type="button"
-                  class="chapter-row w-full text-left p-4 flex justify-between items-center hover:bg-canvas-soft border-none bg-transparent cursor-pointer transition-all focus:outline-none border-b border-hairline last:border-b-0"
-                  data-index={index}
-                  data-video-id={chapter.videoId || course.sampleVideoId}
-                  data-title={chapter.title}
-                >
-                  <div class="flex items-center gap-4">
-                    <div class="chapter-status-icon shrink-0">
-                      <span class="font-mono text-xs text-primary bg-primary/10 border border-primary/20 h-6 w-6 rounded-full flex items-center justify-center font-bold">
-                        {index + 1}
-                      </span>
-                    </div>
-                    <div class="flex flex-col text-left">
-                      <span class="text-sm text-ink font-medium transition-colors chapter-title-text">
-                        {chapter.title}
-                      </span>
-                      <span class="chapter-progress-lbl text-[10px] text-mute font-mono mt-0.5 hidden">
-                        0% watched
-                      </span>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-3">
-                    <div class="w-16 h-1 bg-canvas border border-hairline rounded-sm overflow-hidden hidden sm:block chapter-progress-bar-container invisible">
-                      <div
-                        class="chapter-progress-bar-fill h-full bg-primary"
-                        style="width: 0%"
-                      />
-                    </div>
-                    <span class="font-mono text-xs text-mute shrink-0">
-                      {chapter.duration}
-                    </span>
-                  </div>
-                </button>
-              ))
-            }
-          </div>
-        </div>
       </section>
 
       <!-- Right Column: Sidebar Actions & Technical Specs -->
@@ -488,8 +520,10 @@ if (!course) {
   <div
     id="course-page-data"
     data-slug={course.slug}
-    data-chapters={JSON.stringify(course.chapters)}
     data-video-id={course.sampleVideoId}
+    data-chapters={JSON.stringify(modules)}
+    data-course-desc={course.creatorDescription || course.description || ""}
+    data-course-assets={JSON.stringify(course.practiceAssets || [])}
     class="hidden"
   >
   </div>
@@ -811,6 +845,7 @@ if (!course) {
       }
 
       updateActiveChapterRowHighlight();
+      updateModuleDetailsUI(index);
 
       if (!player) {
         initPlayer(videoId, savedTime);
@@ -822,6 +857,49 @@ if (!course) {
       }
 
       updateUI();
+    }
+    
+    const globalDesc = dataEl?.getAttribute("data-course-desc") || "ℹ️ No description provided by creator for this lesson.";
+    let globalAssets: any[] = [];
+    try {
+      globalAssets = JSON.parse(dataEl?.getAttribute("data-course-assets") || "[]");
+    } catch(e) {}
+
+    function updateModuleDetailsUI(index: number) {
+      const chapter = chaptersData[index];
+      if (!chapter) return;
+      
+      const descContainer = document.getElementById("module-description-content");
+      if (descContainer) {
+        descContainer.textContent = chapter.creatorDescription || globalDesc;
+      }
+      
+      const assetsContainer = document.getElementById("module-assets-content");
+      if (assetsContainer) {
+        const assetsToUse = (chapter.practiceAssets && chapter.practiceAssets.length > 0)
+          ? chapter.practiceAssets
+          : globalAssets;
+
+        if (!assetsToUse || assetsToUse.length === 0) {
+          assetsContainer.innerHTML = `<div class="text-sm text-body font-light">📂 No extra practice files required for this module.</div>`;
+        } else {
+          assetsContainer.innerHTML = assetsToUse.map((asset: any) => {
+            let icon = `<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>`;
+            if (asset.url.includes("github.com")) {
+              icon = `<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>`;
+            } else if (asset.url.includes("drive.google.com")) {
+              icon = `<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5M9.73 15L16.29 3.5H23l-6.57 11.5M11.96 18.91l-3.28-5.69h13.14l-3.28 5.69"></path></svg>`;
+            }
+            return `<a href="${asset.url}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 bg-canvas border border-hairline rounded-sm hover:border-primary/50 transition-colors group">
+              <div class="flex items-center gap-3">
+                <span class="text-mute group-hover:text-primary transition-colors">${icon}</span>
+                <span class="text-xs font-mono text-ink-strong">${asset.title}</span>
+              </div>
+              <span class="text-[10px] font-mono text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity">Access &nearr;</span>
+            </a>`;
+          }).join('');
+        }
+      }
     }
 
     function updateActiveChapterRowHighlight() {
@@ -1601,6 +1679,75 @@ if (!course) {
       if (player) {
         player.seekTo(0, true);
         player.playVideo();
+      }
+    });
+
+    // Keyboard Shortcuts
+    window.addEventListener("keydown", (e) => {
+      // Ignore if typing in an input/textarea
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) return;
+      
+      if (!player) return;
+      
+      switch(e.code) {
+        case "Space":
+          e.preventDefault();
+          togglePlayPause();
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          if (typeof player.getCurrentTime === "function") {
+            player.seekTo(player.getCurrentTime() - 10, true);
+          }
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          if (typeof player.getCurrentTime === "function") {
+            player.seekTo(player.getCurrentTime() + 10, true);
+          }
+          break;
+      }
+    });
+
+    // Tab switching logic for Creator Description, Practice Assets, and Syllabus
+    const tabs = [
+      {
+        btn: document.getElementById("tab-desc-btn"),
+        content: document.getElementById("module-description-content")
+      },
+      {
+        btn: document.getElementById("tab-assets-btn"),
+        content: document.getElementById("module-assets-content")
+      },
+      {
+        btn: document.getElementById("tab-syllabus-btn"),
+        content: document.getElementById("module-syllabus-content")
+      }
+    ];
+
+    tabs.forEach((tab) => {
+      if (tab.btn && tab.content) {
+        tab.btn.addEventListener("click", () => {
+          const isActive = tab.content?.classList.contains("block");
+
+          // Reset all tabs
+          tabs.forEach((t) => {
+            if (t.btn && t.content) {
+              t.btn.classList.remove("text-primary", "font-bold", "border-primary", "bg-canvas-soft");
+              t.btn.classList.add("text-mute", "hover:text-ink", "font-semibold", "border-transparent", "hover:bg-canvas-soft");
+              t.content.classList.remove("block");
+              t.content.classList.add("hidden");
+            }
+          });
+
+          // If the clicked tab wasn't active, activate it
+          if (!isActive && tab.btn && tab.content) {
+            tab.btn.classList.add("text-primary", "font-bold", "border-primary", "bg-canvas-soft");
+            tab.btn.classList.remove("text-mute", "hover:text-ink", "font-semibold", "border-transparent", "hover:bg-canvas-soft");
+            tab.content.classList.remove("hidden");
+            tab.content.classList.add("block");
+          }
+        });
       }
     });
 

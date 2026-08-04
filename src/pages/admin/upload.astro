@@ -768,7 +768,29 @@ const description = "Manually ingest new courses and syllabus layouts into the c
             if (modulesList) modulesList.innerHTML = '';
             moduleIndex = 0;
             data.chapters.forEach((ch: any) => {
+               const rowIdx = moduleIndex + 1; // It will be incremented inside createModuleRow
                createModuleRow(ch.title, ch.duration || ch.description || '', ch.videoId || '');
+               // After row creation, populate the new fields
+               const lastRow = modulesList?.lastElementChild;
+               if (lastRow) {
+                 const cDescInput = lastRow.querySelector('.module-creator-desc-input') as HTMLTextAreaElement;
+                 if (cDescInput) cDescInput.value = ch.creatorDescription || '';
+                 
+                 if (ch.practiceAssets && Array.isArray(ch.practiceAssets)) {
+                   const addAssetBtn = lastRow.querySelector('.add-asset-btn') as HTMLButtonElement;
+                   const assetsList = lastRow.querySelector('.assets-list');
+                   ch.practiceAssets.forEach((asset: any) => {
+                     if (addAssetBtn) addAssetBtn.click();
+                     const newAssetRow = assetsList?.lastElementChild;
+                     if (newAssetRow) {
+                       const tInput = newAssetRow.querySelector('.asset-title-input') as HTMLInputElement;
+                       const uInput = newAssetRow.querySelector('.asset-url-input') as HTMLInputElement;
+                       if (tInput) tInput.value = asset.title;
+                       if (uInput) uInput.value = asset.url;
+                     }
+                   });
+                 }
+               }
             });
             updateModuleCount();
           }
@@ -875,7 +897,47 @@ const description = "Manually ingest new courses and syllabus layouts into the c
           />
         </div>
       </div>
+      
+      <div class="border-t border-hairline/40 pt-4 mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] font-mono uppercase tracking-wider text-mute mb-1.5">Creator Description / Module Notes</label>
+          <textarea 
+            class="module-creator-desc-input w-full bg-canvas border border-hairline text-ink rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/30 min-h-[100px]"
+            placeholder="Add detailed notes or creator description here..."></textarea>
+        </div>
+        
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-[10px] font-mono uppercase tracking-wider text-mute">Practice Assets</label>
+            <button type="button" class="add-asset-btn text-[10px] text-primary font-mono hover:underline focus:outline-none cursor-pointer">+ Add Asset</button>
+          </div>
+          <div class="assets-list space-y-2">
+            <!-- Asset rows will be injected here -->
+          </div>
+        </div>
+      </div>
     `;
+
+    const addAssetBtn = row.querySelector('.add-asset-btn');
+    const assetsList = row.querySelector('.assets-list');
+    
+    addAssetBtn?.addEventListener('click', () => {
+      const assetRow = document.createElement('div');
+      assetRow.className = "asset-row flex gap-2 items-start";
+      assetRow.innerHTML = `
+        <div class="flex-1 space-y-2">
+          <input type="text" placeholder="Asset Title (e.g. Starter Code)" class="asset-title-input w-full bg-canvas border border-hairline text-ink rounded-sm px-2 py-1.5 text-xs focus:outline-none focus:border-primary" />
+          <input type="url" placeholder="Asset URL (https://...)" class="asset-url-input w-full bg-canvas border border-hairline text-ink rounded-sm px-2 py-1.5 text-xs focus:outline-none focus:border-primary" />
+        </div>
+        <button type="button" class="remove-asset-btn text-mute hover:text-red-400 focus:outline-none mt-1 shrink-0 px-1 py-1 cursor-pointer">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      `;
+      assetRow.querySelector('.remove-asset-btn')?.addEventListener('click', () => {
+        assetRow.remove();
+      });
+      assetsList?.appendChild(assetRow);
+    });
 
     const removeBtn = row.querySelector('.remove-module-btn');
     removeBtn?.addEventListener('click', () => {
@@ -963,18 +1025,32 @@ const description = "Manually ingest new courses and syllabus layouts into the c
     const langVal = (document.getElementById('course-language') as HTMLSelectElement).value;
     const overviewVal = overviewInput.value;
 
-    const modules: Array<{ title: string; description: string; videoId: string }> = [];
+    const modules: Array<{ title: string; description: string; videoId: string; creatorDescription?: string; practiceAssets?: {title: string, url: string}[] }> = [];
     const moduleRows = modulesList?.children || [];
     for (let i = 0; i < moduleRows.length; i++) {
       const row = moduleRows[i];
       const titleInput = row.querySelector('.module-title-input') as HTMLInputElement;
       const descInput = row.querySelector('.module-desc-input') as HTMLInputElement;
       const videoInput = row.querySelector('.module-video-input') as HTMLInputElement;
+      const creatorDescInput = row.querySelector('.module-creator-desc-input') as HTMLTextAreaElement;
+      
+      const practiceAssets: {title: string, url: string}[] = [];
+      const assetRows = row.querySelectorAll('.asset-row');
+      assetRows.forEach(aRow => {
+        const aTitle = (aRow.querySelector('.asset-title-input') as HTMLInputElement)?.value.trim();
+        const aUrl = (aRow.querySelector('.asset-url-input') as HTMLInputElement)?.value.trim();
+        if (aTitle && aUrl) {
+          practiceAssets.push({ title: aTitle, url: aUrl });
+        }
+      });
+
       if (titleInput && descInput) {
         modules.push({
           title: titleInput.value.trim(),
           description: descInput.value.trim(),
-          videoId: videoInput ? videoInput.value.trim() : ''
+          videoId: videoInput ? videoInput.value.trim() : '',
+          creatorDescription: creatorDescInput ? creatorDescInput.value.trim() : '',
+          practiceAssets
         });
       }
     }
@@ -1006,7 +1082,9 @@ const description = "Manually ingest new courses and syllabus layouts into the c
       return {
         title: m.title,
         duration: m.description || '15 mins',
-        videoId: chVideoId
+        videoId: chVideoId,
+        creatorDescription: m.creatorDescription || '',
+        practiceAssets: m.practiceAssets || []
       };
     });
 
