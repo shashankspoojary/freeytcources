@@ -136,7 +136,7 @@ const description = "A collection of high-quality learning roadmaps hosted exter
               <!-- Thumbnail -->
               <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
                 <img 
-                  src={getYoutubeThumbnail(course.sampleVideoId)} 
+                  src={course.thumbnail || getYoutubeThumbnail(course.sampleVideoId)} 
                   alt={`${course.title} thumbnail`} 
                   class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-90 group-hover:opacity-100"
                   loading="lazy"
@@ -151,7 +151,7 @@ const description = "A collection of high-quality learning roadmaps hosted exter
                 <div class="mb-4">
                   <div class="flex items-center gap-2 mb-3">
                     <div class="h-6 w-6 rounded-full bg-canvas border border-hairline overflow-hidden shrink-0">
-                      <img src={course.creatorLogo} alt={course.creatorName} class="h-full w-full object-cover" />
+                      <img src={course.creatorLogo} alt={course.creatorName} class="h-full w-full object-cover" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random&color=fff';" />
                     </div>
                     <span class="text-xs font-mono text-mute truncate">{course.creatorName}</span>
                   </div>

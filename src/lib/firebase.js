@@ -82,6 +82,40 @@ if (isValidConfig) {
   }
 }
 
+function computeCourseDuration(course) {
+  let totalMinutes = 0;
+  const chapters = course.chapters || course.modules || [];
+  
+  if (chapters.length > 0) {
+    chapters.forEach(ch => {
+      const d = ch.duration || '';
+      const timeMatch = d.match(/^(?:(?:(\d+):)?(\d+):)?(\d+)$/);
+      if (timeMatch) {
+        if (timeMatch[1]) {
+           totalMinutes += parseInt(timeMatch[1], 10) * 60 + parseInt(timeMatch[2], 10);
+        } else if (timeMatch[2]) {
+           totalMinutes += parseInt(timeMatch[2], 10);
+        }
+      } else {
+        const hMatch = d.match(/(\d+)\s*h/i);
+        const mMatch = d.match(/(\d+)\s*m/i);
+        const minsMatch = d.match(/(\d+)\s*mins?/i);
+        if (hMatch) totalMinutes += parseInt(hMatch[1], 10) * 60;
+        if (mMatch) totalMinutes += parseInt(mMatch[1], 10);
+        else if (minsMatch) totalMinutes += parseInt(minsMatch[1], 10);
+      }
+    });
+  }
+
+  if (totalMinutes > 0) {
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    return h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+  }
+  
+  return course.duration !== "1h 30m" ? course.duration : "TBD";
+}
+
 /**
  * Fetches all courses from Firestore.
  * @returns {Promise<Course[]>}
@@ -96,7 +130,9 @@ export async function getAllCourses() {
     const querySnapshot = await getDocs(collection(db, "courses"));
     const fetched = [];
     querySnapshot.forEach((doc) => {
-      fetched.push({ id: doc.id, ...doc.data() });
+      const data = doc.data();
+      data.duration = computeCourseDuration(data);
+      fetched.push({ id: doc.id, ...data });
     });
     
     return fetched;
@@ -122,7 +158,9 @@ export async function getCourseBySlug(slug) {
     
     if (!querySnapshot.empty) {
       const doc = querySnapshot.docs[0];
-      return { id: doc.id, ...doc.data() };
+      const data = doc.data();
+      data.duration = computeCourseDuration(data);
+      return { id: doc.id, ...data };
     }
     console.warn(`Course slug '${slug}' not found in Firestore.`);
     return undefined;

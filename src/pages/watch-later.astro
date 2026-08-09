@@ -127,7 +127,7 @@ const description = "Access your saved YouTube courses and video tutorials to wa
         if (!course) return;
 
         const videoId = course.sampleVideoId;
-        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        const thumbnailUrl = course.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
         const creatorSlug = getCreatorSlug(course.creatorName);
 
         const card = document.createElement('article');
@@ -184,6 +184,7 @@ const description = "Access your saved YouTube courses and video tutorials to wa
                   src="${course.creatorLogo}" 
                   alt="${course.creatorName}" 
                   class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0"
+                  onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random&color=fff';"
                 />
                 <span class="text-xs font-mono text-mute group-hover/creator:text-primary transition-colors leading-none">${course.creatorName}</span>
               </a>

@@ -59,6 +59,7 @@ const description = `Explore all curated structured courses, syllabus breakdowns
         src={creatorLogo} 
         alt={creatorName} 
         class="h-24 w-24 md:h-32 md:w-32 rounded-full object-cover border border-hairline shrink-0 shadow-xl"
+        onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random&color=fff';"
       />
       
       <div class="space-y-3 flex-grow max-w-3xl">
@@ -137,7 +138,7 @@ const description = `Explore all curated structured courses, syllabus breakdowns
           <!-- Video Thumbnail image -->
           <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
             <img 
-              src={getYoutubeThumbnail(course.sampleVideoId)} 
+              src={course.thumbnail || getYoutubeThumbnail(course.sampleVideoId)} 
               alt={`${course.title} thumbnail`} 
               class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"

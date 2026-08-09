@@ -234,7 +234,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
           {trendingCourses.map((course) => (
             <article class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer" data-slug={course.slug}>
               <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
-                <img src={getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <img src={course.thumbnail || getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                 <button type="button" class="watch-later-toggle-btn absolute top-2.5 left-2.5 z-30 bg-canvas/95 hover:bg-primary hover:text-on-primary text-ink px-2 py-0.5 rounded-sm transition-all shadow-md text-[10px] font-mono border border-hairline flex items-center gap-1" data-slug={course.slug} title="Save to Watch Later">
                   <svg class="h-3 w-3 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   <span class="wl-label pointer-events-none">Watch later</span>
@@ -254,7 +254,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
                     <a href={`/courses/${course.slug}`} class="focus:outline-none after:absolute after:inset-0">{course.title}</a>
                   </h3>
                   <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="flex items-center gap-1.5 hover:text-primary transition-colors group/creator shrink-0 relative z-30">
-                    <img src={course.creatorLogo} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" />
+                    <img src={course.creatorLogo} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random&color=fff';" />
                     <span class="text-[11px] font-mono text-mute group-hover/creator:text-primary transition-colors leading-none">{course.creatorName}</span>
                   </a>
                 </div>
@@ -287,7 +287,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
           {editorsPicks.map((course) => (
             <article class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer" data-slug={course.slug}>
               <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
-                <img src={getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <img src={course.thumbnail || getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                 <button type="button" class="watch-later-toggle-btn absolute top-2.5 left-2.5 z-30 bg-canvas/95 hover:bg-primary hover:text-on-primary text-ink px-2 py-0.5 rounded-sm transition-all shadow-md text-[10px] font-mono border border-hairline flex items-center gap-1" data-slug={course.slug} title="Save to Watch Later">
                   <svg class="h-3 w-3 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   <span class="wl-label pointer-events-none">Watch later</span>
@@ -307,7 +307,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
                     <a href={`/courses/${course.slug}`} class="focus:outline-none after:absolute after:inset-0">{course.title}</a>
                   </h3>
                   <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="flex items-center gap-1.5 hover:text-primary transition-colors group/creator shrink-0 relative z-30">
-                    <img src={course.creatorLogo} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" />
+                    <img src={course.creatorLogo} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random&color=fff';" />
                     <span class="text-[11px] font-mono text-mute group-hover/creator:text-primary transition-colors leading-none">{course.creatorName}</span>
                   </a>
                 </div>
@@ -340,7 +340,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
           {recentlyAddedCourses.map((course) => (
             <article class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer" data-slug={course.slug}>
               <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
-                <img src={getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <img src={course.thumbnail || getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                 <button type="button" class="watch-later-toggle-btn absolute top-2.5 left-2.5 z-30 bg-canvas/95 hover:bg-primary hover:text-on-primary text-ink px-2 py-0.5 rounded-sm transition-all shadow-md text-[10px] font-mono border border-hairline flex items-center gap-1" data-slug={course.slug} title="Save to Watch Later">
                   <svg class="h-3 w-3 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   <span class="wl-label pointer-events-none">Watch later</span>
@@ -360,7 +360,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
                     <a href={`/courses/${course.slug}`} class="focus:outline-none after:absolute after:inset-0">{course.title}</a>
                   </h3>
                   <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="flex items-center gap-1.5 hover:text-primary transition-colors group/creator shrink-0 relative z-30">
-                    <img src={course.creatorLogo} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" />
+                    <img src={course.creatorLogo} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random&color=fff';" />
                     <span class="text-[11px] font-mono text-mute group-hover/creator:text-primary transition-colors leading-none">{course.creatorName}</span>
                   </a>
                 </div>
@@ -393,7 +393,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
           {mostPopularCourses.map((course) => (
             <article class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer" data-slug={course.slug}>
               <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
-                <img src={getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <img src={course.thumbnail || getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                 <button type="button" class="watch-later-toggle-btn absolute top-2.5 left-2.5 z-30 bg-canvas/95 hover:bg-primary hover:text-on-primary text-ink px-2 py-0.5 rounded-sm transition-all shadow-md text-[10px] font-mono border border-hairline flex items-center gap-1" data-slug={course.slug} title="Save to Watch Later">
                   <svg class="h-3 w-3 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   <span class="wl-label pointer-events-none">Watch later</span>
@@ -413,7 +413,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
                     <a href={`/courses/${course.slug}`} class="focus:outline-none after:absolute after:inset-0">{course.title}</a>
                   </h3>
                   <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="flex items-center gap-1.5 hover:text-primary transition-colors group/creator shrink-0 relative z-30">
-                    <img src={course.creatorLogo} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" />
+                    <img src={course.creatorLogo} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random&color=fff';" />
                     <span class="text-[11px] font-mono text-mute group-hover/creator:text-primary transition-colors leading-none">{course.creatorName}</span>
                   </a>
                 </div>
@@ -558,7 +558,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
           <!-- Prominent Thumbnail & Promo Badge -->
           <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
             <img 
-              src={getYoutubeThumbnail(course.sampleVideoId)} 
+              src={course.thumbnail || getYoutubeThumbnail(course.sampleVideoId)} 
               alt={`${course.title} thumbnail`} 
               class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
@@ -621,6 +621,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
                   src={course.creatorLogo} 
                   alt={course.creatorName} 
                   class="h-6 w-6 rounded-full object-cover border border-hairline shrink-0 group-hover/creator:border-primary transition-colors"
+                  onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random&color=fff';"
                 />
                 <div class="flex flex-col">
                   <span class="text-xs font-mono text-mute group-hover/creator:text-primary transition-colors leading-none">{course.creatorName}</span>
@@ -1473,7 +1474,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
         
         item.innerHTML = `
           <div class="relative h-9 w-9 shrink-0">
-            <img src="${creator.logo}" class="h-full w-full object-cover rounded-full border border-hairline group-hover:border-primary transition-all" />
+            <img src="${creator.logo}" class="h-full w-full object-cover rounded-full border border-hairline group-hover:border-primary transition-all" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${creator.name}') + '&background=random&color=fff';" />
             <span class="absolute -bottom-1 -right-1 bg-primary text-on-primary text-[7px] font-mono uppercase px-1 rounded-sm">Creator</span>
           </div>
           <div class="overflow-hidden">
@@ -1491,7 +1492,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
 
       scoredMatches.slice(0, 5).forEach((course: any) => {
         const videoId = course.sampleVideoId;
-        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        const thumbnailUrl = course.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
         
         const item = document.createElement('a');
         item.href = `/courses/${course.slug}`;
@@ -1755,7 +1756,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
         const course = allCourses.find((c: any) => c.slug === slug);
         if (course) {
           count++;
-          const thumbnailUrl = `https://img.youtube.com/vi/${course.sampleVideoId}/maxresdefault.jpg`;
+          const thumbnailUrl = course.thumbnail || `https://img.youtube.com/vi/${course.sampleVideoId}/maxresdefault.jpg`;
           
           const progressKey = getUserStorageKey(`freeyt_progress_${course.slug}`);
           let progressPercent = 0;
@@ -1790,7 +1791,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
             </div>
           ` : `
             <div class="flex items-center gap-1.5 mt-2">
-              <img src="${course.creatorLogo}" class="h-4 w-4 rounded-full border border-hairline object-cover shrink-0" alt="${course.creatorName}" />
+              <img src="${course.creatorLogo}" class="h-4 w-4 rounded-full border border-hairline object-cover shrink-0" alt="${course.creatorName}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random&color=fff';" />
               <span class="text-[10px] font-mono text-mute line-clamp-1">${course.creatorName}</span>
             </div>
           `;

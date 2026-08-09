@@ -9,7 +9,7 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
 ---
 
 <!-- Sticky YouTube-Style Nav Bar -->
-<nav class="fixed top-0 left-0 right-0 z-50 bg-canvas/95 backdrop-blur border-b border-hairline px-4 md:px-6 py-3 flex justify-between items-center transition-all gap-4 h-[60px]">
+<nav class="fixed top-0 left-0 right-0 z-50 bg-canvas/95 backdrop-blur border-b border-hairline px-2 sm:px-4 md:px-6 py-3 flex justify-between items-center transition-all gap-2 sm:gap-4 h-[60px]">
   <!-- Left: Hamburger Menu Button + YouTube Style Logo -->
   <div class="flex items-center gap-3 shrink-0">
     {!hideSidebarToggle && (
@@ -38,7 +38,7 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
 
   <!-- Center: Global Search Bar (hidden on admin pages) -->
   {!isAdmin && (
-    <div id="search-container" class="relative flex-1 min-w-0 max-w-xs sm:max-w-md md:max-w-lg mx-2 sm:mx-auto flex items-center">
+    <div id="search-container" class="relative flex-1 min-w-[120px] max-w-[200px] sm:max-w-md md:max-w-lg mx-1 sm:mx-auto flex items-center">
       <form id="global-search-form" class="relative w-full flex items-center" action="/" method="GET">
         <input 
           type="text" 
@@ -81,7 +81,7 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
   )}
 
   <!-- Right-aligned Header Links -->
-  <div class="flex items-center gap-3 md:gap-4 shrink-0">
+  <div class="flex items-center gap-1 sm:gap-3 md:gap-4 shrink-0">
     <!-- User Profile Header Button (hidden on admin pages) -->
     {!isAdmin && (
       <button 
@@ -94,7 +94,7 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
       >
         <div id="header-profile-avatar-box" class="h-6 w-6 rounded-full bg-primary/10 border border-primary/30 text-primary font-bold text-xs flex items-center justify-center shrink-0 overflow-hidden">
           <span id="header-profile-initial">U</span>
-          <img id="header-profile-photo" src="" alt="Profile" class="h-full w-full object-cover hidden" />
+          <img id="header-profile-photo" src="" alt="Profile" class="h-full w-full object-cover hidden" onerror="this.classList.add('hidden'); document.getElementById('header-profile-initial')?.classList.remove('hidden');" />
         </div>
         <span id="header-auth-status-dot" class="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-mute border border-canvas group-hover:bg-primary transition-colors"></span>
       </button>
@@ -338,7 +338,36 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
     window.addEventListener('storage', updateHeaderAvatar);
   }
 
+  function fixRickAstleyCourses() {
+    try {
+      const dbRaw = localStorage.getItem('freeyt_courses_db');
+      if (dbRaw) {
+        let db = JSON.parse(dbRaw);
+        let changed = false;
+        db = db.map((course: any) => {
+          if (course.sampleVideoId === 'dQw4w9WgXcQ') {
+            const validChapter = course.chapters?.find((ch: any) => ch.videoId && ch.videoId !== 'dQw4w9WgXcQ');
+            if (validChapter) {
+              course.sampleVideoId = validChapter.videoId;
+              changed = true;
+            }
+          }
+          if (!course.thumbnail && course.sampleVideoId && course.sampleVideoId !== 'dQw4w9WgXcQ') {
+            course.thumbnail = `https://img.youtube.com/vi/${course.sampleVideoId}/maxresdefault.jpg`;
+            changed = true;
+          }
+          return course;
+        });
+        if (changed) {
+          localStorage.setItem('freeyt_courses_db', JSON.stringify(db));
+          window.location.reload();
+        }
+      }
+    } catch(e) {}
+  }
+
   function initHeader() {
+    fixRickAstleyCourses();
     initThemeToggle();
     initGlobalSearch();
     initSecretAdminTriggers();

@@ -146,7 +146,7 @@
         item.innerHTML = `
           <div class="flex items-center gap-3 overflow-hidden">
             <div class="h-10 w-10 rounded-full bg-primary/15 border border-primary/30 text-primary font-bold text-sm flex items-center justify-center shrink-0 overflow-hidden">
-              ${acc.photoURL ? `<img src="${acc.photoURL}" class="h-full w-full object-cover" />` : `<span>${initial}</span>`}
+              ${acc.photoURL ? `<img src="${acc.photoURL}" class="h-full w-full object-cover" onerror="this.parentElement.innerHTML = '<span>${initial}</span>';" />` : `<span>${initial}</span>`}
             </div>
             <div class="truncate">
               <h3 class="text-xs font-bold text-ink-strong truncate">${displayName}</h3>
