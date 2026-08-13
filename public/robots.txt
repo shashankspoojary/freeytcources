@@ -2,5 +2,9 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /login
+Disallow: /api/
+Disallow: /pip-player
+Disallow: /watch-later
+Disallow: /subscriptions
 
 Sitemap: https://freeytcourses.com/sitemap.xml

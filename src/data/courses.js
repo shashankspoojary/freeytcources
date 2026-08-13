@@ -303,5 +303,12 @@ export const courses = [
 ];
 
 export function getYoutubeThumbnail(videoId) {
-  return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+  if (!videoId) return "";
+  let id = videoId;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = videoId.match(regExp);
+  if (match && match[2].length === 11) {
+    id = match[2];
+  }
+  return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 }

@@ -8,7 +8,6 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
  * @property {string} duration
  * @property {string} [videoId]
  * @property {string} [creatorDescription]
- * @property {Array<{title: string, url: string}>} [practiceAssets]
  * 
  * @typedef {Object} Course
  * @property {string|number} id
@@ -39,7 +38,7 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
  * @property {string} overview
  * @property {boolean} [isEmbeddable]
  * @property {string} [creatorDescription]
- * @property {Array<{title: string, url: string}>} [practiceAssets]
+ * @property {string} creatorDescription
  * @property {Chapter[]} chapters
  * @property {Chapter[]} [modules]
  * @property {string} [videoUrl]
@@ -174,7 +173,14 @@ export async function getCourseBySlug(slug) {
  * Translates a sampleVideoId to YouTube's standard static maxresdefault thumbnail URL.
  */
 export function getYoutubeThumbnail(videoId) {
-  return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+  if (!videoId) return "";
+  let id = videoId;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = videoId.match(regExp);
+  if (match && match[2].length === 11) {
+    id = match[2];
+  }
+  return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 }
 
 /**

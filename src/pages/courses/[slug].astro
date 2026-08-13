@@ -18,16 +18,22 @@ if (!course) {
   return Astro.redirect("/404");
 }
 
-const modules = (course?.chapters && course.chapters.length > 0)
-  ? course.chapters
-  : (course?.modules && course.modules.length > 0)
-    ? course.modules
-    : [{
-        title: course?.title || 'Full Course Video',
-        videoId: course?.videoUrl || course?.youtubeId || course?.sampleVideoId || '',
-        creatorDescription: course?.creatorDescription || '',
-        practiceAssets: course?.practiceAssets || []
-      }];
+const modules =
+  course?.chapters && course.chapters.length > 0
+    ? course.chapters
+    : course?.modules && course.modules.length > 0
+      ? course.modules
+      : [
+          {
+            title: course?.title || "Full Course Video",
+            videoId:
+              course?.videoUrl ||
+              course?.youtubeId ||
+              course?.sampleVideoId ||
+              "",
+            creatorDescription: course?.creatorDescription || "",
+          },
+        ];
 ---
 
 <Layout
@@ -72,7 +78,9 @@ const modules = (course?.chapters && course.chapters.length > 0)
             id="video-player-container"
             class="border border-hairline bg-canvas rounded-md overflow-hidden relative shadow-2xl transition-all duration-300"
           >
-            <div class="aspect-video w-full relative group overflow-hidden bg-black rounded-2xl">
+            <div
+              class="aspect-video w-full relative group overflow-hidden bg-black rounded-2xl"
+            >
               <div id="youtube-player" class="absolute inset-0 w-full h-full">
               </div>
               <div
@@ -127,46 +135,195 @@ const modules = (course?.chapters && course.chapters.length > 0)
                   value="0"
                   step="0.1"
                 />
-                
-                <div class="flex items-center justify-between text-white font-mono text-[10px] sm:text-xs pointer-events-auto">
+
+                <div
+                  class="flex items-center justify-between text-white font-mono text-[10px] sm:text-xs pointer-events-auto"
+                >
                   <div class="flex items-center gap-1 sm:gap-4">
-                    <button id="player-play-btn" class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1">
-                      <svg id="icon-play" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
-                      <svg id="icon-pause" class="h-6 w-6 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+                    <button
+                      id="player-play-btn"
+                      class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1"
+                    >
+                      <svg
+                        id="icon-play"
+                        class="h-6 w-6"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg
+                      >
+                      <svg
+                        id="icon-pause"
+                        class="h-6 w-6 hidden"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                        ><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg
+                      >
                     </button>
 
-                    <button id="player-skip-back" class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1" title="Skip back 10s">
-                      <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+                    <button
+                      id="player-skip-back"
+                      class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1"
+                      title="Skip back 10s"
+                    >
+                      <svg
+                        class="h-4 w-4 sm:h-5 sm:w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg
+                      >
                     </button>
-                    <button id="player-skip-fwd" class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1" title="Skip forward 10s">
-                      <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                    <button
+                      id="player-skip-fwd"
+                      class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1"
+                      title="Skip forward 10s"
+                    >
+                      <svg
+                        class="h-4 w-4 sm:h-5 sm:w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg
+                      >
                     </button>
 
                     <div class="flex items-center gap-1 sm:gap-2 group/vol">
-                      <button id="player-mute-btn" class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1">
-                        <svg id="icon-vol-up" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
-                        <svg id="icon-vol-mute" class="h-4 w-4 sm:h-5 sm:w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>
+                      <button
+                        id="player-mute-btn"
+                        class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1"
+                      >
+                        <svg
+                          id="icon-vol-up"
+                          class="h-4 w-4 sm:h-5 sm:w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          ><path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                          ></path></svg
+                        >
+                        <svg
+                          id="icon-vol-mute"
+                          class="h-4 w-4 sm:h-5 sm:w-5 hidden"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          ><path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                          ></path></svg
+                        >
                       </button>
-                      <input type="range" id="player-volume" class="hidden sm:block w-16 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer accent-primary opacity-0 group-hover/vol:opacity-100 transition-opacity" min="0" max="100" value="100" />
+                      <input
+                        type="range"
+                        id="player-volume"
+                        class="hidden sm:block w-16 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer accent-primary opacity-0 group-hover/vol:opacity-100 transition-opacity"
+                        min="0"
+                        max="100"
+                        value="100"
+                      />
                     </div>
-                    <span id="player-time-display" class="ml-1 sm:ml-2 opacity-80 shrink-0">0:00 / 0:00</span>
+                    <span
+                      id="player-time-display"
+                      class="ml-1 sm:ml-2 opacity-80 shrink-0">0:00 / 0:00</span
+                    >
                   </div>
                   <div class="flex items-center gap-1 sm:gap-4">
-                    <button id="pip-toggle-btn" class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1 hidden sm:block" title="Picture in Picture">
-                      <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><rect x="11" y="10" width="9" height="6" rx="1" ry="1" fill="currentColor" opacity="0.3"></rect></svg>
+                    <button
+                      id="pip-toggle-btn"
+                      class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1 hidden sm:block"
+                      title="Picture in Picture"
+                    >
+                      <svg
+                        class="h-4 w-4 sm:h-5 sm:w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><rect x="2" y="3" width="20" height="14" rx="2" ry="2"
+                        ></rect><rect
+                          x="11"
+                          y="10"
+                          width="9"
+                          height="6"
+                          rx="1"
+                          ry="1"
+                          fill="currentColor"
+                          opacity="0.3"></rect></svg
+                      >
                     </button>
-                    <button id="hero-watch-later-btn" class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1" title="Watch Later" data-slug={course.slug}>
-                      <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <button
+                      id="hero-watch-later-btn"
+                      class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1"
+                      title="Watch Later"
+                      data-slug={course.slug}
+                    >
+                      <svg
+                        class="h-4 w-4 sm:h-5 sm:w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        ></path>
                       </svg>
                     </button>
-                    <button id="mark-complete-btn" class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1" title="Mark Completed">
-                      <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    <button
+                      id="mark-complete-btn"
+                      class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1"
+                      title="Mark Completed"
+                    >
+                      <svg
+                        class="h-4 w-4 sm:h-5 sm:w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M5 13l4 4L19 7"></path></svg
+                      >
                     </button>
 
-                    <button id="player-rate-btn" class="hover:text-primary transition-colors focus:outline-none font-bold cursor-pointer hidden sm:block" title="Playback Speed">1x</button>
-                    <button id="player-fullscreen-btn" class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1" title="Fullscreen">
-                      <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                    <button
+                      id="player-rate-btn"
+                      class="hover:text-primary transition-colors focus:outline-none font-bold cursor-pointer hidden sm:block"
+                      title="Playback Speed">1x</button
+                    >
+                    <button
+                      id="player-fullscreen-btn"
+                      class="hover:text-primary transition-colors focus:outline-none cursor-pointer p-1"
+                      title="Fullscreen"
+                    >
+                      <svg
+                        class="h-4 w-4 sm:h-5 sm:w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                        ></path></svg
+                      >
                     </button>
                   </div>
                 </div>
@@ -177,95 +334,179 @@ const modules = (course?.chapters && course.chapters.length > 0)
                 id="smart-end-screen"
                 class="absolute inset-0 w-full h-full bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center transition-opacity duration-300 z-40 hidden"
               >
-                <div id="end-screen-next" class="hidden flex-col items-center gap-4">
-                  <p class="text-xs font-mono text-primary uppercase tracking-wider">Up Next</p>
-                  <h3 id="next-lesson-title" class="text-xl font-semibold text-white tracking-tight max-w-md line-clamp-2 font-mono">Next Lesson</h3>
-                  
-                  <div class="w-48 h-1.5 bg-white/20 rounded-full overflow-hidden my-2">
-                    <div id="auto-advance-progress" class="h-full bg-primary w-0 transition-all duration-100 ease-linear"></div>
+                <div
+                  id="end-screen-next"
+                  class="hidden flex-col items-center gap-4"
+                >
+                  <p
+                    class="text-xs font-mono text-primary uppercase tracking-wider"
+                  >
+                    Up Next
+                  </p>
+                  <h3
+                    id="next-lesson-title"
+                    class="text-xl font-semibold text-white tracking-tight max-w-md line-clamp-2 font-mono"
+                  >
+                    Next Lesson
+                  </h3>
+
+                  <div
+                    class="w-48 h-1.5 bg-white/20 rounded-full overflow-hidden my-2"
+                  >
+                    <div
+                      id="auto-advance-progress"
+                      class="h-full bg-primary w-0 transition-all duration-100 ease-linear"
+                    >
+                    </div>
                   </div>
-                  
+
                   <div class="flex gap-4 mt-2">
-                    <button id="play-next-btn" class="px-6 py-2 bg-primary text-on-primary font-mono text-sm uppercase rounded-sm hover:bg-primary/90 transition-all font-bold cursor-pointer shadow-lg shadow-primary/20">Play Next Now</button>
-                    <button id="cancel-next-btn" class="px-6 py-2 bg-transparent border border-white/20 text-white hover:bg-white/10 font-mono text-sm uppercase rounded-sm transition-all cursor-pointer">Cancel</button>
+                    <button
+                      id="play-next-btn"
+                      class="px-6 py-2 bg-primary text-on-primary font-mono text-sm uppercase rounded-sm hover:bg-primary/90 transition-all font-bold cursor-pointer shadow-lg shadow-primary/20"
+                      >Play Next Now</button
+                    >
+                    <button
+                      id="cancel-next-btn"
+                      class="px-6 py-2 bg-transparent border border-white/20 text-white hover:bg-white/10 font-mono text-sm uppercase rounded-sm transition-all cursor-pointer"
+                      >Cancel</button
+                    >
                   </div>
                 </div>
-                
-                <div id="end-screen-done" class="hidden flex-col items-center gap-4">
-                  <h3 class="text-2xl font-bold text-white tracking-tight font-mono">🎉 Course Completed!</h3>
-                  <p class="text-sm text-slate-300 font-light max-w-md">You've reached the end of this course. Great job!</p>
+
+                <div
+                  id="end-screen-done"
+                  class="hidden flex-col items-center gap-4"
+                >
+                  <h3
+                    class="text-2xl font-bold text-white tracking-tight font-mono"
+                  >
+                    🎉 Course Completed!
+                  </h3>
+                  <p class="text-sm text-slate-300 font-light max-w-md">
+                    You've reached the end of this course. Great job!
+                  </p>
                   <div class="flex gap-4 mt-4">
-                    <button id="replay-course-btn" class="px-6 py-2 bg-transparent border border-white/20 text-white hover:bg-white/10 font-mono text-sm uppercase rounded-sm transition-all cursor-pointer flex items-center gap-2">
-                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    <button
+                      id="replay-course-btn"
+                      class="px-6 py-2 bg-transparent border border-white/20 text-white hover:bg-white/10 font-mono text-sm uppercase rounded-sm transition-all cursor-pointer flex items-center gap-2"
+                    >
+                      <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        ></path></svg
+                      >
                       Replay Lesson
                     </button>
-                    <a href="/courses" class="px-6 py-2 bg-primary text-on-primary font-mono text-sm uppercase rounded-sm hover:bg-primary/90 transition-all font-bold cursor-pointer shadow-lg shadow-primary/20">Explore More</a>
+                    <a
+                      href="/courses"
+                      class="px-6 py-2 bg-primary text-on-primary font-mono text-sm uppercase rounded-sm hover:bg-primary/90 transition-all font-bold cursor-pointer shadow-lg shadow-primary/20"
+                      >Explore More</a
+                    >
                   </div>
                 </div>
               </div>
               <!-- Double Tap Zones for Skiping & Center Click for Play/Pause -->
-              <div id="zone-skip-back" class="absolute inset-y-0 left-0 w-1/3 z-20 cursor-pointer" title="Double tap to skip back"></div>
-              <div id="zone-play-pause" class="absolute inset-y-0 left-1/3 right-1/3 z-20 cursor-pointer"></div>
-              <div id="zone-skip-fwd" class="absolute inset-y-0 right-0 w-1/3 z-20 cursor-pointer" title="Double tap to skip forward"></div>
+              <div
+                id="zone-skip-back"
+                class="absolute inset-y-0 left-0 w-1/3 z-20 cursor-pointer"
+                title="Double tap to skip back"
+              >
+              </div>
+              <div
+                id="zone-play-pause"
+                class="absolute inset-y-0 left-1/3 right-1/3 z-20 cursor-pointer"
+              >
+              </div>
+              <div
+                id="zone-skip-fwd"
+                class="absolute inset-y-0 right-0 w-1/3 z-20 cursor-pointer"
+                title="Double tap to skip forward"
+              >
+              </div>
             </div>
           </div>
 
           <!-- Placeholder shown when video is in PiP mode -->
-          <div id="video-pip-placeholder" class="hidden border border-hairline border-dashed rounded-md bg-canvas-soft p-12 text-center flex flex-col items-center justify-center gap-3 min-h-[300px]">
-            <div class="h-12 w-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <div
+            id="video-pip-placeholder"
+            class="hidden border border-hairline border-dashed rounded-md bg-canvas-soft p-12 text-center flex flex-col items-center justify-center gap-3 min-h-[300px]"
+          >
+            <div
+              class="h-12 w-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary"
+            >
+              <svg
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                <rect x="11" y="10" width="9" height="6" rx="1" ry="1" fill="currentColor" opacity="0.4"></rect>
+                <rect
+                  x="11"
+                  y="10"
+                  width="9"
+                  height="6"
+                  rx="1"
+                  ry="1"
+                  fill="currentColor"
+                  opacity="0.4"></rect>
               </svg>
             </div>
-            <p class="text-sm font-mono text-ink font-semibold">Video is playing in Picture-in-Picture</p>
-            <p class="text-xs font-mono text-mute max-w-sm">The floating window stays on top of other applications. Close the PiP window to return the video here.</p>
+            <p class="text-sm font-mono text-ink font-semibold">
+              Video is playing in Picture-in-Picture
+            </p>
+            <p class="text-xs font-mono text-mute max-w-sm">
+              The floating window stays on top of other applications. Close the
+              PiP window to return the video here.
+            </p>
           </div>
         </div>
 
         <!-- Module Details Tabbed Panel (Description, Assets, Syllabus) -->
-        <div class="mt-8 border border-hairline rounded-md bg-canvas-soft overflow-hidden" id="module-details-container">
-          <div class="flex border-b border-hairline bg-canvas overflow-x-auto scrollbar-none">
-            <button type="button" id="tab-desc-btn" class="flex-1 py-3 px-2 sm:px-4 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-mute hover:text-ink font-semibold border-b-2 border-transparent hover:bg-canvas-soft transition-colors focus:outline-none cursor-pointer whitespace-nowrap">
+        <div
+          class="mt-8 border border-hairline rounded-md bg-canvas-soft overflow-hidden"
+          id="module-details-container"
+        >
+          <div
+            class="flex border-b border-hairline bg-canvas overflow-x-auto scrollbar-none"
+          >
+            <button
+              type="button"
+              id="tab-desc-btn"
+              class="flex-1 py-3 px-2 sm:px-4 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-mute hover:text-ink font-semibold border-b-2 border-transparent hover:bg-canvas-soft transition-colors focus:outline-none cursor-pointer whitespace-nowrap"
+            >
               Creator Description
             </button>
-            <button type="button" id="tab-assets-btn" class="flex-1 py-3 px-2 sm:px-4 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-mute hover:text-ink font-semibold border-b-2 border-transparent hover:bg-canvas-soft transition-colors focus:outline-none cursor-pointer whitespace-nowrap">
-              Practice Assets
-            </button>
-            <button type="button" id="tab-syllabus-btn" class="flex-1 py-3 px-2 sm:px-4 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-mute hover:text-ink font-semibold border-b-2 border-transparent hover:bg-canvas-soft transition-colors focus:outline-none cursor-pointer whitespace-nowrap">
+
+            <button
+              type="button"
+              id="tab-syllabus-btn"
+              class="flex-1 py-3 px-2 sm:px-4 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-mute hover:text-ink font-semibold border-b-2 border-transparent hover:bg-canvas-soft transition-colors focus:outline-none cursor-pointer whitespace-nowrap"
+            >
               Syllabus
             </button>
           </div>
-          
+
           <div class="p-0">
             <!-- Creator Description Content -->
-            <div id="module-description-content" class="p-6 text-sm text-body font-light whitespace-pre-line leading-relaxed hidden">
-              {modules[0]?.creatorDescription || course?.creatorDescription || "ℹ️ No description provided by creator for this lesson."}
-            </div>
-
-            <!-- Practice Assets Content -->
-            <div id="module-assets-content" class="p-6 space-y-3 hidden">
-              {(!(modules[0]?.practiceAssets && modules[0].practiceAssets.length > 0) && !(course?.practiceAssets && course.practiceAssets.length > 0)) ? (
-                <div class="text-sm text-body font-light">📂 No extra practice files required for this module.</div>
-              ) : (
-                (modules[0]?.practiceAssets && modules[0].practiceAssets.length > 0 ? modules[0].practiceAssets : (course?.practiceAssets || [])).map((asset: any) => {
-                  let icon = `<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>`;
-                  if (asset.url.includes("github.com")) {
-                    icon = `<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>`;
-                  } else if (asset.url.includes("drive.google.com")) {
-                    icon = `<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5M9.73 15L16.29 3.5H23l-6.57 11.5M11.96 18.91l-3.28-5.69h13.14l-3.28 5.69"></path></svg>`;
-                  }
-                  return (
-                    <a href={asset.url} target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 bg-canvas border border-hairline rounded-sm hover:border-primary/50 transition-colors group">
-                      <div class="flex items-center gap-3">
-                        <span class="text-mute group-hover:text-primary transition-colors" set:html={icon} />
-                        <span class="text-xs font-mono text-ink-strong">{asset.title}</span>
-                      </div>
-                      <span class="text-[10px] font-mono text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity">Access &nearr;</span>
-                    </a>
-                  );
-                })
-              )}
+            <div
+              id="module-description-content"
+              class="p-6 text-sm text-body font-light whitespace-pre-line leading-relaxed hidden"
+            >
+              {
+                modules[0]?.creatorDescription ||
+                  course?.creatorDescription ||
+                  "ℹ️ No description provided by creator for this lesson."
+              }
             </div>
 
             <!-- Syllabus Content -->
@@ -354,7 +595,6 @@ const modules = (course?.chapters && course.chapters.length > 0)
             </p>
           </div>
         </article>
-
       </section>
 
       <!-- Right Column: Sidebar Actions & Technical Specs -->
@@ -436,7 +676,9 @@ const modules = (course?.chapters && course.chapters.length > 0)
                 {course.creatorName || course.author}
               </a>
               <a
-                href={course.channelId ? `https://www.youtube.com/channel/${course.channelId}` : `https://www.youtube.com/results?search_query=${encodeURIComponent(course.creatorName || course.author)}`}
+                href={course.channelId
+                  ? `https://www.youtube.com/channel/${course.channelId}`
+                  : `https://www.youtube.com/results?search_query=${encodeURIComponent(course.creatorName || course.author)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 class="text-[10px] font-mono text-primary hover:underline mt-1 block"
@@ -532,7 +774,6 @@ const modules = (course?.chapters && course.chapters.length > 0)
     data-video-id={course.sampleVideoId}
     data-chapters={JSON.stringify(modules)}
     data-course-desc={course.creatorDescription || ""}
-    data-course-assets={JSON.stringify(course.practiceAssets || [])}
     class="hidden"
   >
   </div>
@@ -577,6 +818,14 @@ const modules = (course?.chapters && course.chapters.length > 0)
     let player: any = null;
     let progressInterval: any = null;
     let apiPromise: Promise<any> | null = null;
+
+    function getYoutubeId(url: string) {
+      if (!url) return "";
+      if (url.length === 11 && !url.includes("http")) return url;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : url;
+    }
 
     // 1. Record site view & history tracking logic
     if (courseSlug) {
@@ -683,7 +932,7 @@ const modules = (course?.chapters && course.chapters.length > 0)
             onStateChange: (event: any) => {
               const iconPlay = document.getElementById("icon-play");
               const iconPause = document.getElementById("icon-pause");
-              
+
               if (event.data === YT.PlayerState.PLAYING) {
                 startProgressTracking();
                 iconPlay?.classList.add("hidden");
@@ -701,18 +950,23 @@ const modules = (course?.chapters && course.chapters.length > 0)
             },
             onError: async (event: any) => {
               if (event.data === 101 || event.data === 150) {
-                console.warn("Video cannot be embedded. Auto-migrating to external directory...");
+                console.warn(
+                  "Video cannot be embedded. Auto-migrating to external directory...",
+                );
                 try {
-                  await fetch('/api/update-embed', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ slug: courseSlug, isEmbeddable: false })
+                  await fetch("/api/update-embed", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      slug: courseSlug,
+                      isEmbeddable: false,
+                    }),
                   });
                 } catch (e) {
                   console.error("Failed to update embed status:", e);
                 }
                 alert("This roadmap has been moved to our External directory.");
-                window.location.href = '/external';
+                window.location.href = "/external";
               }
             },
           },
@@ -781,35 +1035,37 @@ const modules = (course?.chapters && course.chapters.length > 0)
       const endDone = document.getElementById("end-screen-done");
       const nextTitle = document.getElementById("next-lesson-title");
       const progressBar = document.getElementById("auto-advance-progress");
-      
+
       if (!endScreen || !endNext || !endDone) return;
-      
+
       endScreen.classList.remove("hidden");
-      
+
       if (nextIndex < chaptersData.length) {
         // Has next lesson
         endNext.classList.remove("hidden");
         endNext.classList.add("flex");
         endDone.classList.add("hidden");
         endDone.classList.remove("flex");
-        
-        if (nextTitle) nextTitle.textContent = chaptersData[nextIndex]?.title || `Lesson ${nextIndex + 1}`;
-        
+
+        if (nextTitle)
+          nextTitle.textContent =
+            chaptersData[nextIndex]?.title || `Lesson ${nextIndex + 1}`;
+
         // Start 5 second countdown
         if (progressBar) {
-          progressBar.style.transitionDuration = '0ms';
-          progressBar.style.width = '0%';
+          progressBar.style.transitionDuration = "0ms";
+          progressBar.style.width = "0%";
           void progressBar.offsetWidth; // trigger reflow
-          progressBar.style.transitionDuration = '5000ms';
-          progressBar.style.width = '100%';
+          progressBar.style.transitionDuration = "5000ms";
+          progressBar.style.width = "100%";
         }
-        
+
         if (endScreenInterval) clearTimeout(endScreenInterval);
         endScreenInterval = setTimeout(() => {
           endScreen.classList.add("hidden");
           endNext.classList.add("hidden");
           endNext.classList.remove("flex");
-          if (progressBar) progressBar.style.width = '0%';
+          if (progressBar) progressBar.style.width = "0%";
           playChapter(nextIndex);
         }, 5000);
       } else {
@@ -828,7 +1084,8 @@ const modules = (course?.chapters && course.chapters.length > 0)
 
       const chapter = chaptersData[index];
       if (!chapter) return;
-      const videoId = chapter.videoId || courseVideoId;
+      const rawVideoId = chapter.videoId || courseVideoId;
+      const videoId = getYoutubeId(rawVideoId);
 
       // Hide poster overlay
       const overlay = document.getElementById("video-poster-overlay");
@@ -837,7 +1094,8 @@ const modules = (course?.chapters && course.chapters.length > 0)
       // Hide smart end screen
       const endScreen = document.getElementById("smart-end-screen");
       if (endScreen) endScreen.classList.add("hidden");
-      if (typeof endScreenInterval !== 'undefined' && endScreenInterval) clearTimeout(endScreenInterval);
+      if (typeof endScreenInterval !== "undefined" && endScreenInterval)
+        clearTimeout(endScreenInterval);
 
       // Update Sub-Bar title
       const activeTitleDisplay = document.getElementById(
@@ -845,11 +1103,17 @@ const modules = (course?.chapters && course.chapters.length > 0)
       );
       if (activeTitleDisplay) activeTitleDisplay.textContent = chapter.title;
 
-      let savedTime = forceStartTime !== undefined ? forceStartTime : (progressState.chapterPositions[index] || 0);
+      let savedTime =
+        forceStartTime !== undefined
+          ? forceStartTime
+          : progressState.chapterPositions[index] || 0;
       const duration = progressState.chapterDurations[index] || 0;
       const percent = progressState.chapterPercentages[index] || 0;
-      
-      if (forceStartTime === undefined && (percent === 100 || (duration > 0 && savedTime >= duration - 2))) {
+
+      if (
+        forceStartTime === undefined &&
+        (percent === 100 || (duration > 0 && savedTime >= duration - 2))
+      ) {
         savedTime = 0;
       }
 
@@ -867,29 +1131,42 @@ const modules = (course?.chapters && course.chapters.length > 0)
 
       updateUI();
     }
-    
-    const globalDesc = dataEl?.getAttribute("data-course-desc") || "ℹ️ No description provided by creator for this lesson.";
+
+    const globalDesc =
+      dataEl?.getAttribute("data-course-desc") ||
+      "ℹ️ No description provided by creator for this lesson.";
     let globalAssets: any[] = [];
     try {
-      globalAssets = JSON.parse(dataEl?.getAttribute("data-course-assets") || "[]");
-    } catch(e) {}
+      globalAssets = JSON.parse(
+        dataEl?.getAttribute("data-course-assets") || "[]",
+      );
+    } catch (e) {}
 
     function escapeHtml(unsafe: string) {
-      return (unsafe || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+      return (unsafe || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
-    
+
     function enrichText(text: string): string {
       const safeText = escapeHtml(text);
-      const combinedRegex = /(https?:\/\/[^\s]+)|(\b(?:[0-9]+:)?(?:[0-5]?[0-9]):(?:[0-5][0-9])\b)/g;
+      const combinedRegex =
+        /(https?:\/\/[^\s]+)|(\b(?:[0-9]+:)?(?:[0-5]?[0-9]):(?:[0-5][0-9])\b)/g;
       return safeText.replace(combinedRegex, (match, urlGroup, timeGroup) => {
         if (urlGroup) {
           return `<a href="${urlGroup}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline break-all inline-flex items-center gap-1">${urlGroup} <svg class="h-3 w-3 inline shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>`;
         }
         if (timeGroup) {
-          const parts = timeGroup.split(':');
+          const parts = timeGroup.split(":");
           let totalSeconds = 0;
           if (parts.length === 3) {
-            totalSeconds = parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
+            totalSeconds =
+              parseInt(parts[0], 10) * 3600 +
+              parseInt(parts[1], 10) * 60 +
+              parseInt(parts[2], 10);
           } else if (parts.length === 2) {
             totalSeconds = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
           }
@@ -901,16 +1178,21 @@ const modules = (course?.chapters && course.chapters.length > 0)
 
     document.addEventListener("click", (e) => {
       const target = e.target as HTMLElement;
-      const tsBtn = target.closest('.timestamp-link') as HTMLElement;
+      const tsBtn = target.closest(".timestamp-link") as HTMLElement;
       if (tsBtn) {
         e.preventDefault();
-        const time = parseInt(tsBtn.getAttribute('data-time') || "0", 10);
-        
-        const playerContainer = document.getElementById("video-player-container");
+        const time = parseInt(tsBtn.getAttribute("data-time") || "0", 10);
+
+        const playerContainer = document.getElementById(
+          "video-player-container",
+        );
         if (playerContainer) {
-          playerContainer.scrollIntoView({ behavior: "smooth", block: "center" });
+          playerContainer.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
         }
-        
+
         if (!player) {
           playChapter(activeChapterIndex, time);
         } else {
@@ -930,37 +1212,14 @@ const modules = (course?.chapters && course.chapters.length > 0)
     function updateModuleDetailsUI(index: number) {
       const chapter = chaptersData[index];
       if (!chapter) return;
-      
-      const descContainer = document.getElementById("module-description-content");
-      if (descContainer) {
-        descContainer.innerHTML = enrichText(chapter.creatorDescription || globalDesc);
-      }
-      
-      const assetsContainer = document.getElementById("module-assets-content");
-      if (assetsContainer) {
-        const assetsToUse = (chapter.practiceAssets && chapter.practiceAssets.length > 0)
-          ? chapter.practiceAssets
-          : globalAssets;
 
-        if (!assetsToUse || assetsToUse.length === 0) {
-          assetsContainer.innerHTML = `<div class="text-sm text-body font-light">📂 No extra practice files required for this module.</div>`;
-        } else {
-          assetsContainer.innerHTML = assetsToUse.map((asset: any) => {
-            let icon = `<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>`;
-            if (asset.url.includes("github.com")) {
-              icon = `<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>`;
-            } else if (asset.url.includes("drive.google.com")) {
-              icon = `<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5M9.73 15L16.29 3.5H23l-6.57 11.5M11.96 18.91l-3.28-5.69h13.14l-3.28 5.69"></path></svg>`;
-            }
-            return `<a href="${asset.url}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 bg-canvas border border-hairline rounded-sm hover:border-primary/50 transition-colors group">
-              <div class="flex items-center gap-3">
-                <span class="text-mute group-hover:text-primary transition-colors">${icon}</span>
-                <span class="text-xs font-mono text-ink-strong">${asset.title}</span>
-              </div>
-              <span class="text-[10px] font-mono text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity">Access &nearr;</span>
-            </a>`;
-          }).join('');
-        }
+      const descContainer = document.getElementById(
+        "module-description-content",
+      );
+      if (descContainer) {
+        descContainer.innerHTML = enrichText(
+          chapter.creatorDescription || globalDesc,
+        );
       }
     }
 
@@ -1071,12 +1330,16 @@ const modules = (course?.chapters && course.chapters.length > 0)
         coursePercent = Math.round(progressState.chapterPercentages[0] || 0);
         const watchedSecs = progressState.chapterPositions[0] || 0;
         const totalSecs = progressState.chapterDurations[0] || 0;
-        
+
         if (totalSecs > 0) {
           const formatTime = (secs: number) => {
             const h = Math.floor(secs / 3600);
-            const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
-            const s = Math.floor(secs % 60).toString().padStart(2, '0');
+            const m = Math.floor((secs % 3600) / 60)
+              .toString()
+              .padStart(2, "0");
+            const s = Math.floor(secs % 60)
+              .toString()
+              .padStart(2, "0");
             if (h > 0) return `${h}:${m}:${s}`;
             return `${m}:${s}`;
           };
@@ -1253,7 +1516,6 @@ const modules = (course?.chapters && course.chapters.length > 0)
         }
       });
 
-
     // Watch Later Button Logic on Course Detail Page
     const wlBtn = document.getElementById("hero-watch-later-btn");
 
@@ -1310,12 +1572,16 @@ const modules = (course?.chapters && course.chapters.length > 0)
 
       // Close the PiP window if still open
       if (pipWindow && !pipWindow.closed) {
-        try { pipWindow.close(); } catch(e) {}
+        try {
+          pipWindow.close();
+        } catch (e) {}
       }
 
       // Clean up channel first
       if (pipChannel) {
-        try { pipChannel.close(); } catch(e) {}
+        try {
+          pipChannel.close();
+        } catch (e) {}
         pipChannel = null;
       }
 
@@ -1327,58 +1593,62 @@ const modules = (course?.chapters && course.chapters.length > 0)
       // Since the main player was acting as the audio source, it is already perfectly in sync!
       // We just need to ensure it is playing (which was the behavior of the Return to Page button).
       const doResume = () => {
-        if (player && typeof player.playVideo === 'function') {
-          try { player.playVideo(); } catch(e) {}
+        if (player && typeof player.playVideo === "function") {
+          try {
+            player.playVideo();
+          } catch (e) {}
         }
       };
-      
+
       // Call it immediately and retry slightly later just in case the iframe needs a moment to render
       doResume();
       setTimeout(doResume, 300);
-      
+
       // Also clean up local storage if we used it
-      localStorage.removeItem('freeyt_pip_time');
+      localStorage.removeItem("freeyt_pip_time");
     }
 
     // Blank out main player (hide video, show placeholder)
     function blankMainPlayer() {
-      const container = document.getElementById('youtube-player');
+      const container = document.getElementById("youtube-player");
       if (container) {
-        container.style.opacity = '0';
-        container.style.pointerEvents = 'none';
+        container.style.opacity = "0";
+        container.style.pointerEvents = "none";
       }
-      const customControls = document.getElementById('custom-player-controls');
-      if (customControls) customControls.style.display = 'none';
-      
-      let placeholder = document.getElementById('video-pip-placeholder');
+      const customControls = document.getElementById("custom-player-controls");
+      if (customControls) customControls.style.display = "none";
+
+      let placeholder = document.getElementById("video-pip-placeholder");
       if (!placeholder) {
-        placeholder = document.createElement('div');
-        placeholder.id = 'video-pip-placeholder';
-        placeholder.className = 'absolute inset-0 bg-slate-900 flex flex-col items-center justify-center z-40 text-center px-4 transition-opacity';
-        placeholder.innerHTML = '<h3 class="text-xl font-bold text-white mb-2 font-mono">Playing in Picture-in-Picture</h3><p class="text-white/70 font-mono text-sm max-w-sm">The video is currently playing in a floating window. Audio is synced from this tab.</p>';
-        const wrapper = document.querySelector('.aspect-video');
+        placeholder = document.createElement("div");
+        placeholder.id = "video-pip-placeholder";
+        placeholder.className =
+          "absolute inset-0 bg-slate-900 flex flex-col items-center justify-center z-40 text-center px-4 transition-opacity";
+        placeholder.innerHTML =
+          '<h3 class="text-xl font-bold text-white mb-2 font-mono">Playing in Picture-in-Picture</h3><p class="text-white/70 font-mono text-sm max-w-sm">The video is currently playing in a floating window. Audio is synced from this tab.</p>';
+        const wrapper = document.querySelector(".aspect-video");
         if (wrapper) wrapper.appendChild(placeholder);
       }
-      if (placeholder) placeholder.classList.remove('hidden');
+      if (placeholder) placeholder.classList.remove("hidden");
     }
 
     // Restore main player (show video, hide placeholder)
     function restoreMainPlayer() {
-      const container = document.getElementById('youtube-player');
+      const container = document.getElementById("youtube-player");
       if (container) {
-        container.style.opacity = '1';
-        container.style.pointerEvents = 'auto';
+        container.style.opacity = "1";
+        container.style.pointerEvents = "auto";
       }
-      const customControls = document.getElementById('custom-player-controls');
-      if (customControls) customControls.style.display = '';
-      
-      const placeholder = document.getElementById('video-pip-placeholder');
-      if (placeholder) placeholder.classList.add('hidden');
+      const customControls = document.getElementById("custom-player-controls");
+      if (customControls) customControls.style.display = "";
+
+      const placeholder = document.getElementById("video-pip-placeholder");
+      if (placeholder) placeholder.classList.add("hidden");
     }
 
     // Get the current playing video ID from the YouTube player
     function getCurrentVideoId(): string {
-      if (player && typeof player.getVideoUrl === 'function') {
+      if (player && typeof player.getVideoUrl === "function") {
         try {
           const url = player.getVideoUrl();
           const match = url.match(/[?&]v=([^&]+)/);
@@ -1398,54 +1668,64 @@ const modules = (course?.chapters && course.chapters.length > 0)
 
       const videoId = getCurrentVideoId();
       if (!videoId) {
-        alert('Please start playing a video first.');
+        alert("Please start playing a video first.");
         return;
       }
 
       let currentTime = 0;
-      if (player && typeof player.getCurrentTime === 'function') {
+      if (player && typeof player.getCurrentTime === "function") {
         currentTime = Math.floor(player.getCurrentTime());
       }
 
-      const activeTitle = document.getElementById('active-chapter-title-display');
-      const title = activeTitle?.textContent || 'Course Video';
+      const activeTitle = document.getElementById(
+        "active-chapter-title-display",
+      );
+      const title = activeTitle?.textContent || "Course Video";
       const pipUrl = `/pip-player?v=${encodeURIComponent(videoId)}&t=${currentTime}&title=${encodeURIComponent(title)}`;
 
       // Reset close guard for new PiP session
       pipClosing = false;
 
       // Set up BroadcastChannel to listen for closing message from pip-player
-      pipChannel = new BroadcastChannel('freeyt-pip-channel');
-      pipChannel.addEventListener('message', (e: MessageEvent) => {
-        if (e.data?.type === 'pip-ready') {
+      pipChannel = new BroadcastChannel("freeyt-pip-channel");
+      pipChannel.addEventListener("message", (e: MessageEvent) => {
+        if (e.data?.type === "pip-ready") {
           // NO LONGER pause main player! Just visually hide it so it acts as an audio source!
           blankMainPlayer();
-          const pipBtnEl = document.getElementById('pip-toggle-btn');
-          if (pipBtnEl) pipBtnEl.classList.add('text-primary');
+          const pipBtnEl = document.getElementById("pip-toggle-btn");
+          if (pipBtnEl) pipBtnEl.classList.add("text-primary");
 
           if (pipWindow) {
-            try { pipWindow.postMessage({ type: 'forward-command', func: 'playVideo' }, '*'); } catch(err) {}
+            try {
+              pipWindow.postMessage(
+                { type: "forward-command", func: "playVideo" },
+                "*",
+              );
+            } catch (err) {}
           }
         }
-        if (e.data?.type === 'sync-command') {
+        if (e.data?.type === "sync-command") {
           // Sync playback controls from PiP to the main player (audio source)
           if (player) {
             try {
               const func = e.data.func;
               const args = e.data.args || [];
-              if (typeof player[func] === 'function') {
+              if (typeof player[func] === "function") {
                 player[func](...args);
               }
-            } catch(e) {}
+            } catch (e) {}
           }
         }
-        if (e.data?.type === 'pip-closing' && typeof e.data.currentTime === 'number') {
+        if (
+          e.data?.type === "pip-closing" &&
+          typeof e.data.currentTime === "number"
+        ) {
           handlePipClose(e.data.currentTime);
         }
       });
 
       // ── Try Document Picture-in-Picture API (true always-on-top) ──
-      if ('documentPictureInPicture' in window) {
+      if ("documentPictureInPicture" in window) {
         try {
           const docPip = (window as any).documentPictureInPicture;
           const pipWin: Window = await docPip.requestWindow({
@@ -1454,15 +1734,17 @@ const modules = (course?.chapters && course.chapters.length > 0)
           });
 
           // Style the Document PiP window body
-          const style = pipWin.document.createElement('style');
-          style.textContent = '* { margin: 0; padding: 0; } html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }';
+          const style = pipWin.document.createElement("style");
+          style.textContent =
+            "* { margin: 0; padding: 0; } html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }";
           pipWin.document.head.appendChild(style);
 
           // Load pip-player inside an iframe (YouTube works fine from pip-player's same-origin context)
-          const frame = pipWin.document.createElement('iframe');
+          const frame = pipWin.document.createElement("iframe");
           frame.src = pipUrl;
-          frame.style.cssText = 'width: 100%; height: 100%; border: none; display: block;';
-          frame.allow = 'autoplay; encrypted-media; picture-in-picture';
+          frame.style.cssText =
+            "width: 100%; height: 100%; border: none; display: block;";
+          frame.allow = "autoplay; encrypted-media; picture-in-picture";
           pipWin.document.body.appendChild(frame);
 
           pipWindow = pipWin;
@@ -1470,14 +1752,14 @@ const modules = (course?.chapters && course.chapters.length > 0)
           // Note: Main player is no longer paused here. We wait for pip-ready message.
 
           // Detect Document PiP window close (fallback if BroadcastChannel message wasn't received)
-          pipWin.addEventListener('pagehide', () => {
+          pipWin.addEventListener("pagehide", () => {
             // Small delay to let BroadcastChannel message arrive first (it has the time)
             setTimeout(() => handlePipClose(), 200);
           });
 
           return; // Success — don't fall through to popup
         } catch (e) {
-          console.warn('Document PiP failed, falling back to popup window:', e);
+          console.warn("Document PiP failed, falling back to popup window:", e);
         }
       }
 
@@ -1489,14 +1771,20 @@ const modules = (course?.chapters && course.chapters.length > 0)
 
       pipWindow = window.open(
         pipUrl,
-        'freeyt_pip_player',
-        `popup=yes,width=${popupWidth},height=${popupHeight},left=${left},top=${top}`
+        "freeyt_pip_player",
+        `popup=yes,width=${popupWidth},height=${popupHeight},left=${left},top=${top}`,
       );
 
       if (!pipWindow) {
-        if (pipChannel) { try { pipChannel.close(); } catch(e) {} pipChannel = null; }
-        const msg = document.createElement('div');
-        msg.className = 'fixed bottom-6 right-6 z-[9999] bg-canvas border-2 border-primary rounded-lg p-4 shadow-2xl max-w-sm font-mono text-sm';
+        if (pipChannel) {
+          try {
+            pipChannel.close();
+          } catch (e) {}
+          pipChannel = null;
+        }
+        const msg = document.createElement("div");
+        msg.className =
+          "fixed bottom-6 right-6 z-[9999] bg-canvas border-2 border-primary rounded-lg p-4 shadow-2xl max-w-sm font-mono text-sm";
         msg.innerHTML = `<div class="flex items-start gap-3"><svg class="h-5 w-5 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><div><p class="text-ink font-semibold mb-1">Popup Blocked</p><p class="text-mute text-xs leading-relaxed">Please allow popups for this site.</p></div><button onclick="this.closest('div.fixed').remove()" class="text-mute hover:text-ink cursor-pointer shrink-0"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button></div>`;
         document.body.appendChild(msg);
         setTimeout(() => msg.remove(), 6000);
@@ -1507,18 +1795,21 @@ const modules = (course?.chapters && course.chapters.length > 0)
 
       // Also listen via postMessage for backward compat with popup
       const onPipMessage = (msg: MessageEvent) => {
-        if (msg.data?.type === 'pip-closing' && typeof msg.data.currentTime === 'number') {
+        if (
+          msg.data?.type === "pip-closing" &&
+          typeof msg.data.currentTime === "number"
+        ) {
           handlePipClose(msg.data.currentTime);
-          window.removeEventListener('message', onPipMessage);
+          window.removeEventListener("message", onPipMessage);
         }
       };
-      window.addEventListener('message', onPipMessage);
+      window.addEventListener("message", onPipMessage);
 
       // Poll to detect popup window closed (fallback)
       pipCheckInterval = setInterval(() => {
         if (!pipWindow || pipWindow.closed) {
           handlePipClose();
-          window.removeEventListener('message', onPipMessage);
+          window.removeEventListener("message", onPipMessage);
         }
       }, 500);
     }
@@ -1526,7 +1817,9 @@ const modules = (course?.chapters && course.chapters.length > 0)
     pipBtn?.addEventListener("click", openPictureInPicture);
 
     // Main video player hover controls
-    const mainPlayerContainer = document.getElementById("video-player-container");
+    const mainPlayerContainer = document.getElementById(
+      "video-player-container",
+    );
     const mainControlsBar = document.getElementById("video-controls-bar");
     const customControls = document.getElementById("custom-player-controls");
     let mainHideTimeout: any = null;
@@ -1541,16 +1834,22 @@ const modules = (course?.chapters && course.chapters.length > 0)
           customControls.classList.remove("opacity-0", "pointer-events-none");
           customControls.classList.add("opacity-100", "pointer-events-auto");
         }
-        
+
         if (mainHideTimeout) clearTimeout(mainHideTimeout);
         mainHideTimeout = setTimeout(() => {
           if (mainControlsBar) {
             mainControlsBar.classList.add("opacity-0", "pointer-events-none");
-            mainControlsBar.classList.remove("opacity-100", "pointer-events-auto");
+            mainControlsBar.classList.remove(
+              "opacity-100",
+              "pointer-events-auto",
+            );
           }
           if (customControls) {
             customControls.classList.add("opacity-0", "pointer-events-none");
-            customControls.classList.remove("opacity-100", "pointer-events-auto");
+            customControls.classList.remove(
+              "opacity-100",
+              "pointer-events-auto",
+            );
           }
         }, 2500);
       });
@@ -1559,7 +1858,10 @@ const modules = (course?.chapters && course.chapters.length > 0)
         if (mainHideTimeout) clearTimeout(mainHideTimeout);
         if (mainControlsBar) {
           mainControlsBar.classList.add("opacity-0", "pointer-events-none");
-          mainControlsBar.classList.remove("opacity-100", "pointer-events-auto");
+          mainControlsBar.classList.remove(
+            "opacity-100",
+            "pointer-events-auto",
+          );
         }
         if (customControls) {
           customControls.classList.add("opacity-0", "pointer-events-none");
@@ -1593,31 +1895,32 @@ const modules = (course?.chapters && course.chapters.length > 0)
       }
       const currentTime = player.getCurrentTime();
       const duration = player.getDuration();
-      
+
       const scrub = document.getElementById("player-scrub") as HTMLInputElement;
       const timeDisplay = document.getElementById("player-time-display");
-      
-      if (duration > 0 && scrub && !scrub.matches(':active')) {
+
+      if (duration > 0 && scrub && !scrub.matches(":active")) {
         scrub.value = ((currentTime / duration) * 100).toString();
       }
       if (timeDisplay && duration > 0) {
         timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
       }
-      
+
       requestAnimationFrame(updateCustomControls);
     }
     requestAnimationFrame(updateCustomControls);
-    
+
     // Bind Custom Controls
     const playBtn = document.getElementById("player-play-btn");
-    
+
     function togglePlayPause() {
       if (!player) {
         playChapter(activeChapterIndex);
         return;
       }
       const state = player.getPlayerState();
-      if (state === 1) { // 1 = YT.PlayerState.PLAYING
+      if (state === 1) {
+        // 1 = YT.PlayerState.PLAYING
         player.pauseVideo();
       } else {
         player.playVideo();
@@ -1646,26 +1949,32 @@ const modules = (course?.chapters && course.chapters.length > 0)
       }
     });
 
-    document.getElementById("player-skip-back")?.addEventListener("click", () => {
-      if (player && typeof player.getCurrentTime === "function") {
-        player.seekTo(player.getCurrentTime() - 10, true);
-      }
-    });
-    
-    document.getElementById("player-skip-fwd")?.addEventListener("click", () => {
-      if (player && typeof player.getCurrentTime === "function") {
-        player.seekTo(player.getCurrentTime() + 10, true);
-      }
-    });
-    
-    const scrubSlider = document.getElementById("player-scrub") as HTMLInputElement;
+    document
+      .getElementById("player-skip-back")
+      ?.addEventListener("click", () => {
+        if (player && typeof player.getCurrentTime === "function") {
+          player.seekTo(player.getCurrentTime() - 10, true);
+        }
+      });
+
+    document
+      .getElementById("player-skip-fwd")
+      ?.addEventListener("click", () => {
+        if (player && typeof player.getCurrentTime === "function") {
+          player.seekTo(player.getCurrentTime() + 10, true);
+        }
+      });
+
+    const scrubSlider = document.getElementById(
+      "player-scrub",
+    ) as HTMLInputElement;
     scrubSlider?.addEventListener("input", (e) => {
       if (player && typeof player.getDuration === "function") {
         const val = parseFloat((e.target as HTMLInputElement).value);
         player.seekTo((val / 100) * player.getDuration(), true);
       }
     });
-    
+
     const muteBtn = document.getElementById("player-mute-btn");
     const iconVolUp = document.getElementById("icon-vol-up");
     const iconVolMute = document.getElementById("icon-vol-mute");
@@ -1681,8 +1990,10 @@ const modules = (course?.chapters && course.chapters.length > 0)
         iconVolMute?.classList.remove("hidden");
       }
     });
-    
-    const volSlider = document.getElementById("player-volume") as HTMLInputElement;
+
+    const volSlider = document.getElementById(
+      "player-volume",
+    ) as HTMLInputElement;
     volSlider?.addEventListener("input", (e) => {
       if (player) {
         const val = parseInt((e.target as HTMLInputElement).value, 10);
@@ -1697,7 +2008,7 @@ const modules = (course?.chapters && course.chapters.length > 0)
         }
       }
     });
-    
+
     const rateBtn = document.getElementById("player-rate-btn");
     const rates = [1, 1.25, 1.5, 2];
     let currentRateIdx = 0;
@@ -1708,50 +2019,61 @@ const modules = (course?.chapters && course.chapters.length > 0)
       player.setPlaybackRate(newRate);
       if (rateBtn) rateBtn.textContent = `${newRate}x`;
     });
-    
+
     const fsBtn = document.getElementById("player-fullscreen-btn");
     fsBtn?.addEventListener("click", () => {
       const container = document.getElementById("video-player-wrapper");
       if (!container) return;
       if (!document.fullscreenElement) {
-        container.requestFullscreen().catch(err => {
-          console.error(`Error attempting to enable fullscreen: ${err.message}`);
+        container.requestFullscreen().catch((err) => {
+          console.error(
+            `Error attempting to enable fullscreen: ${err.message}`,
+          );
         });
       } else {
         document.exitFullscreen();
       }
     });
-    
+
     // Smart End Screen Buttons
     document.getElementById("play-next-btn")?.addEventListener("click", () => {
       if (endScreenInterval) clearTimeout(endScreenInterval);
       document.getElementById("smart-end-screen")?.classList.add("hidden");
       playChapter(activeChapterIndex + 1);
     });
-    
-    document.getElementById("cancel-next-btn")?.addEventListener("click", () => {
-      if (endScreenInterval) clearTimeout(endScreenInterval);
-      document.getElementById("smart-end-screen")?.classList.add("hidden");
-      const progressBar = document.getElementById("auto-advance-progress");
-      if (progressBar) progressBar.style.width = '0%';
-    });
-    
-    document.getElementById("replay-course-btn")?.addEventListener("click", () => {
-      document.getElementById("smart-end-screen")?.classList.add("hidden");
-      if (player) {
-        player.seekTo(0, true);
-        player.playVideo();
-      }
-    });
+
+    document
+      .getElementById("cancel-next-btn")
+      ?.addEventListener("click", () => {
+        if (endScreenInterval) clearTimeout(endScreenInterval);
+        document.getElementById("smart-end-screen")?.classList.add("hidden");
+        const progressBar = document.getElementById("auto-advance-progress");
+        if (progressBar) progressBar.style.width = "0%";
+      });
+
+    document
+      .getElementById("replay-course-btn")
+      ?.addEventListener("click", () => {
+        document.getElementById("smart-end-screen")?.classList.add("hidden");
+        if (player) {
+          player.seekTo(0, true);
+          player.playVideo();
+        }
+      });
 
     // Keyboard Shortcuts
     window.addEventListener("keydown", (e) => {
       // Ignore if typing in an input/textarea
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) return;
-      
+      if (
+        ["INPUT", "TEXTAREA", "SELECT"].includes(
+          (e.target as HTMLElement).tagName,
+        )
+      )
+        return;
+
       if (!player) return;
-      
-      switch(e.code) {
+
+      switch (e.code) {
         case "Space":
           e.preventDefault();
           togglePlayPause();
@@ -1775,16 +2097,13 @@ const modules = (course?.chapters && course.chapters.length > 0)
     const tabs = [
       {
         btn: document.getElementById("tab-desc-btn"),
-        content: document.getElementById("module-description-content")
+        content: document.getElementById("module-description-content"),
       },
-      {
-        btn: document.getElementById("tab-assets-btn"),
-        content: document.getElementById("module-assets-content")
-      },
+
       {
         btn: document.getElementById("tab-syllabus-btn"),
-        content: document.getElementById("module-syllabus-content")
-      }
+        content: document.getElementById("module-syllabus-content"),
+      },
     ];
 
     tabs.forEach((tab) => {
@@ -1795,8 +2114,19 @@ const modules = (course?.chapters && course.chapters.length > 0)
           // Reset all tabs
           tabs.forEach((t) => {
             if (t.btn && t.content) {
-              t.btn.classList.remove("text-primary", "font-bold", "border-primary", "bg-canvas-soft");
-              t.btn.classList.add("text-mute", "hover:text-ink", "font-semibold", "border-transparent", "hover:bg-canvas-soft");
+              t.btn.classList.remove(
+                "text-primary",
+                "font-bold",
+                "border-primary",
+                "bg-canvas-soft",
+              );
+              t.btn.classList.add(
+                "text-mute",
+                "hover:text-ink",
+                "font-semibold",
+                "border-transparent",
+                "hover:bg-canvas-soft",
+              );
               t.content.classList.remove("block");
               t.content.classList.add("hidden");
             }
@@ -1804,8 +2134,19 @@ const modules = (course?.chapters && course.chapters.length > 0)
 
           // If the clicked tab wasn't active, activate it
           if (!isActive && tab.btn && tab.content) {
-            tab.btn.classList.add("text-primary", "font-bold", "border-primary", "bg-canvas-soft");
-            tab.btn.classList.remove("text-mute", "hover:text-ink", "font-semibold", "border-transparent", "hover:bg-canvas-soft");
+            tab.btn.classList.add(
+              "text-primary",
+              "font-bold",
+              "border-primary",
+              "bg-canvas-soft",
+            );
+            tab.btn.classList.remove(
+              "text-mute",
+              "hover:text-ink",
+              "font-semibold",
+              "border-transparent",
+              "hover:bg-canvas-soft",
+            );
             tab.content.classList.remove("hidden");
             tab.content.classList.add("block");
           }
