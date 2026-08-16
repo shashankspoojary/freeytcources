@@ -132,3 +132,29 @@ export function recordCourseSiteView(slug) {
     console.error("Failed to record site view", e);
   }
 }
+
+export function getUserRating(slug) {
+  if (!slug || typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('user_ratings');
+    if (raw) {
+      const ratings = JSON.parse(raw);
+      return ratings[slug] || null;
+    }
+  } catch (e) {
+    console.error("Error reading user rating:", e);
+  }
+  return null;
+}
+
+export function saveUserRating(slug, rating) {
+  if (!slug || typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem('user_ratings');
+    const ratings = raw ? JSON.parse(raw) : {};
+    ratings[slug] = rating;
+    localStorage.setItem('user_ratings', JSON.stringify(ratings));
+  } catch (e) {
+    console.error("Error saving user rating:", e);
+  }
+}

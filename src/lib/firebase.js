@@ -43,6 +43,9 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
  * @property {Chapter[]} [modules]
  * @property {string} [videoUrl]
  * @property {string} [youtubeId]
+ * @property {boolean} [isCreatorSubmission]
+ * @property {boolean} [showcaseFeatured]
+ * @property {any} [creatorSubmittedAt]
  */
 
 // Firebase Config initialized using Astro env system

@@ -57,6 +57,11 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
       </div>
     </section>
 
+    <!-- Quick Filters (Pill Tags) -->
+    <nav id="courses-feed-chips" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 mb-6 -mx-6 px-6 md:mx-0 md:px-0 scroll-smooth">
+      <button class="chip-btn bg-canvas-soft hover:bg-hairline/50 text-ink px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors" data-target="top-rated">⭐ Top Rated</button>
+    </nav>
+
     <!-- Filters & Sort Controls Bar (Dropdown Selects) -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 p-4 bg-canvas-soft/40 border border-hairline rounded-md">
       <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-4 w-full md:w-auto">
@@ -112,8 +117,8 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
               class="w-full sm:w-44 appearance-none bg-canvas border border-hairline text-ink rounded-sm pl-3.5 pr-9 py-2 text-xs font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
             >
               <option value="All" selected>All Modules</option>
-              <option value="single">Single Module (1)</option>
-              <option value="multi">Multi Module (2+)</option>
+              <option value="single">Crashcourse (1)</option>
+              <option value="multi">Playlist/Chapters (2+)</option>
             </select>
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-mute">
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -159,6 +164,7 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
           data-date={course.publishDate}
           data-creator={course.creatorName}
           data-slug={course.slug}
+          data-rating-count={(course as any).ratingCount || 1}
           data-module-type={course.moduleType || (course.chapters && course.chapters.length === 1 ? 'single' : 'multi')}
         >
           <!-- Prominent Thumbnail & Promo Badge -->
@@ -499,6 +505,24 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
     (window as any).setLanguage = setLanguage;
     (window as any).setModuleType = setModuleType;
 
+    let isTopRatedActive = false;
+    document.getElementById('courses-feed-chips')?.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest('.chip-btn');
+      if (!target) return;
+      const isTopRated = target.getAttribute('data-target') === 'top-rated';
+      if (isTopRated) {
+        isTopRatedActive = !isTopRatedActive;
+        if (isTopRatedActive) {
+          target.classList.remove('bg-canvas-soft', 'text-ink', 'hover:bg-hairline/50');
+          target.classList.add('bg-ink', 'text-canvas', 'hover:bg-ink-strong', 'active');
+        } else {
+          target.classList.add('bg-canvas-soft', 'text-ink', 'hover:bg-hairline/50');
+          target.classList.remove('bg-ink', 'text-canvas', 'hover:bg-ink-strong', 'active');
+        }
+        applyFiltersAndSort();
+      }
+    });
+
     function applyFiltersAndSort() {
       if (!courseGrid) return;
       const cards = Array.from(courseGrid.getElementsByClassName('course-card')) as HTMLElement[];
@@ -564,6 +588,17 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
       }
 
       scoredCards.sort((a, b) => {
+        if (isTopRatedActive) {
+          const cardA = a.card;
+          const cardB = b.card;
+          const ratingA = parseFloat(cardA.getAttribute('data-rating') || '4.5');
+          const ratingB = parseFloat(cardB.getAttribute('data-rating') || '4.5');
+          if (ratingB !== ratingA) return ratingB - ratingA;
+          const countA = parseInt(cardA.getAttribute('data-rating-count') || '1', 10);
+          const countB = parseInt(cardB.getAttribute('data-rating-count') || '1', 10);
+          return countB - countA;
+        }
+
         if (currentQuery.length > 0) {
           if (b.score !== a.score) {
             return b.score - a.score;
