@@ -82,9 +82,9 @@ const modules =
           ))}
         </div>
         <span class="text-sm font-mono text-mute bg-canvas-soft px-2.5 py-1 rounded-sm border border-hairline/50">
-          <span id="rating-avg" class="text-ink font-semibold">{course.rating || 4.5}</span>
+          <span id="rating-avg" class="text-ink font-semibold">{course.rating || 0}</span>
           <span class="text-mute/70">/5</span> 
-          <span class="ml-1 text-[11px]">(<span id="rating-count">{(course as any).ratingCount || 1}</span> reviews)</span>
+          <span class="ml-1 text-[11px]">(<span id="rating-count">{(course as any).ratingCount || 0}</span> reviews)</span>
         </span>
       </div>
     </header>
@@ -490,6 +490,31 @@ const modules =
               PiP window to return the video here.
             </p>
           </div>
+        </div>
+
+        <!-- Creator Bar (YouTube Style) -->
+        <div class="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-hairline pb-5">
+          <div class="flex items-center gap-3.5">
+            <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="shrink-0 focus:outline-none">
+              <img 
+                src={course.creatorLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(course.creatorName || course.author)}&background=random&color=fff`} 
+                alt={course.creatorName} 
+                class="h-12 w-12 sm:h-14 sm:w-14 rounded-full object-cover border-2 border-hairline hover:border-primary transition-colors shadow-sm"
+                onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random&color=fff';"
+              />
+            </a>
+            <div class="flex flex-col">
+              <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="text-base sm:text-lg font-bold text-ink-strong hover:text-primary transition-colors line-clamp-1 focus:outline-none">
+                {course.creatorName || course.author}
+              </a>
+              <span class="text-xs sm:text-sm font-mono text-mute line-clamp-1 mt-0.5">
+                {course.creatorSubscribers || "Verified Channel"}
+              </span>
+            </div>
+          </div>
+          <button id="course-subscribe-btn" data-creator-slug={getCreatorSlug(course.creatorName)} class="hidden">
+            <!-- Content injected by JS -->
+          </button>
         </div>
 
         <!-- Module Details Tabbed Panel (Description, Assets, Syllabus) -->
@@ -2266,9 +2291,13 @@ const modules =
       allStars.forEach(star => {
         star.addEventListener('click', async () => {
           const oldRating = getUserRating(widgetSlug);
-          const val = parseInt(star.getAttribute('data-rating') || '0', 10);
+          const clickedVal = parseInt(star.getAttribute('data-rating') || '0', 10);
           
-          if (oldRating === val) return;
+          // If clicking the same star, treat it as an "undo" or clearing of the rating
+          let val = clickedVal;
+          if (oldRating === clickedVal) {
+            val = 0;
+          }
 
           renderStars(val);
           saveUserRating(widgetSlug, val);
@@ -2306,5 +2335,72 @@ const modules =
         });
       });
     }
+
+    // ---------------------------------------------------------
+    // Subscribe Button Logic
+    // ---------------------------------------------------------
+    import { getSubscriptions, setSubscriptions } from '../../lib/userStorage.js';
+    
+    function initSubscribeButton() {
+      const subBtn = document.getElementById('course-subscribe-btn');
+      if (!subBtn) return;
+      
+      const creatorSlug = subBtn.getAttribute('data-creator-slug') || '';
+      if (!creatorSlug) return;
+      
+      subBtn.classList.remove('hidden'); // Reveal after JS loads
+      
+      function isSubscribed() {
+        const subs = getSubscriptions();
+        return subs.includes(creatorSlug);
+      }
+      
+      function updateBtnUI() {
+        if (!subBtn) return;
+        if (isSubscribed()) {
+          subBtn.className = "px-5 py-2.5 sm:px-6 sm:py-3 font-mono text-xs sm:text-sm uppercase font-bold rounded-sm transition-all flex items-center justify-center gap-2 select-none cursor-pointer bg-canvas-soft border border-hairline text-ink-strong hover:border-primary shadow-sm w-full sm:w-auto shrink-0 focus:outline-none";
+          subBtn.innerHTML = `
+            <svg class="h-4 w-4 sm:h-5 sm:w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+            </svg>
+            <span>Subscribed</span>
+          `;
+        } else {
+          subBtn.className = "px-5 py-2.5 sm:px-6 sm:py-3 font-mono text-xs sm:text-sm uppercase font-bold rounded-sm transition-all flex items-center justify-center gap-2 select-none cursor-pointer bg-primary text-on-primary hover:bg-primary-soft shadow-lg shadow-primary/20 border border-primary w-full sm:w-auto shrink-0 focus:outline-none";
+          subBtn.innerHTML = `
+            <span>Subscribe</span>
+          `;
+        }
+      }
+      
+      subBtn.addEventListener('click', () => {
+        let subs = getSubscriptions();
+        if (subs.includes(creatorSlug)) {
+          subs = subs.filter((s: string) => s !== creatorSlug);
+        } else {
+          subs.push(creatorSlug);
+        }
+        setSubscriptions(subs);
+        updateBtnUI();
+      });
+      
+      // Update if changed in another tab
+      window.addEventListener('subscriptionsChanged', updateBtnUI);
+      window.addEventListener('storage', (e) => {
+        if (e.key?.includes('freeyt_subscribed_creators')) updateBtnUI();
+      });
+      window.addEventListener('pageshow', (e) => {
+        if (e.persisted) updateBtnUI();
+      });
+      
+      updateBtnUI();
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSubscribeButton);
+    } else {
+      initSubscribeButton();
+    }
+    
   </script>
 </Layout>

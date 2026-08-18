@@ -272,6 +272,36 @@ const description = "Access and track the latest courses and updates published b
       updateSubscribedChannelAvatarsVisibility();
       applyFiltersAndSort();
       renderProgressOnCards();
+
+      // Listen for subscription changes globally to instantly update UI
+      const onSubsUpdate = () => {
+        const subs = getSubscriptions();
+        
+        // If the currently filtered channel was just unsubscribed, clear the filter
+        if (selectedChannelSlug && !subs.includes(selectedChannelSlug)) {
+          selectedChannelSlug = null;
+          updateChannelSelectionUI();
+        }
+        
+        updateSubscribedChannelAvatarsVisibility();
+        applyFiltersAndSort();
+      };
+
+      window.addEventListener('subscriptionsChanged', onSubsUpdate);
+      
+      // Also listen for cross-tab local storage changes
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'freeyt_subscribed_creators' || e.key?.includes('freeyt_subscribed_creators_')) {
+          onSubsUpdate();
+        }
+      });
+
+      // Handle Back/Forward cache (bfcache) navigation when user hits "Back" from a creator page
+      window.addEventListener('pageshow', (e) => {
+        if (e.persisted) {
+          onSubsUpdate();
+        }
+      });
     }
 
     function updateSubscribedChannelAvatarsVisibility() {

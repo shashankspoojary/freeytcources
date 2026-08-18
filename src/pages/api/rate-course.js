@@ -6,7 +6,7 @@ export async function POST({ request }) {
     const body = await request.json();
     const { slug, rating, previousRating } = body;
 
-    if (!slug || typeof rating !== 'number' || rating < 1 || rating > 5) {
+    if (!slug || typeof rating !== 'number' || rating < 0 || rating > 5) {
       return new Response(JSON.stringify({ error: 'Invalid payload' }), { status: 400 });
     }
 
@@ -24,12 +24,21 @@ export async function POST({ request }) {
     const course = docSnap.data();
     
     // Default fallback values if not present
-    const oldRating = course.rating || 4.5;
-    const oldCount = course.ratingCount || 1;
+    const oldRating = course.rating || 0;
+    const oldCount = course.ratingCount || 0;
     
     let newAverage, newCount;
 
-    if (typeof previousRating === 'number' && previousRating >= 1 && previousRating <= 5) {
+    if (rating === 0 && typeof previousRating === 'number') {
+      // Removing an existing rating
+      newCount = Math.max(0, oldCount - 1);
+      if (newCount === 0) {
+        newAverage = 0; // Default fallback if no ratings left
+      } else {
+        const totalScore = (oldRating * oldCount) - previousRating;
+        newAverage = Number((totalScore / newCount).toFixed(1));
+      }
+    } else if (typeof previousRating === 'number' && previousRating >= 1 && previousRating <= 5) {
       // Update existing rating: adjust average without changing count
       newCount = oldCount;
       const totalScore = (oldRating * oldCount) - previousRating + rating;

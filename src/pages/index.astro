@@ -102,7 +102,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
     </nav>
 
     <!-- Homepage Hero Search Bar -->
-    <form id="hero-search-form" class="max-w-xl mx-auto mb-12 relative z-20" action="/courses" method="GET">
+    <form id="hero-search-form" class="max-w-xl mx-auto mb-12 relative z-20" action="/results" method="GET">
       <div class="relative flex items-center">
         <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-mute pointer-events-none">
           <svg class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -112,7 +112,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
         <input 
           type="text" 
           id="hero-search-input" 
-          name="q"
+          name="search_query"
           placeholder="Search by topic, creator, tool, or keyword (e.g. Traversy, React, DaVinci)..." 
           class="w-full bg-canvas-soft border-2 border-hairline hover:border-primary/40 focus:border-primary text-ink rounded-md pl-12 pr-24 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder-mute/60 shadow-lg font-sans"
           autocomplete="off"
@@ -532,7 +532,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
                   </a>
                 </div>
                 <div class="pt-3 border-t border-hairline flex justify-between items-center text-[10px] font-mono text-mute mt-3">
-                  <span class="text-[10px] font-mono text-mute font-bold flex items-center gap-1"><span class="text-amber-400">★</span> {course.rating || 4.5}</span>
+                  <span class="text-[10px] font-mono text-mute font-bold flex items-center gap-1"><span class="text-amber-400">★</span> {course.rating || 0}</span>
                   <a href={`/courses/${course.slug}`} class="inline-flex items-center gap-1 bg-primary/10 hover:bg-primary border border-primary/30 text-primary hover:text-on-primary px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold uppercase transition-all relative z-30 shrink-0">
                     <span>Watch Now</span>
                   </a>
@@ -1252,27 +1252,8 @@ const description = "Discover the best free YouTube courses for AI engineering, 
       cardShuffleSeedMap.set(c.slug, Math.random());
     });
 
-    /**
-     * 1. Search Query Tokenization & Normalization
-     * Converts search input into lower-case tokens, stripping special characters & extra whitespace.
-     */
-    function tokenize(text: string): string[] {
-      if (!text) return [];
-      return String(text)
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, ' ')
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean);
-    }
+    import { scoreCourse } from '../lib/searchEngine.js';
 
-    /**
-     * Base Course Rank Function
-     * Calculates internal ranking score driven by internal site watch/views on our platform:
-     * - Featured Bonus: course.featured ? 25 : 0
-     * - Site Watch Score: Math.min((siteViews || 0) * 10, 50)
-     * - Recency Score: course.publishedYear >= 2025 ? 25 : 15
-     */
     function calculateCourseRank(course: any): number {
       if (!course) return 0;
       const siteViews = getCourseSiteViews(course.slug);
@@ -1283,48 +1264,6 @@ const description = "Discover the best free YouTube courses for AI engineering, 
         : (course.publishDate ? new Date(course.publishDate).getFullYear() : 0);
       const recencyScore = year >= 2025 ? 25 : 15;
       return featuredBonus + siteViewsScore + recencyScore;
-    }
-
-    /**
-     * Multi-Field Weighted Relevance Scoring Algorithm
-     * - Title token match: +10 pts per token
-     * - Tags token match: +8 pts per token
-     * - Creator token match: +7 pts per token
-     * - Category token match: +6 pts per token
-     * - Tools token match: +5 pts per token
-     */
-    function calculateRelevanceScore(course: any, rawQuery: string): { relevanceScore: number; allTokensMatch: boolean } {
-      const queryTokens = tokenize(rawQuery);
-      if (queryTokens.length === 0) return { relevanceScore: 0, allTokensMatch: false };
-
-      const titleStr = String(course.title || '').toLowerCase();
-      const creatorStr = String(course.creatorName || course.creator || course.author || '').toLowerCase();
-      const categoryStr = String(course.category || '').toLowerCase();
-      const tagsArr: string[] = Array.isArray(course.tags) ? course.tags : (course.tags ? [course.tags] : []);
-      const toolsArr: string[] = Array.isArray(course.tools) ? course.tools : (course.tools ? [course.tools] : []);
-
-      let score = 0;
-      let allTokensMatch = true;
-
-      for (const token of queryTokens) {
-        const titleMatch = titleStr.includes(token);
-        const tagsMatch = tagsArr.some(t => String(t).toLowerCase().includes(token));
-        const creatorMatch = creatorStr.includes(token);
-        const categoryMatch = categoryStr.includes(token);
-        const toolsMatch = toolsArr.some(t => String(t).toLowerCase().includes(token));
-
-        if (!(titleMatch || tagsMatch || creatorMatch || categoryMatch || toolsMatch)) {
-          allTokensMatch = false;
-        }
-
-        if (titleMatch) score += 10;
-        if (tagsMatch) score += 8;
-        if (creatorMatch) score += 7;
-        if (categoryMatch) score += 6;
-        if (toolsMatch) score += 5;
-      }
-
-      return { relevanceScore: score, allTokensMatch };
     }
 
     // Populate skill/category dropdown dynamically from stored categories
@@ -1515,11 +1454,21 @@ const description = "Discover the best free YouTube courses for AI engineering, 
       }
     }
 
+    function tokenize(text: string): string[] {
+      if (!text) return [];
+      return String(text)
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+    }
+
     function highlightText(text: string, query: string): string {
       if (!query.trim()) return text;
       const tokens = tokenize(query);
       if (tokens.length === 0) return text;
-      const escaped = tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+      const escaped = tokens.map((t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
       const regex = new RegExp(`(${escaped})`, 'gi');
       return text.replace(regex, '<span class="text-primary font-bold">$1</span>');
     }
@@ -1541,10 +1490,8 @@ const description = "Discover the best free YouTube courses for AI engineering, 
 
       const scoredMatches = allCourses
         .map((c: any) => {
-          const { relevanceScore, allTokensMatch } = calculateRelevanceScore(c, query);
-          if (relevanceScore === 0 || !allTokensMatch) return { course: c, score: 0 };
-          const baseRank = calculateCourseRank(c);
-          return { course: c, score: relevanceScore + (baseRank * 0.2) };
+          const score = scoreCourse(c, query, calculateCourseRank);
+          return { course: c, score: score };
         })
         .filter((item: any) => item.score > 0)
         .sort((a: any, b: any) => b.score - a.score)
@@ -1639,32 +1586,7 @@ const description = "Discover the best free YouTube courses for AI engineering, 
       dropdown.classList.remove('hidden');
     }
 
-    const heroSearchForm = document.getElementById('hero-search-form') as HTMLFormElement;
-    heroSearchForm?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const q = heroSearchInput?.value || '';
-      triggerSearchSync(q);
-      dropdown?.classList.add('hidden');
-      heroSearchInput?.blur();
-      document.getElementById('courses-section')?.scrollIntoView({ behavior: 'smooth' });
-    });
 
-    searchInput?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        applyFiltersAndSort();
-        dropdown?.classList.add('hidden');
-        searchInput.blur();
-        document.getElementById('courses-section')?.scrollIntoView({ behavior: 'smooth' });
-      }
-    });
-
-    heroSearchInput?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        applyFiltersAndSort();
-        heroSearchInput.blur();
-        document.getElementById('courses-section')?.scrollIntoView({ behavior: 'smooth' });
-      }
-    });
 
     function updateSubscriptionsUI() {
       const subs = getSubscriptions();
@@ -1749,12 +1671,11 @@ const description = "Discover the best free YouTube courses for AI engineering, 
         let matchesSearch = true;
 
         if (currentQuery.length > 0 && course) {
-          const { relevanceScore, allTokensMatch } = calculateRelevanceScore(course, currentQuery);
-          if (relevanceScore === 0 || !allTokensMatch) {
+          const relevanceScore = scoreCourse(course, currentQuery, calculateCourseRank);
+          if (relevanceScore === 0) {
             matchesSearch = false;
           } else {
-            const baseRank = calculateCourseRank(course);
-            score = relevanceScore + (baseRank * 0.2);
+            score = relevanceScore;
           }
         } else if (course) {
           score = calculateCourseRank(course);

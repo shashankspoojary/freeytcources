@@ -1016,6 +1016,26 @@ const description = "Manually ingest new courses and syllabus layouts into the c
 
     const titleVal = (document.getElementById('course-title') as HTMLInputElement).value;
     const ytVal = (document.getElementById('youtube-link') as HTMLInputElement).value;
+
+    if (!isEditingMode) {
+      try {
+        const dupRes = await fetch('/api/check-duplicate-course', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: ytVal.trim() })
+        });
+        if (dupRes.ok) {
+          const dupData = await dupRes.json();
+          if (dupData.isDuplicate) {
+            alert("Error: This course is already in the database. Cannot submit duplicate course.");
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Could not check duplicate status on submit:", err);
+      }
+    }
+
     const catVal = (document.getElementById('category') as HTMLSelectElement).value;
     const authorVal = (document.getElementById('author') as HTMLInputElement).value;
     const langVal = (document.getElementById('course-language') as HTMLSelectElement).value;
@@ -1230,7 +1250,7 @@ const description = "Manually ingest new courses and syllabus layouts into the c
       
       let isDuplicate = false;
       try {
-        if (db) {
+        if (db && !isEditingMode) {
           const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
           const match = urlOrId.match(regExp);
           const videoId = (match && match[2].length === 11) ? match[2] : urlOrId;
@@ -1239,7 +1259,7 @@ const description = "Manually ingest new courses and syllabus layouts into the c
           const snap = await getDocs(qVid);
           if (!snap.empty) {
             isDuplicate = true;
-            alert("Warning: A course with this exact YouTube video already exists in the database. Are you sure you want to add it again?");
+            alert("Error: A course with this exact YouTube video already exists in the database. Duplicate submissions are not allowed.");
           }
         }
       } catch (err) {
@@ -1331,6 +1351,25 @@ const description = "Manually ingest new courses and syllabus layouts into the c
       return;
     }
 
+    if (!isEditingMode) {
+      try {
+        const dupRes = await fetch('/api/check-duplicate-course', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        if (dupRes.ok) {
+          const dupData = await dupRes.json();
+          if (dupData.isDuplicate) {
+            alert("Error: This course is already in the database. Cannot add duplicate course.");
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Could not check duplicate status:", err);
+      }
+    }
+
     if (autoFillStatus) {
       autoFillStatus.textContent = "Extracting YouTube metadata...";
       autoFillStatus.classList.remove('hidden', 'text-red-400');
@@ -1376,11 +1415,39 @@ const description = "Manually ingest new courses and syllabus layouts into the c
         if (lastRow) {
           const cDescInput = lastRow.querySelector('.module-creator-desc-input') as HTMLTextAreaElement;
           if (cDescInput) cDescInput.value = mod.creatorDescription || '';
-          
-
         }
       });
       updateModuleCount();
+
+      // Deep Duplicate Check: Check all video IDs to ensure none already exist in the database
+      if (!isEditingMode && data.modules && data.modules.length > 0) {
+        const extractedVideoIds = data.modules.map((m: any) => m.videoId).filter(Boolean);
+        if (extractedVideoIds.length > 0) {
+           try {
+              const deepDupRes = await fetch('/api/check-duplicate-course', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ url, videoIds: extractedVideoIds })
+              });
+              if (deepDupRes.ok) {
+                 const deepDupData = await deepDupRes.json();
+                 if (deepDupData.isDuplicate) {
+                    alert("Error: One or more videos from this playlist already exist as part of a curated course on our website. Cannot add overlapping course.");
+                    if (autoFillStatus) {
+                        autoFillStatus.textContent = "Overlapping Duplicate Found!";
+                        autoFillStatus.classList.remove('animate-pulse', 'text-primary');
+                        autoFillStatus.classList.add('text-red-400');
+                    }
+                    uploadForm.reset();
+                    if (modulesList) modulesList.innerHTML = '';
+                    return;
+                 }
+              }
+           } catch (e) {
+              console.warn("Could not perform deep duplicate check:", e);
+           }
+        }
+      }
 
       // Trigger standard channel info fetch which will handle author, views, logo, embeddable status
       let channelInfoUrl = url;

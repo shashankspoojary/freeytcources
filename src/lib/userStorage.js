@@ -152,7 +152,13 @@ export function saveUserRating(slug, rating) {
   try {
     const raw = localStorage.getItem('user_ratings');
     const ratings = raw ? JSON.parse(raw) : {};
-    ratings[slug] = rating;
+    
+    if (rating === 0) {
+      delete ratings[slug];
+    } else {
+      ratings[slug] = rating;
+    }
+    
     localStorage.setItem('user_ratings', JSON.stringify(ratings));
   } catch (e) {
     console.error("Error saving user rating:", e);

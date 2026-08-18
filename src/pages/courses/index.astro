@@ -349,26 +349,8 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
       } catch (e) {}
     }
 
-    /**
-     * 1. Search Query Tokenization & Normalization
-     */
-    function tokenize(text: string): string[] {
-      if (!text) return [];
-      return String(text)
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, ' ')
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean);
-    }
+    import { scoreCourse } from '../../lib/searchEngine.js';
 
-    /**
-     * Base Course Rank Function
-     * Calculates internal ranking score driven by internal site watch/views on our platform:
-     * - Featured Bonus: course.featured ? 25 : 0
-     * - Site Watch Score: Math.min((siteViews || 0) * 10, 50)
-     * - Recency Score: course.publishedYear >= 2025 ? 25 : 15
-     */
     function calculateCourseRank(course: any): number {
       if (!course) return 0;
       const siteViews = getCourseSiteViews(course.slug);
@@ -379,43 +361,6 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
         : (course.publishDate ? new Date(course.publishDate).getFullYear() : 0);
       const recencyScore = year >= 2025 ? 25 : 15;
       return featuredBonus + siteViewsScore + recencyScore;
-    }
-
-    /**
-     * 2. Multi-Field Weighted Relevance Scoring Algorithm
-     */
-    function calculateRelevanceScore(course: any, rawQuery: string): { relevanceScore: number; allTokensMatch: boolean } {
-      const queryTokens = tokenize(rawQuery);
-      if (queryTokens.length === 0) return { relevanceScore: 0, allTokensMatch: false };
-
-      const titleStr = String(course.title || '').toLowerCase();
-      const creatorStr = String(course.creatorName || course.creator || course.author || '').toLowerCase();
-      const categoryStr = String(course.category || '').toLowerCase();
-      const tagsArr: string[] = Array.isArray(course.tags) ? course.tags : (course.tags ? [course.tags] : []);
-      const toolsArr: string[] = Array.isArray(course.tools) ? course.tools : (course.tools ? [course.tools] : []);
-
-      let score = 0;
-      let allTokensMatch = true;
-
-      for (const token of queryTokens) {
-        const titleMatch = titleStr.includes(token);
-        const tagsMatch = tagsArr.some(t => String(t).toLowerCase().includes(token));
-        const creatorMatch = creatorStr.includes(token);
-        const categoryMatch = categoryStr.includes(token);
-        const toolsMatch = toolsArr.some(t => String(t).toLowerCase().includes(token));
-
-        if (!(titleMatch || tagsMatch || creatorMatch || categoryMatch || toolsMatch)) {
-          allTokensMatch = false;
-        }
-
-        if (titleMatch) score += 10;
-        if (tagsMatch) score += 8;
-        if (creatorMatch) score += 7;
-        if (categoryMatch) score += 6;
-        if (toolsMatch) score += 5;
-      }
-
-      return { relevanceScore: score, allTokensMatch };
     }
 
     // Read ?q= URL param on page load and pre-fill search input
@@ -527,7 +472,6 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
       if (!courseGrid) return;
       const cards = Array.from(courseGrid.getElementsByClassName('course-card')) as HTMLElement[];
       const currentQuery = (searchQuery || searchInput?.value || '').trim();
-      const queryTokens = tokenize(currentQuery);
 
       const scoredCards: { card: HTMLElement; score: number }[] = [];
       let visibleCount = 0;
@@ -546,13 +490,12 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
         let score = 0;
         let matchesSearch = true;
 
-        if (queryTokens.length > 0 && course) {
-          const { relevanceScore, allTokensMatch } = calculateRelevanceScore(course, currentQuery);
-          if (relevanceScore === 0 || !allTokensMatch) {
+        if (currentQuery.length > 0 && course) {
+          const relevanceScore = scoreCourse(course, currentQuery, calculateCourseRank);
+          if (relevanceScore === 0) {
             matchesSearch = false;
           } else {
-            const baseRank = calculateCourseRank(course);
-            score = relevanceScore + (baseRank * 0.2);
+            score = relevanceScore;
           }
         } else if (course) {
           score = calculateCourseRank(course);

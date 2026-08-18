@@ -39,11 +39,11 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
   <!-- Center: Global Search Bar (hidden on admin pages) -->
   {!isAdmin && (
     <div id="search-container" class="relative flex-1 min-w-[120px] max-w-[200px] sm:max-w-md md:max-w-lg mx-1 sm:mx-auto flex items-center">
-      <form id="global-search-form" class="relative w-full flex items-center" action="/" method="GET">
+      <form id="global-search-form" class="relative w-full flex items-center" action="/results" method="GET">
         <input 
           type="text" 
           id="search-input"
-          name="q"
+          name="search_query"
           placeholder="Search courses..." 
           class="w-full bg-canvas-soft border border-hairline text-ink rounded-sm pl-3 pr-14 py-1.5 sm:py-2 text-xs focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder-mute/50"
           autocomplete="off"
@@ -170,84 +170,26 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
 
     if (!searchInput) return;
 
-    let searchTimeout: any = null;
-    function emitSearch(query: string) {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        const isBrowsePage = window.location.pathname === '/' || 
-                             window.location.pathname === '/courses' || 
-                             window.location.pathname === '/courses/';
-        
-        if (isBrowsePage) {
-          const url = new URL(window.location.href);
-          if (query.trim()) {
-            url.searchParams.set('q', query.trim());
-          } else {
-            url.searchParams.delete('q');
-          }
-          window.history.replaceState({}, '', url.toString());
-        }
-
-        window.dispatchEvent(new CustomEvent('course-search', { detail: query }));
-        window.dispatchEvent(new CustomEvent('globalSearchInput', { detail: query }));
-      }, 150);
-    }
-
-    // Pre-fill from URL ?q= param
+    // Pre-fill from URL ?search_query= param
     const urlParams = new URLSearchParams(window.location.search);
-    const existingQuery = urlParams.get('q');
+    const existingQuery = urlParams.get('search_query') || urlParams.get('q');
     if (existingQuery) {
       searchInput.value = existingQuery;
       clearBtn?.classList.remove('hidden');
     }
 
-    // Show/hide clear button & emit debounced search event
     searchInput.addEventListener('input', () => {
-      const val = searchInput.value;
-      if (val.trim()) {
+      if (searchInput.value.trim()) {
         clearBtn?.classList.remove('hidden');
       } else {
         clearBtn?.classList.add('hidden');
       }
-      emitSearch(val);
     });
 
-    // Clear button
     clearBtn?.addEventListener('click', () => {
       searchInput.value = '';
       clearBtn.classList.add('hidden');
       searchInput.focus();
-      emitSearch('');
-    });
-
-    // Sync input if external search event occurs (e.g. Hero search bar)
-    function handleExternalSearch(e: Event) {
-      const customEvt = e as CustomEvent;
-      const q = typeof customEvt.detail === 'string' ? customEvt.detail : customEvt.detail?.query || '';
-      if (searchInput.value !== q) {
-        searchInput.value = q;
-        if (q.trim()) {
-          clearBtn?.classList.remove('hidden');
-        } else {
-          clearBtn?.classList.add('hidden');
-        }
-      }
-    }
-    window.addEventListener('course-search', handleExternalSearch as EventListener);
-
-    // Form submit
-    form?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const searchQuery = searchInput.value.trim();
-      const isHomePage = window.location.pathname === '/';
-      if (isHomePage) {
-        emitSearch(searchQuery);
-        const dropdown = document.getElementById('search-suggestions-dropdown');
-        if (dropdown) dropdown.classList.add('hidden');
-        document.getElementById('courses-section')?.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        window.location.href = `/?q=${encodeURIComponent(searchQuery)}`;
-      }
     });
 
     // Keyboard shortcut: press "/" to focus search
