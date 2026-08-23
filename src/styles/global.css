@@ -24,22 +24,22 @@ html.dark {
 }
 
 html.light {
-  --primary: #00875a;
-  --primary-soft: #00a870;
-  --primary-deep: #006644;
+  --primary: #059669;
+  --primary-soft: #10b981;
+  --primary-deep: #047857;
   --on-primary: #ffffff;
   
-  --ink: #1e293b;
+  --ink: #334155;
   --ink-strong: #0f172a;
-  --body: #334155;
+  --body: #475569;
   --mute: #64748b;
   
   --hairline: #cbd5e1;
   --hairline-soft: #94a3b8;
   
-  --canvas: #e2e8f0;
-  --canvas-soft: #edf2f7;
-  --canvas-text-soft: #1e293b;
+  --canvas: #f1f5f9;
+  --canvas-soft: #e2e8f0;
+  --canvas-text-soft: #cbd5e1;
   
   color-scheme: light;
 }
@@ -96,7 +96,19 @@ html.light {
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* Smooth theme transitions — only active during theme switch */
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition: background-color 0.35s ease,
+                color 0.35s ease,
+                border-color 0.35s ease,
+                box-shadow 0.35s ease,
+                fill 0.35s ease,
+                stroke 0.35s ease !important;
   }
 
   img, video, iframe {

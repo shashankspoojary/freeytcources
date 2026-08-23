@@ -148,6 +148,9 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
     updateIcons();
 
     toggleBtn?.addEventListener('click', () => {
+      // Enable smooth transitions for all elements during theme switch
+      document.documentElement.classList.add('theme-transitioning');
+
       const isLight = document.documentElement.classList.contains('light');
       if (isLight) {
         document.documentElement.classList.remove('light');
@@ -159,6 +162,11 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
         localStorage.setItem('freeyt_theme', 'light');
       }
       updateIcons();
+
+      // Remove transitioning class after animation completes
+      setTimeout(() => {
+        document.documentElement.classList.remove('theme-transitioning');
+      }, 400);
     });
   }
 

@@ -1027,8 +1027,10 @@ const description = "Manually ingest new courses and syllabus layouts into the c
         if (dupRes.ok) {
           const dupData = await dupRes.json();
           if (dupData.isDuplicate) {
-            alert("Error: This course is already in the database. Cannot submit duplicate course.");
-            return;
+            const forceAdd = confirm("Warning: This course is already in the database. Do you want to force add it anyway?");
+            if (!forceAdd) {
+              return;
+            }
           }
         }
       } catch (err) {
@@ -1259,7 +1261,8 @@ const description = "Manually ingest new courses and syllabus layouts into the c
           const snap = await getDocs(qVid);
           if (!snap.empty) {
             isDuplicate = true;
-            alert("Error: A course with this exact YouTube video already exists in the database. Duplicate submissions are not allowed.");
+            // Changed from blocking alert to allow force add
+            console.warn("A course with this exact YouTube video already exists in the database. You can force add it if needed.");
           }
         }
       } catch (err) {
@@ -1361,8 +1364,11 @@ const description = "Manually ingest new courses and syllabus layouts into the c
         if (dupRes.ok) {
           const dupData = await dupRes.json();
           if (dupData.isDuplicate) {
-            alert("Error: This course is already in the database. Cannot add duplicate course.");
-            return;
+            const forceAdd = confirm("Warning: This course is already in the database. Do you want to force auto-fill anyway?");
+            if (!forceAdd) {
+              autoFillBtn.disabled = false;
+              return;
+            }
           }
         }
       } catch (err) {
@@ -1432,15 +1438,17 @@ const description = "Manually ingest new courses and syllabus layouts into the c
               if (deepDupRes.ok) {
                  const deepDupData = await deepDupRes.json();
                  if (deepDupData.isDuplicate) {
-                    alert("Error: One or more videos from this playlist already exist as part of a curated course on our website. Cannot add overlapping course.");
-                    if (autoFillStatus) {
-                        autoFillStatus.textContent = "Overlapping Duplicate Found!";
-                        autoFillStatus.classList.remove('animate-pulse', 'text-primary');
-                        autoFillStatus.classList.add('text-red-400');
+                    const forceAdd = confirm("Warning: One or more videos from this playlist already exist as part of a curated course on our website. Do you want to force add overlapping course?");
+                    if (!forceAdd) {
+                      if (autoFillStatus) {
+                          autoFillStatus.textContent = "Overlapping Duplicate Found!";
+                          autoFillStatus.classList.remove('animate-pulse', 'text-primary');
+                          autoFillStatus.classList.add('text-red-400');
+                      }
+                      uploadForm.reset();
+                      if (modulesList) modulesList.innerHTML = '';
+                      return;
                     }
-                    uploadForm.reset();
-                    if (modulesList) modulesList.innerHTML = '';
-                    return;
                  }
               }
            } catch (e) {

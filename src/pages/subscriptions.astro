@@ -222,7 +222,7 @@ const description = "Access and track the latest courses and updates published b
 
   <!-- Client script for channel filtering, sorting, watch later -->
   <script>
-    import { getSubscriptions } from '../lib/userStorage.js';
+    import { getSubscriptions, getWatchLater, setWatchLater } from '../lib/userStorage.js';
 
     const coursesGrid = document.getElementById('subscribed-courses-grid');
     const searchInput = document.getElementById('sub-feed-search') as HTMLInputElement;
@@ -272,6 +272,7 @@ const description = "Access and track the latest courses and updates published b
       updateSubscribedChannelAvatarsVisibility();
       applyFiltersAndSort();
       renderProgressOnCards();
+      initWatchLaterButtons();
 
       // Listen for subscription changes globally to instantly update UI
       const onSubsUpdate = () => {
@@ -447,6 +448,49 @@ const description = "Access and track the latest courses and updates published b
           console.error(e);
         }
       });
+    }
+
+    // Watch Later toggle buttons
+    function updateWatchLaterButtons() {
+      const wl = getWatchLater();
+      document.querySelectorAll('.watch-later-toggle-btn').forEach(btn => {
+        const slug = btn.getAttribute('data-slug');
+        const label = btn.querySelector('.wl-label');
+        if (slug && Array.isArray(wl) && wl.includes(slug)) {
+          btn.className = "watch-later-toggle-btn absolute top-2.5 left-2.5 z-30 bg-primary text-on-primary font-bold px-2.5 py-1 rounded-sm transition-all shadow-md focus:outline-none cursor-pointer border border-primary flex items-center gap-1.5 text-[11px] font-mono";
+          if (label) label.textContent = "Saved";
+          btn.setAttribute('title', 'Saved to Watch Later (Click to remove)');
+        } else {
+          btn.className = "watch-later-toggle-btn absolute top-2.5 left-2.5 z-30 bg-canvas/95 hover:bg-primary hover:text-on-primary text-ink px-2.5 py-1 rounded-sm transition-all shadow-md focus:outline-none cursor-pointer border border-hairline hover:border-primary flex items-center gap-1.5 text-[11px] font-mono";
+          if (label) label.textContent = "Watch later";
+          btn.setAttribute('title', 'Save to Watch Later');
+        }
+      });
+    }
+
+    function initWatchLaterButtons() {
+      updateWatchLaterButtons();
+
+      document.querySelectorAll('.watch-later-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const slug = btn.getAttribute('data-slug');
+          if (!slug) return;
+
+          let wl = getWatchLater();
+          if (wl.includes(slug)) {
+            wl = wl.filter((s: string) => s !== slug);
+          } else {
+            wl.push(slug);
+          }
+
+          setWatchLater(wl);
+          updateWatchLaterButtons();
+        });
+      });
+
+      window.addEventListener('watchLaterChanged', updateWatchLaterButtons);
     }
 
     if (document.readyState === 'loading') {

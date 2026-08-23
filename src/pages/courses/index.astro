@@ -303,7 +303,7 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
   </main>
 
   <script>
-    import { getCourseSiteViews, recordCourseSiteView } from '../../lib/userStorage.js';
+    import { getCourseSiteViews, recordCourseSiteView, getWatchLater, setWatchLater } from '../../lib/userStorage.js';
 
     const skillSelect = document.getElementById('skill-filter-select') as HTMLSelectElement;
     const languageSelect = document.getElementById('language-filter-select') as HTMLSelectElement;
@@ -598,13 +598,7 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
     }
 
     function updateWatchLaterButtons() {
-      let wl: string[] = [];
-      try {
-        const raw = localStorage.getItem('freeyt_watch_later');
-        wl = raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        wl = [];
-      }
+      const wl = getWatchLater();
 
       document.querySelectorAll('.watch-later-toggle-btn').forEach(btn => {
         const slug = btn.getAttribute('data-slug');
@@ -628,25 +622,18 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
         const slug = btn.getAttribute('data-slug');
         if (!slug) return;
 
-        let wl: string[] = [];
-        try {
-          const raw = localStorage.getItem('freeyt_watch_later');
-          wl = raw ? JSON.parse(raw) : [];
-        } catch (e) {
-          wl = [];
-        }
+        let wl = getWatchLater();
 
         const isSaved = wl.includes(slug);
         if (isSaved) {
-          wl = wl.filter(s => s !== slug);
+          wl = wl.filter((s: string) => s !== slug);
           showToast('Removed from Watch Later');
         } else {
           wl.push(slug);
           showToast('Saved to Watch Later', 'View Playlist', '/watch-later');
         }
 
-        localStorage.setItem('freeyt_watch_later', JSON.stringify(wl));
-        window.dispatchEvent(new Event('watchLaterChanged'));
+        setWatchLater(wl);
         updateWatchLaterButtons();
       });
     });
