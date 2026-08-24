@@ -43,15 +43,41 @@ const description = `Search results for ${searchQuery} on FreeYTCourses. Find th
 <Layout title={title} description={description} activePage="results">
   <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 md:py-8 min-h-screen">
     
-    <!-- Top Refinement Filter Chips -->
-    <nav class="flex gap-3 overflow-x-auto no-scrollbar pb-4 mb-6 border-b border-hairline/50">
-      <button class="chip-btn bg-ink text-canvas hover:bg-ink-strong px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors active" data-filter="all">All</button>
-      <button class="chip-btn bg-canvas-soft hover:bg-hairline/50 text-ink px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors" data-filter="ai">AI &amp; ML</button>
-      <button class="chip-btn bg-canvas-soft hover:bg-hairline/50 text-ink px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors" data-filter="web">Web Development</button>
-      <button class="chip-btn bg-canvas-soft hover:bg-hairline/50 text-ink px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors" data-filter="video">Video Editing</button>
-      <button class="chip-btn bg-canvas-soft hover:bg-hairline/50 text-ink px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors" data-filter="top-rated">⭐ Top Rated</button>
-      <button class="chip-btn bg-canvas-soft hover:bg-hairline/50 text-ink px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors" data-filter="playlists">Playlists Only</button>
-    </nav>
+    <!-- YouTube-style Filter Button and Panel -->
+    <div class="mb-6">
+      <button type="button" id="filter-toggle-btn" class="inline-flex items-center gap-2 bg-canvas hover:bg-canvas-soft text-ink-strong px-4 py-2 rounded-full border border-hairline transition-colors text-sm font-semibold cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary group shadow-sm">
+        Filters
+        <svg class="h-4 w-4 text-mute group-hover:text-ink-strong transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+      </button>
+
+      <div id="filter-panel" class="hidden border-t border-hairline pt-6 mt-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
+          
+          <!-- Category -->
+          <div class="flex flex-col gap-4">
+            <h4 class="text-[11px] font-mono uppercase tracking-[0.1em] text-ink-strong font-semibold border-b border-hairline pb-2">Category</h4>
+            <div class="flex flex-col gap-3" id="category-filter-list">
+              <button type="button" class="filter-option text-sm text-left transition-colors font-semibold text-ink-strong focus:outline-none" data-filter="all">All Results</button>
+              <button type="button" class="filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none" data-filter="ai">AI & ML</button>
+              <button type="button" class="filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none" data-filter="web">Web Development</button>
+              <button type="button" class="filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none" data-filter="video">Video Editing</button>
+            </div>
+          </div>
+
+          <!-- Features -->
+          <div class="flex flex-col gap-4">
+            <h4 class="text-[11px] font-mono uppercase tracking-[0.1em] text-ink-strong font-semibold border-b border-hairline pb-2">Features</h4>
+            <div class="flex flex-col gap-3" id="features-filter-list">
+              <button type="button" class="filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none" data-filter="top-rated">⭐ Top Rated</button>
+              <button type="button" class="filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none" data-filter="playlists">Playlists Only</button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
 
     <!-- Results Container -->
     <div id="results-container" class="flex flex-col gap-6 w-full max-w-4xl mx-auto">
@@ -176,64 +202,72 @@ const description = `Search results for ${searchQuery} on FreeYTCourses. Find th
   }
 </style>
 <script>
-  // Client-side filtering logic for the chips
+  // Client-side filtering logic for the panel
   function initResultsFilter() {
-    const chips = document.querySelectorAll('.chip-btn');
+    const filterPanel = document.getElementById('filter-panel');
+    const filterToggleBtn = document.getElementById('filter-toggle-btn');
     const cards = document.querySelectorAll('.result-card');
     const container = document.getElementById('results-container');
     let activeFilter = 'all';
 
-    chips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        // Update active state
-        chips.forEach(c => {
-          c.classList.remove('bg-ink', 'text-canvas', 'hover:bg-ink-strong', 'active');
-          c.classList.add('bg-canvas-soft', 'text-ink', 'hover:bg-hairline/50');
-        });
-        chip.classList.remove('bg-canvas-soft', 'text-ink', 'hover:bg-hairline/50');
-        chip.classList.add('bg-ink', 'text-canvas', 'hover:bg-ink-strong', 'active');
+    filterToggleBtn?.addEventListener('click', () => {
+      filterPanel?.classList.toggle('hidden');
+    });
 
-        activeFilter = chip.getAttribute('data-filter') || 'all';
+    filterPanel?.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest('.filter-option');
+      if (!btn) return;
+      
+      const filterValue = btn.getAttribute('data-filter');
+      if (!filterValue) return;
 
-        let visibleCount = 0;
-        cards.forEach(card => {
-          const el = card as HTMLElement;
-          const category = (el.getAttribute('data-category') || '').toLowerCase();
-          const moduleType = el.getAttribute('data-module-type');
-          const ratingStr = el.getAttribute('data-rating');
-          const rating = parseFloat(ratingStr || '0');
+      // Update active state in UI
+      const buttons = filterPanel.querySelectorAll('.filter-option');
+      buttons.forEach(b => {
+        b.className = 'filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none';
+      });
+      btn.className = 'filter-option text-sm text-left transition-colors font-semibold text-ink-strong focus:outline-none';
 
-          let show = false;
-          if (activeFilter === 'all') show = true;
-          else if (activeFilter === 'ai' && category.includes('ai')) show = true;
-          else if (activeFilter === 'web' && (category.includes('web') || category.includes('coding'))) show = true;
-          else if (activeFilter === 'video' && category.includes('video')) show = true;
-          else if (activeFilter === 'top-rated' && rating >= 4.8) show = true;
-          else if (activeFilter === 'playlists' && moduleType === 'multi') show = true;
+      activeFilter = filterValue;
+      let visibleCount = 0;
+      
+      cards.forEach(card => {
+        const el = card as HTMLElement;
+        const category = (el.getAttribute('data-category') || '').toLowerCase();
+        const moduleType = el.getAttribute('data-module-type');
+        const ratingStr = el.getAttribute('data-rating');
+        const rating = parseFloat(ratingStr || '0');
 
-          if (show) {
-            el.style.display = 'flex';
-            visibleCount++;
-          } else {
-            el.style.display = 'none';
-          }
-        });
+        let show = false;
+        if (activeFilter === 'all') show = true;
+        else if (activeFilter === 'ai' && category.includes('ai')) show = true;
+        else if (activeFilter === 'web' && (category.includes('web') || category.includes('coding'))) show = true;
+        else if (activeFilter === 'video' && category.includes('video')) show = true;
+        else if (activeFilter === 'top-rated' && rating >= 4.8) show = true;
+        else if (activeFilter === 'playlists' && moduleType === 'multi') show = true;
 
-        // Hide/Show logic for Empty State if filtering hides all matches
-        const existingEmptyState = container?.querySelector('.empty-filter-state');
-        if (visibleCount === 0 && cards.length > 0) {
-          if (!existingEmptyState) {
-            const emptyDiv = document.createElement('div');
-            emptyDiv.className = 'empty-filter-state py-12 text-center text-mute';
-            emptyDiv.textContent = 'No courses match this specific filter.';
-            container?.appendChild(emptyDiv);
-          }
+        if (show) {
+          el.style.display = 'flex';
+          visibleCount++;
         } else {
-          if (existingEmptyState) {
-            existingEmptyState.remove();
-          }
+          el.style.display = 'none';
         }
       });
+
+      // Hide/Show logic for Empty State if filtering hides all matches
+      const existingEmptyState = container?.querySelector('.empty-filter-state');
+      if (visibleCount === 0 && cards.length > 0) {
+        if (!existingEmptyState) {
+          const emptyDiv = document.createElement('div');
+          emptyDiv.className = 'empty-filter-state py-12 text-center text-mute';
+          emptyDiv.textContent = 'No courses match this specific filter.';
+          container?.appendChild(emptyDiv);
+        }
+      } else {
+        if (existingEmptyState) {
+          existingEmptyState.remove();
+        }
+      }
     });
   }
 

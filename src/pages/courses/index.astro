@@ -62,90 +62,59 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
       <button class="chip-btn bg-canvas-soft hover:bg-hairline/50 text-ink px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors" data-target="top-rated">⭐ Top Rated</button>
     </nav>
 
-    <!-- Filters & Sort Controls Bar (Dropdown Selects) -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 p-4 bg-canvas-soft/40 border border-hairline rounded-md">
-      <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-4 w-full md:w-auto">
-        
-        <!-- Skill / Category Filter Dropdown -->
-        <div class="flex items-center gap-2">
-          <label for="skill-filter-select" class="text-xs font-mono uppercase tracking-wider text-mute font-semibold shrink-0">Filter Skill:</label>
-          <div class="relative flex-1 sm:flex-initial">
-            <select 
-              id="skill-filter-select" 
-              class="w-full sm:w-48 appearance-none bg-canvas border border-hairline text-ink rounded-sm pl-3.5 pr-9 py-2 text-xs font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
-            >
-              <option value="All" selected>All Courses</option>
-              <option value="AI Engineering">AI Engineering</option>
-              <option value="Video Editing">Video Editing</option>
-              <option value="Coding Skills">Coding Skills</option>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-mute">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
+    <!-- YouTube-style Filter Button and Panel -->
+    <div class="mb-8">
+      <button type="button" id="filter-toggle-btn" class="inline-flex items-center gap-2 bg-canvas hover:bg-canvas-soft text-ink-strong px-4 py-2 rounded-full border border-hairline transition-colors text-sm font-semibold cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary group shadow-sm">
+        Filters
+        <svg class="h-4 w-4 text-mute group-hover:text-ink-strong transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+      </button>
+
+      <div id="filter-panel" class="hidden border-t border-hairline pt-6 mt-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+          
+          <!-- Skill / Category -->
+          <div class="flex flex-col gap-4">
+            <h4 class="text-[11px] font-mono uppercase tracking-[0.1em] text-ink-strong font-semibold border-b border-hairline pb-2">Skill</h4>
+            <div class="flex flex-col gap-3" id="skill-filter-list">
+              <button type="button" class="filter-option text-sm text-left transition-colors font-semibold text-ink-strong focus:outline-none" data-filter-type="skill" data-value="All">All Courses</button>
+              <button type="button" class="filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none" data-filter-type="skill" data-value="AI Engineering">AI Engineering</button>
+              <button type="button" class="filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none" data-filter-type="skill" data-value="Video Editing">Video Editing</button>
+              <button type="button" class="filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none" data-filter-type="skill" data-value="Coding Skills">Coding Skills</button>
             </div>
           </div>
-        </div>
 
-        <!-- Language Filter Dropdown -->
-        <div class="flex items-center gap-2">
-          <label for="language-filter-select" class="text-xs font-mono uppercase tracking-wider text-mute font-semibold shrink-0">Language:</label>
-          <div class="relative flex-1 sm:flex-initial">
-            <select 
-              id="language-filter-select" 
-              class="w-full sm:w-44 appearance-none bg-canvas border border-hairline text-ink rounded-sm pl-3.5 pr-9 py-2 text-xs font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
-            >
-              <option value="All" selected>All Languages</option>
+          <!-- Language -->
+          <div class="flex flex-col gap-4">
+            <h4 class="text-[11px] font-mono uppercase tracking-[0.1em] text-ink-strong font-semibold border-b border-hairline pb-2">Language</h4>
+            <div class="flex flex-col gap-3" id="language-filter-list">
+              <button type="button" class="filter-option text-sm text-left transition-colors font-semibold text-ink-strong focus:outline-none" data-filter-type="language" data-value="All">All Languages</button>
               {languages.map((lang) => (
-                <option value={lang}>{lang}</option>
+                <button type="button" class="filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none" data-filter-type="language" data-value={lang}>{lang}</button>
               ))}
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-mute">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
             </div>
           </div>
-        </div>
 
-        <!-- Module Structure Filter Dropdown -->
-        <div class="flex items-center gap-2">
-          <label for="module-filter-select" class="text-xs font-mono uppercase tracking-wider text-mute font-semibold shrink-0">Modules:</label>
-          <div class="relative flex-1 sm:flex-initial">
-            <select 
-              id="module-filter-select" 
-              class="w-full sm:w-44 appearance-none bg-canvas border border-hairline text-ink rounded-sm pl-3.5 pr-9 py-2 text-xs font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
-            >
-              <option value="All" selected>All Modules</option>
-              <option value="single">Crashcourse (1)</option>
-              <option value="multi">Playlist/Chapters (2+)</option>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-mute">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
+          <!-- Modules -->
+          <div class="flex flex-col gap-4">
+            <h4 class="text-[11px] font-mono uppercase tracking-[0.1em] text-ink-strong font-semibold border-b border-hairline pb-2">Modules</h4>
+            <div class="flex flex-col gap-3" id="module-filter-list">
+              <button type="button" class="filter-option text-sm text-left transition-colors font-semibold text-ink-strong focus:outline-none" data-filter-type="module" data-value="All">All Modules</button>
+              <button type="button" class="filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none" data-filter-type="module" data-value="single">Crashcourse (1)</button>
+              <button type="button" class="filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none" data-filter-type="module" data-value="multi">Playlist/Chapters (2+)</button>
             </div>
           </div>
-        </div>
 
-      </div>
-
-      <!-- Sort By Dropdown -->
-      <div class="flex items-center gap-2 w-full md:w-auto justify-start md:justify-end">
-        <label for="sort-filter-select" class="text-xs font-mono uppercase tracking-wider text-mute font-semibold shrink-0">Sort By:</label>
-        <div class="relative flex-1 sm:flex-initial">
-          <select 
-            id="sort-filter-select" 
-            class="w-full sm:w-48 appearance-none bg-canvas border border-hairline text-ink rounded-sm pl-3.5 pr-9 py-2 text-xs font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
-          >
-            <option value="most-watched" selected>Most Watched on Site</option>
-            <option value="latest">Latest</option>
-          </select>
-          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-mute">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
+          <!-- Sort By -->
+          <div class="flex flex-col gap-4">
+            <h4 class="text-[11px] font-mono uppercase tracking-[0.1em] text-ink-strong font-semibold border-b border-hairline pb-2">Prioritize</h4>
+            <div class="flex flex-col gap-3" id="sort-filter-list">
+              <button type="button" class="filter-option text-sm text-left transition-colors font-semibold text-ink-strong focus:outline-none" data-filter-type="sort" data-value="most-watched">Popularity</button>
+              <button type="button" class="filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none" data-filter-type="sort" data-value="latest">Latest</button>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -305,10 +274,43 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
   <script>
     import { getCourseSiteViews, recordCourseSiteView, getWatchLater, setWatchLater } from '../../lib/userStorage.js';
 
-    const skillSelect = document.getElementById('skill-filter-select') as HTMLSelectElement;
-    const languageSelect = document.getElementById('language-filter-select') as HTMLSelectElement;
-    const moduleSelect = document.getElementById('module-filter-select') as HTMLSelectElement;
-    const sortSelect = document.getElementById('sort-filter-select') as HTMLSelectElement;
+    // Filter Panel Elements
+    const filterPanel = document.getElementById('filter-panel');
+    const filterToggleBtn = document.getElementById('filter-toggle-btn');
+    
+    filterToggleBtn?.addEventListener('click', () => {
+      filterPanel?.classList.toggle('hidden');
+    });
+
+    filterPanel?.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest('.filter-option');
+      if (!btn) return;
+      
+      const filterType = btn.getAttribute('data-filter-type');
+      const value = btn.getAttribute('data-value');
+      
+      if (filterType && value) {
+        if (filterType === 'skill') setFilter(value);
+        else if (filterType === 'language') setLanguage(value);
+        else if (filterType === 'module') setModuleType(value);
+        else if (filterType === 'sort') setSort(value);
+      }
+    });
+
+    function updateFilterUI(type: string, value: string) {
+      const listId = `${type}-filter-list`;
+      const list = document.getElementById(listId);
+      if (!list) return;
+      
+      const buttons = list.querySelectorAll('.filter-option');
+      buttons.forEach(b => {
+        if (b.getAttribute('data-value') === value) {
+          b.className = 'filter-option text-sm text-left transition-colors font-semibold text-ink-strong focus:outline-none';
+        } else {
+          b.className = 'filter-option text-sm text-left hover:text-ink transition-colors text-body focus:outline-none';
+        }
+      });
+    }
 
     const courseGrid = document.getElementById('course-grid');
     const emptyState = document.getElementById('empty-state');
@@ -324,27 +326,25 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
     const coursesDataEl = document.getElementById('courses-data');
     const allCourses = JSON.parse(coursesDataEl?.getAttribute('data-courses') || '[]');
 
-    // Populate skill/category dropdown dynamically from stored categories
+    // Populate skill/category filter options dynamically from stored categories
     function populateCategoryOptions() {
-      if (!skillSelect) return;
+      const skillFilterList = document.getElementById('skill-filter-list');
+      if (!skillFilterList) return;
       try {
         const raw = localStorage.getItem('freeyt_categories');
         const cats = raw ? JSON.parse(raw) : ["AI Engineering", "Video Editing", "Coding Skills"];
         const cur = activeFilter;
 
-        skillSelect.innerHTML = '<option value="All">All Courses</option>';
+        let html = `<button type="button" class="filter-option text-sm text-left transition-colors ${cur === 'All' ? 'font-semibold text-ink-strong' : 'hover:text-ink text-body'} focus:outline-none" data-filter-type="skill" data-value="All">All Courses</button>`;
         cats.forEach((cat: string) => {
-          const opt = document.createElement('option');
-          opt.value = cat;
-          opt.textContent = cat;
-          if (cat === cur) opt.selected = true;
-          skillSelect.appendChild(opt);
+          const isActive = cat === cur;
+          html += `<button type="button" class="filter-option text-sm text-left transition-colors ${isActive ? 'font-semibold text-ink-strong' : 'hover:text-ink text-body'} focus:outline-none" data-filter-type="skill" data-value="${cat}">${cat}</button>`;
         });
-        if (cats.includes(cur) || cur === 'All') {
-          skillSelect.value = cur;
-        } else {
-          skillSelect.value = 'All';
-          activeFilter = 'All';
+        skillFilterList.innerHTML = html;
+        
+        if (!cats.includes(cur) && cur !== 'All') {
+           activeFilter = 'All';
+           populateCategoryOptions(); // re-render to highlight 'All'
         }
       } catch (e) {}
     }
@@ -372,9 +372,9 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
     }
     
     const initialSkill = urlParams.get('skill');
-    if (initialSkill && skillSelect) {
-      skillSelect.value = initialSkill;
+    if (initialSkill) {
       activeFilter = initialSkill;
+      updateFilterUI('skill', initialSkill);
     }
 
     // Listen for live search events
@@ -390,20 +390,7 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
     window.addEventListener('course-search', handleSearchEvent as EventListener);
     window.addEventListener('globalSearchInput', handleSearchEvent as EventListener);
 
-    skillSelect?.addEventListener('change', () => {
-      activeFilter = skillSelect.value;
-      applyFiltersAndSort();
-    });
-
-    languageSelect?.addEventListener('change', () => {
-      activeLanguage = languageSelect.value;
-      applyFiltersAndSort();
-    });
-
-    sortSelect?.addEventListener('change', () => {
-      activeSort = sortSelect.value;
-      applyFiltersAndSort();
-    });
+    // Filter click handling is now consolidated in the filterPanel event delegation
 
     window.addEventListener('categoriesChanged', () => {
       populateCategoryOptions();
@@ -419,31 +406,27 @@ const description = "Filter, search, and sort high-quality curated YouTube cours
 
     function setFilter(category: string) {
       activeFilter = category;
-      if (skillSelect) skillSelect.value = category;
+      updateFilterUI('skill', category);
       applyFiltersAndSort();
     }
 
     function setSort(sortType: string) {
       activeSort = sortType;
-      if (sortSelect) sortSelect.value = sortType;
+      updateFilterUI('sort', sortType);
       applyFiltersAndSort();
     }
 
     function setLanguage(lang: string) {
       activeLanguage = lang;
-      if (languageSelect) languageSelect.value = lang;
+      updateFilterUI('language', lang);
       applyFiltersAndSort();
     }
 
     function setModuleType(modType: string) {
       activeModuleType = modType;
-      if (moduleSelect) moduleSelect.value = modType;
+      updateFilterUI('module', modType);
       applyFiltersAndSort();
     }
-
-    moduleSelect?.addEventListener('change', (e) => {
-      setModuleType((e.target as HTMLSelectElement).value);
-    });
 
     (window as any).setFilter = setFilter;
     (window as any).setSort = setSort;
