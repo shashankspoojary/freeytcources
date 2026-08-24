@@ -1,0 +1,671 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = "Curated Course Builder";
+const description = "Create and manage curated courses from individual YouTube videos.";
+---
+
+<Layout title={title} description={description} activePage="admin" hideSidebar={true}>
+
+  <main class="max-w-4xl mx-auto px-6 py-12 md:py-20 min-h-[calc(100vh-140px)]">
+
+    <!-- Admin Console (Hidden Until Authenticated) -->
+    <div id="admin-console" class="hidden w-full max-w-3xl mx-auto space-y-8 opacity-0 transform translate-y-4 transition-all duration-500">
+      
+      <!-- Console Header -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-hairline pb-6">
+        <div>
+          <div class="inline-block font-mono text-[10px] text-primary uppercase tracking-[2.52px] mb-2 bg-primary/10 px-2.5 py-1 rounded-pill border border-primary/20">
+            Authenticated Admin Session
+          </div>
+          <h1 class="text-3xl font-light text-ink-strong tracking-[-0.65px]">Curated Course Builder</h1>
+          <p class="text-sm text-body font-light mt-1">
+            Build curated courses from individual YouTube videos.
+          </p>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <a href="/admin/analytics" class="text-xs font-mono uppercase border border-blue-500/50 text-blue-500 hover:bg-blue-500 hover:text-white px-3.5 py-2.5 rounded-sm transition-all flex items-center gap-2 cursor-pointer font-bold">Analytics</a>
+          <a href="/admin/upload" class="text-xs font-mono uppercase border border-primary/50 text-primary hover:bg-primary hover:text-on-primary px-3.5 py-2.5 rounded-sm transition-all flex items-center gap-2 cursor-pointer font-bold">Upload Console</a>
+          <button id="lock-console-btn" class="text-xs font-mono uppercase border border-hairline hover:border-red-500/50 hover:text-red-400 text-body px-3.5 py-2.5 rounded-sm transition-all flex items-center gap-2 cursor-pointer">Sign Out</button>
+        </div>
+      </div>
+
+      <!-- Main Form -->
+      <form id="upload-form" class="space-y-8">
+        
+        <!-- Section 1: Course Metadata -->
+        <div class="bg-canvas-soft border border-hairline rounded-md p-6 space-y-6">
+          <div class="flex items-center gap-2 mb-2 border-b border-hairline/40 pb-3">
+            <span class="text-xs font-mono text-primary font-bold">01/</span>
+            <h2 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold">Course Meta-Data</h2>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="course-title" class="block text-xs font-mono uppercase tracking-wider text-mute mb-2">Curated Course Title</label>
+              <input type="text" id="course-title" placeholder="e.g. Python Full Course" class="w-full bg-canvas border border-hairline text-ink rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/40" required />
+            </div>
+
+            <div>
+              <label for="author" class="block text-xs font-mono uppercase tracking-wider text-mute mb-2">Author Name</label>
+              <input type="text" id="author" value="FreeYTcourses" readonly class="w-full bg-canvas border border-hairline text-ink rounded-sm px-4 py-3 text-sm focus:outline-none transition-all text-primary font-bold opacity-80 cursor-not-allowed" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-6 pt-4 border-t border-hairline/40">
+            <!-- Course Tags / Tools Input Section -->
+            <div>
+              <label for="tag-input" class="block text-xs font-mono uppercase tracking-wider text-mute mb-2">Tags / Technologies (Optional)</label>
+              <div class="flex gap-2 mb-3">
+                <input type="text" id="tag-input" placeholder="e.g. Python, Next.js (Press Enter)" class="flex-grow bg-canvas border border-hairline text-ink rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/40" />
+                <button type="button" id="add-tag-btn" class="px-4 py-3 bg-canvas border border-hairline hover:border-primary text-xs font-mono uppercase text-body hover:text-primary rounded-sm transition-all shrink-0 cursor-pointer">Add Tag</button>
+              </div>
+              <div id="tags-chips-container" class="flex flex-wrap gap-2 min-h-[36px] p-2.5 bg-canvas/40 border border-hairline/60 rounded-sm">
+                <span class="text-xs font-mono text-mute/50 self-center" id="no-tags-msg">No tags added yet.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Extended Summary -->
+        <div class="bg-canvas-soft border border-hairline rounded-md p-6 space-y-6">
+          <div class="flex items-center justify-between border-b border-hairline/40 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-primary font-bold">02/</span>
+              <h2 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold">Extended Overview & Critique</h2>
+            </div>
+            <span class="text-xs font-mono text-mute">
+              Words: <span id="word-count" class="text-ink font-semibold">0</span> / 200 | Chars: <span id="char-count" class="text-ink">0</span>
+            </span>
+          </div>
+          <div>
+            <textarea id="overview" rows="6" placeholder="Provide a summary of this curated course..." class="w-full bg-canvas border border-hairline text-ink rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/40 font-light leading-relaxed mb-1" required></textarea>
+          </div>
+        </div>
+
+        <!-- Section 3: Dynamic Syllabus Modules -->
+        <div class="bg-canvas-soft border border-hairline rounded-md p-6 space-y-6">
+          <div class="flex justify-between items-center border-b border-hairline/40 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-primary font-bold">03/</span>
+              <h2 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold">Curated Video Modules</h2>
+            </div>
+            <span class="text-xs font-mono text-mute">
+              Modules: <span id="module-count" class="text-primary font-bold">0</span>
+            </span>
+          </div>
+
+          <!-- Modules Container -->
+          <div id="modules-list" class="space-y-4">
+            <!-- Dynamic rows will be inserted here by JavaScript -->
+          </div>
+
+          <!-- Add Module Control -->
+          <button type="button" id="add-module-btn" class="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-hairline hover:border-primary/50 text-xs font-mono uppercase text-body hover:text-primary rounded-sm transition-all cursor-pointer bg-canvas/30">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Another Video Module
+          </button>
+        </div>
+
+        <!-- Form Submission Controls -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-hairline">
+          <button type="button" id="reset-form-btn" class="w-full sm:w-auto px-6 py-3.5 border border-hairline hover:border-red-500/30 text-xs font-mono uppercase text-body hover:text-red-400 rounded-sm transition-all cursor-pointer bg-transparent">Reset Form</button>
+          
+          <button type="submit" id="admin-submit-btn" disabled class="w-full sm:w-auto bg-primary text-on-primary font-mono uppercase text-sm font-bold tracking-wider py-3.5 px-8 rounded-sm hover:bg-primary-soft transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            Save Curated Course
+          </button>
+        </div>
+      </form>
+      
+      <!-- Section 4: Active Curated Courses List -->
+      <div class="bg-canvas-soft border border-hairline rounded-md p-6 space-y-6 mt-12">
+        <div class="flex items-center gap-2 border-b border-hairline/40 pb-4">
+          <span class="text-xs font-mono text-primary font-bold">04/</span>
+          <h2 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold">Active Curated Courses</h2>
+        </div>
+        <div id="playlists-container" class="space-y-4">
+          <p class="text-sm text-mute font-light text-center py-8">Loading courses...</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Notification Toast Alert Component -->
+  <div id="success-toast" class="fixed bottom-6 right-6 z-50 bg-canvas border border-hairline rounded-md p-4 shadow-2xl max-w-sm flex gap-3 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-300 border-l-4 border-l-primary">
+    <div class="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+    <div>
+      <h3 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold">Success</h3>
+      <p id="toast-message" class="text-xs text-body font-light mt-0.5 leading-relaxed">Operation completed successfully.</p>
+    </div>
+    <button id="close-toast-btn" class="text-mute hover:text-ink transition-colors ml-2 self-start cursor-pointer focus:outline-none bg-transparent border-none">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+</Layout>
+
+<script>
+  import { db, auth } from '../../lib/firebase.js';
+  import { doc, setDoc, collection, getDocs, deleteDoc, getDoc } from 'firebase/firestore';
+  import { onAuthStateChanged, signOut } from 'firebase/auth';
+  import { getCreatorSlug } from '../../lib/firebase.js';
+
+  const PUBLIC_ADMIN_UID = import.meta.env.PUBLIC_ADMIN_UID || 'L3hLhdVxWBRkPk4GQg5KIZGFrx63';
+
+  // DOM Elements
+  const adminConsole = document.getElementById('admin-console');
+  const lockConsoleBtn = document.getElementById('lock-console-btn');
+  const uploadForm = document.getElementById('upload-form') as HTMLFormElement;
+  const resetFormBtn = document.getElementById('reset-form-btn');
+  const adminSubmitBtn = document.getElementById('admin-submit-btn') as HTMLButtonElement;
+  const playlistsContainer = document.getElementById('playlists-container');
+  
+  const courseTitleInput = document.getElementById('course-title') as HTMLInputElement;
+  const overviewInput = document.getElementById('overview') as HTMLTextAreaElement;
+  const wordCount = document.getElementById('word-count');
+  const charCount = document.getElementById('char-count');
+  
+  // Dynamic Modules
+  const modulesList = document.getElementById('modules-list');
+  const addModuleBtn = document.getElementById('add-module-btn');
+  const moduleCountDisplay = document.getElementById('module-count');
+  
+  // Toast
+  const successToast = document.getElementById('success-toast');
+  const toastMessage = document.getElementById('toast-message');
+  const closeToastBtn = document.getElementById('close-toast-btn');
+
+  // Manual Tags Elements
+  const tagInput = document.getElementById('tag-input') as HTMLInputElement;
+  const addTagBtn = document.getElementById('add-tag-btn');
+  const tagsChipsContainer = document.getElementById('tags-chips-container');
+  let currentTags: string[] = [];
+
+  // Edit Mode State
+  let isEditingMode = false;
+  let editOriginalSlug = '';
+  let allPlaylists: any[] = [];
+
+  // --- Word Count Logic ---
+  overviewInput?.addEventListener('input', (e) => {
+    const text = (e.target as HTMLTextAreaElement).value;
+    if (charCount) charCount.textContent = text.length.toString();
+    
+    if (wordCount) {
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      wordCount.textContent = words.toString();
+      
+      if (words > 200) {
+        wordCount.classList.add('text-red-500');
+        wordCount.classList.remove('text-ink');
+      } else {
+        wordCount.classList.remove('text-red-500');
+        wordCount.classList.add('text-ink');
+      }
+    }
+  });
+
+  // --- UI Helpers ---
+
+  function triggerToast(message: string) {
+    if (successToast && toastMessage) {
+      toastMessage.textContent = message;
+      successToast.classList.remove('translate-y-12', 'opacity-0', 'pointer-events-none');
+      successToast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        successToast.classList.remove('translate-y-0', 'opacity-100');
+        successToast.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
+      }, 4000);
+    }
+  }
+
+  closeToastBtn?.addEventListener('click', () => {
+    if (successToast) {
+      successToast.classList.remove('translate-y-0', 'opacity-100');
+      successToast.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
+    }
+  });
+
+  // --- Tags Management ---
+
+  function renderTagChips() {
+    if (!tagsChipsContainer) return;
+    tagsChipsContainer.innerHTML = '';
+    
+    if (currentTags.length === 0) {
+      tagsChipsContainer.innerHTML = `<span class="text-xs font-mono text-mute/50 self-center" id="no-tags-msg">No tags added yet. Type a tag above and click Add.</span>`;
+      return;
+    }
+
+    currentTags.forEach((tag, idx) => {
+      const chip = document.createElement('div');
+      chip.className = 'inline-flex items-center gap-1.5 px-3 py-1 bg-canvas border border-primary/40 text-primary rounded-sm text-xs font-mono shadow-sm';
+      chip.innerHTML = `
+        <span>${tag}</span>
+        <button type="button" class="remove-tag-btn hover:text-red-400 focus:outline-none cursor-pointer text-sm font-bold ml-1" data-idx="${idx}" title="Remove tag">&times;</button>
+      `;
+      
+      chip.querySelector('.remove-tag-btn')?.addEventListener('click', () => {
+        currentTags.splice(idx, 1);
+        renderTagChips();
+      });
+
+      tagsChipsContainer.appendChild(chip);
+    });
+  }
+
+  function addTagFromInput() {
+    if (!tagInput) return;
+    const val = tagInput.value.trim();
+    if (val) {
+      const splitTags = val.split(/[,;\n]+/).map(t => t.trim()).filter(Boolean);
+      splitTags.forEach(t => {
+        if (!currentTags.includes(t)) {
+          currentTags.push(t);
+        }
+      });
+      tagInput.value = '';
+      renderTagChips();
+    }
+  }
+
+  addTagBtn?.addEventListener('click', addTagFromInput);
+  tagInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTagFromInput();
+    }
+  });
+
+  // --- Dynamic Modules Management ---
+  
+  let moduleIndex = 0;
+
+  function createModuleRow(titleText = '', descText = '', videoText = '', notesText = '') {
+    moduleIndex++;
+    const rowId = `module-row-${moduleIndex}`;
+    
+    const row = document.createElement('div');
+    row.id = rowId;
+    row.className = "group border border-hairline bg-canvas/40 p-4 rounded-sm space-y-4 relative hover:border-hairline-soft transition-colors";
+    
+    row.innerHTML = `
+      <div class="flex justify-between items-center">
+        <span class="text-[10px] font-mono uppercase text-mute">Module Row #${moduleIndex}</span>
+        <button type="button" class="remove-module-btn text-mute hover:text-red-400 text-xs font-mono flex items-center gap-1 transition-colors cursor-pointer bg-transparent border-none">
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Remove
+        </button>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] font-mono uppercase tracking-wider text-mute mb-1.5 flex justify-between">
+            YouTube Video ID / URL 
+            <span class="module-autofill-status text-[9px] text-primary hidden">Autofilling...</span>
+          </label>
+          <div class="flex gap-2">
+            <input type="text" placeholder="e.g. https://youtu.be/..." class="module-video-input flex-1 bg-canvas border border-hairline text-ink rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/30 font-light" required />
+            <button type="button" class="row-autofill-btn bg-primary text-on-primary font-mono text-[10px] uppercase font-bold px-3 py-2 rounded-sm hover:bg-primary-soft transition-colors cursor-pointer flex items-center gap-1 shrink-0">
+              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Auto-fill
+            </button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[10px] font-mono uppercase tracking-wider text-mute mb-1.5">Chapter Title</label>
+          <input type="text" placeholder="e.g. Module 1: Basics" class="module-title-input w-full bg-canvas border border-hairline text-ink rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/30 font-medium" required />
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="md:col-span-1">
+          <label class="block text-[10px] font-mono uppercase tracking-wider text-mute mb-1.5">Module Duration</label>
+          <input type="text" placeholder="e.g. 45 mins" class="module-desc-input w-full bg-canvas border border-hairline text-ink rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/30 font-light" required />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[10px] font-mono uppercase tracking-wider text-mute mb-1.5">Notes / Description</label>
+          <textarea class="module-notes-input w-full bg-canvas border border-hairline text-ink rounded-sm px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/30 min-h-[40px]"></textarea>
+        </div>
+      </div>
+    `;
+
+    const removeBtn = row.querySelector('.remove-module-btn');
+    removeBtn?.addEventListener('click', () => {
+      row.remove();
+      updateModuleCount();
+    });
+
+    // Row-level Autofill Logic
+    const autoFillBtn = row.querySelector('.row-autofill-btn') as HTMLButtonElement;
+    const urlInput = row.querySelector('.module-video-input') as HTMLInputElement;
+    const titleInput = row.querySelector('.module-title-input') as HTMLInputElement;
+    const durationInput = row.querySelector('.module-desc-input') as HTMLInputElement;
+    const notesInput = row.querySelector('.module-notes-input') as HTMLTextAreaElement;
+    const statusText = row.querySelector('.module-autofill-status') as HTMLSpanElement;
+
+    autoFillBtn?.addEventListener('click', async () => {
+      const url = urlInput.value.trim();
+      if (!url) {
+        alert("Please enter a valid YouTube URL in this row first.");
+        return;
+      }
+
+      statusText.textContent = "Extracting metadata...";
+      statusText.classList.remove('hidden', 'text-red-400');
+      statusText.classList.add('text-primary', 'animate-pulse');
+      autoFillBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/auto-import-course', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.error || 'Failed to extract');
+
+        if (data.modules && data.modules.length > 0) {
+          const modData = data.modules[0];
+          titleInput.value = modData.title.replace(/^MODULE \d+: /, ''); // Remove "MODULE 1:" prefix
+          durationInput.value = modData.duration || '10 mins';
+          notesInput.value = modData.creatorDescription || '';
+        }
+
+        statusText.textContent = "✓ Extracted";
+        statusText.classList.remove('animate-pulse');
+        setTimeout(() => statusText.classList.add('hidden'), 3000);
+      } catch (err: any) {
+        console.error(err);
+        statusText.textContent = "Error: " + (err.message || 'Unknown error');
+        statusText.classList.remove('text-primary', 'animate-pulse');
+        statusText.classList.add('text-red-400');
+      } finally {
+        autoFillBtn.disabled = false;
+      }
+    });
+
+    modulesList?.appendChild(row);
+    updateModuleCount();
+
+    if (titleText) titleInput.value = titleText;
+    if (descText) durationInput.value = descText;
+    if (videoText) urlInput.value = videoText;
+    if (notesText) notesInput.value = notesText;
+  }
+
+  function updateModuleCount() {
+    if (modulesList && moduleCountDisplay) {
+      const count = modulesList.children.length;
+      moduleCountDisplay.textContent = String(count);
+    }
+  }
+
+  addModuleBtn?.addEventListener('click', () => createModuleRow());
+
+  // --- Auth & Init ---
+
+  function redirectToLoginImmediately() {
+    window.location.replace('/404');
+  }
+
+  function verifyAdminAuthSession() {
+    if (!auth) {
+      redirectToLoginImmediately();
+      return;
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.uid === PUBLIC_ADMIN_UID) {
+        grantAdminAccess();
+      } else {
+        redirectToLoginImmediately();
+      }
+    });
+  }
+
+  async function grantAdminAccess() {
+    if (adminSubmitBtn) adminSubmitBtn.disabled = false;
+    adminConsole?.classList.remove('hidden');
+    setTimeout(() => {
+      adminConsole?.classList.add('opacity-100', 'translate-y-0');
+    }, 20);
+
+    createModuleRow();
+    await fetchPlaylists();
+  }
+
+  lockConsoleBtn?.addEventListener('click', async () => {
+    if (auth) {
+      try { await signOut(auth); } catch (e) { console.error(e); }
+    }
+    localStorage.removeItem('freeyt_user_auth');
+    window.location.href = '/login';
+  });
+
+  // --- Form Reset & Submit ---
+
+  function resetForm() {
+    uploadForm.reset();
+    if (modulesList) modulesList.innerHTML = '';
+    moduleIndex = 0;
+    currentTags = [];
+    renderTagChips();
+    createModuleRow();
+    isEditingMode = false;
+    editOriginalSlug = '';
+    if (adminSubmitBtn) {
+      adminSubmitBtn.textContent = "Save Curated Course";
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  resetFormBtn?.addEventListener('click', () => {
+    if (confirm('Are you sure you want to discard all form inputs?')) {
+      resetForm();
+    }
+  });
+
+  uploadForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const titleVal = courseTitleInput.value.trim();
+    const overviewVal = overviewInput.value.trim();
+
+    const modules: Array<{ title: string; videoId: string; duration: string; notes: string }> = [];
+    const moduleRows = modulesList?.children || [];
+    for (let i = 0; i < moduleRows.length; i++) {
+      const row = moduleRows[i];
+      const titleInput = row.querySelector('.module-title-input') as HTMLInputElement;
+      const videoInput = row.querySelector('.module-video-input') as HTMLInputElement;
+      const durationInput = row.querySelector('.module-desc-input') as HTMLInputElement;
+      const notesInput = row.querySelector('.module-notes-input') as HTMLTextAreaElement;
+
+      if (titleInput && videoInput) {
+        let vid = videoInput.value.trim();
+        // Extract ID if URL is provided
+        const match = vid.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+        if (match) vid = match[1];
+
+        modules.push({
+          title: titleInput.value.trim(),
+          videoId: vid,
+          duration: durationInput ? durationInput.value.trim() : '15 mins',
+          notes: notesInput ? notesInput.value.trim() : ''
+        });
+      }
+    }
+
+    if (modules.length === 0) {
+      alert("Please add at least one module.");
+      return;
+    }
+
+    let slug = isEditingMode && editOriginalSlug 
+      ? editOriginalSlug 
+      : titleVal.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    
+    if (!isEditingMode) {
+      // Add a timestamp to prevent overwriting accidentally if same name
+      slug = `${slug}-${Date.now().toString().slice(-4)}`;
+    }
+
+    const payload = {
+      name: titleVal,
+      author: "FreeYTcourses",
+      overview: overviewVal,
+      tags: currentTags,
+      modules,
+      logo: '/favicon.svg', // Maintained for backwards compatibility in UI
+      createdAt: new Date().toISOString()
+    };
+
+    if (db) {
+      try {
+        adminSubmitBtn.disabled = true;
+        adminSubmitBtn.textContent = "Saving...";
+        
+        await setDoc(doc(db, "playlists", slug), payload);
+        
+        triggerToast(`Curated Course '${titleVal}' saved successfully!`);
+        resetForm();
+        await fetchPlaylists();
+      } catch (err) {
+        console.error("Firestore Write Failed:", err);
+        alert("Failed to save: " + (err instanceof Error ? err.message : err));
+      } finally {
+        adminSubmitBtn.disabled = false;
+        adminSubmitBtn.textContent = "Save Curated Course";
+      }
+    }
+  });
+
+  // --- Active Playlists Fetch & Render ---
+
+  async function fetchPlaylists() {
+    if (!db) return;
+    try {
+      const snap = await getDocs(collection(db, "playlists"));
+      allPlaylists = [];
+      snap.forEach((d) => {
+        allPlaylists.push({ id: d.id, ...d.data() });
+      });
+      renderPlaylists();
+    } catch (err) {
+      console.error("Failed to fetch curated courses", err);
+    }
+  }
+
+  function renderPlaylists() {
+    if (!playlistsContainer) return;
+    
+    if (allPlaylists.length === 0) {
+      playlistsContainer.innerHTML = '<p class="text-sm text-mute font-light text-center py-8">No curated courses found. Create one above.</p>';
+      return;
+    }
+    
+    playlistsContainer.innerHTML = '';
+    
+    // Sort by createdAt descending
+    allPlaylists.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+
+    allPlaylists.forEach(playlist => {
+      const card = document.createElement('div');
+      card.className = 'flex items-center justify-between p-4 bg-canvas border border-hairline hover:border-primary/40 rounded-sm transition-all group';
+      
+      const thumbUrl = playlist.modules && playlist.modules.length > 0 
+        ? `https://img.youtube.com/vi/${playlist.modules[0].videoId}/hqdefault.jpg`
+        : playlist.logo || '/favicon.svg';
+
+      card.innerHTML = `
+        <div class="flex items-center gap-4">
+          <img src="${thumbUrl}" alt="${playlist.name}" class="h-12 w-20 rounded-sm object-cover border border-hairline/40 bg-canvas-soft" onerror="this.src='/favicon.svg'" />
+          <div>
+            <h3 class="text-sm font-mono text-ink-strong group-hover:text-primary transition-colors">${playlist.name}</h3>
+            <p class="text-[10px] uppercase font-mono text-mute mt-1">${playlist.modules ? playlist.modules.length : 0} Videos • ${playlist.author || 'FreeYTcourses'}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="button" class="edit-playlist-btn text-xs font-mono uppercase bg-canvas-soft border border-hairline text-ink hover:text-primary hover:border-primary px-3 py-1.5 rounded-sm transition-all cursor-pointer" data-id="${playlist.id}">
+            Edit
+          </button>
+          <button type="button" class="delete-playlist-btn text-xs font-mono uppercase text-red-500 hover:text-red-400 p-1.5 cursor-pointer opacity-50 hover:opacity-100 transition-opacity" data-id="${playlist.id}" title="Delete">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      `;
+      
+      playlistsContainer.appendChild(card);
+    });
+    
+    document.querySelectorAll('.edit-playlist-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = (e.currentTarget as HTMLElement).getAttribute('data-id');
+        if (id) {
+          const playlist = allPlaylists.find(p => p.id === id);
+          if (playlist) {
+            isEditingMode = true;
+            editOriginalSlug = id;
+            
+            courseTitleInput.value = playlist.name || '';
+            overviewInput.value = playlist.overview || '';
+            
+            currentTags = playlist.tags || [];
+            renderTagChips();
+            
+            if (modulesList) modulesList.innerHTML = '';
+            moduleIndex = 0;
+            if (playlist.modules && playlist.modules.length > 0) {
+              playlist.modules.forEach((m: any) => {
+                createModuleRow(m.title, m.duration, `https://youtu.be/${m.videoId}`, m.notes || '');
+              });
+            } else {
+              createModuleRow();
+            }
+            
+            if (adminSubmitBtn) {
+              adminSubmitBtn.textContent = "Update Curated Course";
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }
+      });
+    });
+
+    document.querySelectorAll('.delete-playlist-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = (e.currentTarget as HTMLElement).getAttribute('data-id');
+        if (id && confirm(`Are you sure you want to delete this curated course (${id})?`)) {
+          if (!db) return;
+          try {
+            await deleteDoc(doc(db, "playlists", id));
+            triggerToast("Curated course deleted.");
+            await fetchPlaylists();
+          } catch (err) {
+            console.error("Error deleting:", err);
+            alert("Failed to delete.");
+          }
+        }
+      });
+    });
+  }
+
+  // Init
+  verifyAdminAuthSession();
+</script>

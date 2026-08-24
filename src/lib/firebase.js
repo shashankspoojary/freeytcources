@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 /**
@@ -118,10 +118,6 @@ function computeCourseDuration(course) {
   return course.duration !== "1h 30m" ? course.duration : "TBD";
 }
 
-/**
- * Fetches all courses from Firestore.
- * @returns {Promise<Course[]>}
- */
 export async function getAllCourses() {
   if (!db) {
     console.info("Firestore not configured/active. Returning empty array.");
@@ -129,14 +125,63 @@ export async function getAllCourses() {
   }
 
   try {
-    const querySnapshot = await getDocs(collection(db, "courses"));
     const fetched = [];
+    
+    // 1. Fetch courses
+    const querySnapshot = await getDocs(collection(db, "courses"));
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       data.duration = computeCourseDuration(data);
       fetched.push({ id: doc.id, ...data });
     });
-    
+
+    // 2. Fetch playlists and map them to standard course shape
+    try {
+      const plSnapshot = await getDocs(collection(db, "playlists"));
+      plSnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        let sampleVid = '';
+        if (data.modules && data.modules.length > 0) {
+          sampleVid = data.modules[0].videoId;
+        }
+        
+        const mappedData = {
+          id: docSnap.id,
+          slug: docSnap.id,
+          title: data.name || 'Curated Course',
+          description: data.overview || '',
+          overview: data.overview || '',
+          category: data.category || 'Playlists', // or extract from tags
+          language: data.language || 'English',
+          rating: 4.8,
+          votes: 1,
+          views: 10,
+          publishDate: data.createdAt || new Date().toISOString(),
+          duration: '',
+          author: data.author || 'FreeYTcourses',
+          creatorName: data.author || 'FreeYTcourses',
+          creatorLogo: '/favicon.svg',
+          type: 'free',
+          sampleVideoId: sampleVid,
+          youtubeUrl: sampleVid ? `https://youtube.com/watch?v=${sampleVid}` : '',
+          tools: data.tags || [],
+          thumbnail: sampleVid ? `https://img.youtube.com/vi/${sampleVid}/hqdefault.jpg` : (data.logo || '/favicon.svg'),
+          moduleType: data.modules && data.modules.length > 1 ? 'multi' : 'single',
+          isEmbeddable: true,
+          chapters: data.modules ? data.modules.map((m) => ({
+            title: m.title,
+            duration: m.duration,
+            videoId: m.videoId,
+            creatorDescription: m.notes || ''
+          })) : [],
+          isCuratedPlaylist: true
+        };
+        mappedData.duration = computeCourseDuration(mappedData);
+        fetched.push(mappedData);
+      });
+    } catch (plErr) {
+      console.warn("Failed to fetch/merge playlists:", plErr);
+    }
     return fetched;
   } catch (e) {
     console.warn("Failed to fetch courses from Firestore.", e);
@@ -159,11 +204,56 @@ export async function getCourseBySlug(slug) {
     const querySnapshot = await getDocs(q);
     
     if (!querySnapshot.empty) {
-      const doc = querySnapshot.docs[0];
-      const data = doc.data();
+      const docSnap = querySnapshot.docs[0];
+      const data = docSnap.data();
       data.duration = computeCourseDuration(data);
-      return { id: doc.id, ...data };
+      return { id: docSnap.id, ...data };
     }
+    
+    // Fallback: Check playlists collection
+    const plDoc = await getDoc(doc(db, "playlists", slug));
+    if (plDoc.exists()) {
+      const data = plDoc.data();
+      let sampleVid = '';
+      if (data.modules && data.modules.length > 0) {
+        sampleVid = data.modules[0].videoId;
+      }
+      
+      const mappedData = {
+        id: plDoc.id,
+        slug: plDoc.id,
+        title: data.name || 'Curated Course',
+        description: data.overview || '',
+        overview: data.overview || '',
+        category: data.category || 'Playlists',
+        language: data.language || 'English',
+        rating: 4.8,
+        votes: 1,
+        views: 10,
+        publishDate: data.createdAt || new Date().toISOString(),
+        duration: '',
+        author: data.author || 'FreeYTcourses',
+        creatorName: data.author || 'FreeYTcourses',
+        creatorLogo: '/favicon.svg',
+        type: 'free',
+        sampleVideoId: sampleVid,
+        youtubeUrl: sampleVid ? `https://youtube.com/watch?v=${sampleVid}` : '',
+        tools: data.tags || [],
+        thumbnail: sampleVid ? `https://img.youtube.com/vi/${sampleVid}/hqdefault.jpg` : (data.logo || '/favicon.svg'),
+        moduleType: data.modules && data.modules.length > 1 ? 'multi' : 'single',
+        isEmbeddable: true,
+        chapters: data.modules ? data.modules.map((m) => ({
+          title: m.title,
+          duration: m.duration,
+          videoId: m.videoId,
+          creatorDescription: m.notes || ''
+        })) : [],
+        isCuratedPlaylist: true
+      };
+      mappedData.duration = computeCourseDuration(mappedData);
+      return mappedData;
+    }
+
     console.warn(`Course slug '${slug}' not found in Firestore.`);
     return undefined;
   } catch (e) {
@@ -196,6 +286,47 @@ export function getCreatorSlug(name) {
   return name.toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '');
+}
+
+/**
+ * Fetches all playlists from Firestore.
+ * @returns {Promise<any[]>}
+ */
+export async function getAllPlaylists() {
+  if (!db) {
+    return [];
+  }
+  try {
+    const querySnapshot = await getDocs(collection(db, "playlists"));
+    const fetched = [];
+    querySnapshot.forEach((doc) => {
+      fetched.push({ id: doc.id, ...doc.data() });
+    });
+    return fetched;
+  } catch (e) {
+    console.warn("Failed to fetch playlists from Firestore.", e);
+    return [];
+  }
+}
+
+/**
+ * Fetches a specific playlist by its ID/slug.
+ * @param {string} slug
+ * @returns {Promise<any|undefined>}
+ */
+export async function getPlaylistBySlug(slug) {
+  if (!db) return undefined;
+  try {
+    const docRef = doc(db, "playlists", slug);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    }
+    return undefined;
+  } catch (e) {
+    console.warn(`Failed to fetch playlist '${slug}'.`, e);
+    return undefined;
+  }
 }
 
 export { app, db, auth, googleProvider };

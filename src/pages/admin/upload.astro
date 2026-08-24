@@ -56,6 +56,16 @@ const description = "Manually ingest new courses and syllabus layouts into the c
             Directory &rarr;
           </a>
 
+          <a 
+            href="/admin/playlists" 
+            class="text-xs font-mono uppercase bg-canvas-soft border border-hairline hover:border-primary text-ink hover:text-primary px-3.5 py-2 rounded-sm transition-all flex items-center gap-2 cursor-pointer font-medium"
+          >
+            <svg class="h-3.5 w-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+            Playlists
+          </a>
+
           <button 
             id="lock-console-btn" 
             class="text-xs font-mono uppercase border border-hairline hover:border-red-500/50 hover:text-red-400 text-body px-3 py-2 rounded-sm transition-all flex items-center gap-2 cursor-pointer"
@@ -1271,7 +1281,6 @@ const description = "Manually ingest new courses and syllabus layouts into the c
           const snap = await getDocs(qVid);
           if (!snap.empty) {
             isDuplicate = true;
-            // Changed from blocking alert to allow force add
             console.warn("A course with this exact YouTube video already exists in the database. You can force add it if needed.");
           }
         }
@@ -1467,23 +1476,62 @@ const description = "Manually ingest new courses and syllabus layouts into the c
         }
       }
 
-      // Trigger standard channel info fetch which will handle author, views, logo, embeddable status
-      let channelInfoUrl = url;
-      if (data.modules && data.modules.length > 0) {
-        channelInfoUrl = data.modules[0].videoId;
+      // Populate Author
+      if (authorInput) authorInput.value = data.author;
+
+      // Creator Showcase
+      const creatorShowcaseCheckbox = document.getElementById('creator-showcase-checkbox') as HTMLInputElement;
+      if (creatorShowcaseCheckbox) creatorShowcaseCheckbox.checked = true; // Auto-check for AI imports
+
+      // Handle Modules
+      if (modulesList) {
+        modulesList.innerHTML = ''; // clear
+        moduleIndex = 0;
+        
+        if (data.chapters && data.chapters.length > 0) {
+          data.chapters.forEach((ch: any) => {
+            createModuleRow(ch.title, ch.duration || ch.description, ch.videoId || '');
+          });
+        } else {
+          // Single module fallback
+          createModuleRow("Full Course (Extracted)", "Main video content", data.sampleVideoId || '');
+        }
       }
-      await fetchChannelInfo(channelInfoUrl);
+
+      // Category extraction logic
+      if (data.category && categorySelect) {
+        const cats = getStoredCategories();
+        if (!cats.includes(data.category)) {
+          cats.push(data.category);
+          saveStoredCategories(cats);
+          renderCategoryManager();
+        }
+        categorySelect.value = data.category;
+      }
+      
+      // Update global extract state for submission
+      extractedCreatorLogo = data.creatorLogo || '';
+      extractedChannelId = data.channelId || '';
+      extractedSubscribers = data.subscribers || '';
+      extractedViews = data.views || 12450;
+      extractedPublishDate = data.publishDate || '';
+      extractedIsEmbeddable = data.isEmbeddable !== false;
+      
+      if (extractedCreatorLogo && authorAvatarPreview) {
+        authorAvatarPreview.src = extractedCreatorLogo;
+        authorAvatarPreview.classList.remove('hidden');
+      }
 
       if (autoFillStatus) {
-        autoFillStatus.textContent = "Auto-fill complete!";
-        autoFillStatus.classList.remove('animate-pulse', 'text-red-400');
-        autoFillStatus.classList.add('text-green-400');
-        setTimeout(() => autoFillStatus.classList.add('hidden'), 5000);
+        autoFillStatus.textContent = "✓ Extracted Successfully";
+        autoFillStatus.classList.remove('animate-pulse');
+        setTimeout(() => autoFillStatus.classList.add('hidden'), 3000);
       }
 
     } catch (err: any) {
+      console.error(err);
       if (autoFillStatus) {
-        autoFillStatus.textContent = "Error: " + err.message;
+        autoFillStatus.textContent = "Extraction Failed: " + (err.message || 'Unknown error');
         autoFillStatus.classList.remove('text-primary', 'animate-pulse');
         autoFillStatus.classList.add('text-red-400');
       }

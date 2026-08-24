@@ -24,22 +24,22 @@ html.dark {
 }
 
 html.light {
-  --primary: #059669;
-  --primary-soft: #10b981;
-  --primary-deep: #047857;
+  --primary: #10b981;
+  --primary-soft: #34d399;
+  --primary-deep: #059669;
   --on-primary: #ffffff;
   
-  --ink: #334155;
-  --ink-strong: #0f172a;
-  --body: #475569;
-  --mute: #64748b;
+  --ink: #1f2937;
+  --ink-strong: #030712;
+  --body: #374151;
+  --mute: #6b7280;
   
-  --hairline: #cbd5e1;
-  --hairline-soft: #94a3b8;
+  --hairline: #e5e7eb;
+  --hairline-soft: #d1d5db;
   
-  --canvas: #f1f5f9;
-  --canvas-soft: #e2e8f0;
-  --canvas-text-soft: #cbd5e1;
+  --canvas: #ffffff;
+  --canvas-soft: #f9fafb;
+  --canvas-text-soft: #f3f4f6;
   
   color-scheme: light;
 }
@@ -109,6 +109,14 @@ html.light {
                 box-shadow 0.35s ease,
                 fill 0.35s ease,
                 stroke 0.35s ease !important;
+  }
+
+  /* Force disable all CSS transitions for View Transitions API */
+  html.disable-transitions,
+  html.disable-transitions *,
+  html.disable-transitions *::before,
+  html.disable-transitions *::after {
+    transition: none !important;
   }
 
   img, video, iframe {

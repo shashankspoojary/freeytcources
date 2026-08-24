@@ -148,25 +148,40 @@ const isAdmin = activePage === 'admin' || hideSidebarToggle;
     updateIcons();
 
     toggleBtn?.addEventListener('click', () => {
-      // Enable smooth transitions for all elements during theme switch
-      document.documentElement.classList.add('theme-transitioning');
-
       const isLight = document.documentElement.classList.contains('light');
-      if (isLight) {
-        document.documentElement.classList.remove('light');
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('freeyt_theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.classList.add('light');
-        localStorage.setItem('freeyt_theme', 'light');
-      }
-      updateIcons();
 
-      // Remove transitioning class after animation completes
-      setTimeout(() => {
-        document.documentElement.classList.remove('theme-transitioning');
-      }, 400);
+      const toggleTheme = () => {
+        if (isLight) {
+          document.documentElement.classList.remove('light');
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('freeyt_theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+          localStorage.setItem('freeyt_theme', 'light');
+        }
+        updateIcons();
+      };
+
+      // Force disable all CSS transitions so they don't fight the toggle
+      document.documentElement.classList.add('disable-transitions');
+
+      if (!document.startViewTransition) {
+        document.documentElement.classList.remove('disable-transitions');
+        document.documentElement.classList.add('theme-transitioning');
+        toggleTheme();
+        setTimeout(() => {
+          document.documentElement.classList.remove('theme-transitioning');
+        }, 400);
+      } else {
+        const transition = document.startViewTransition(() => {
+          toggleTheme();
+        });
+        
+        transition.finished.finally(() => {
+          document.documentElement.classList.remove('disable-transitions');
+        });
+      }
     });
   }
 
