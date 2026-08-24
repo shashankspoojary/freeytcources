@@ -9,11 +9,11 @@ export async function POST({ request }) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
     }
 
-    const host = import.meta.env.SMTP_HOST || process.env.SMTP_HOST;
-    const port = import.meta.env.SMTP_PORT || process.env.SMTP_PORT;
-    const user = import.meta.env.SMTP_USER || process.env.SMTP_USER;
-    const pass = import.meta.env.SMTP_PASS || process.env.SMTP_PASS;
-    const fromEmail = import.meta.env.SMTP_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || '"FreeYTCourses" <noreply@freeytcourses.com>';
+    const host = import.meta.env.SMTP_HOST;
+    const port = import.meta.env.SMTP_PORT;
+    const user = import.meta.env.SMTP_USER;
+    const pass = import.meta.env.SMTP_PASS;
+    const fromEmail = import.meta.env.SMTP_FROM_EMAIL || '"FreeYTCourses" <noreply@freeytcourses.com>';
 
     if (!host || !user || !pass) {
       console.warn("SMTP credentials not fully configured. Email was not sent.");

@@ -99,12 +99,10 @@ function computeCourseDuration(course) {
            totalMinutes += parseInt(timeMatch[2], 10);
         }
       } else {
-        const hMatch = d.match(/(\d+)\s*h/i);
-        const mMatch = d.match(/(\d+)\s*m/i);
-        const minsMatch = d.match(/(\d+)\s*mins?/i);
+        const hMatch = d.match(/(\d+)\s*(?:h|hr|hours?)/i);
+        const mMatch = d.match(/(\d+)\s*(?:m|min|mins?|minutes?)/i);
         if (hMatch) totalMinutes += parseInt(hMatch[1], 10) * 60;
         if (mMatch) totalMinutes += parseInt(mMatch[1], 10);
-        else if (minsMatch) totalMinutes += parseInt(minsMatch[1], 10);
       }
     });
   }
@@ -116,6 +114,47 @@ function computeCourseDuration(course) {
   }
   
   return course.duration !== "1h 30m" ? course.duration : "TBD";
+}
+
+function mapPlaylistToCourse(id, data) {
+  let sampleVid = '';
+  if (data.modules && data.modules.length > 0) {
+    sampleVid = data.modules[0].videoId;
+  }
+  
+  const mappedData = {
+    id: id,
+    slug: id,
+    title: data.name || 'Curated Course',
+    description: data.overview || '',
+    overview: data.overview || '',
+    category: data.category || 'Playlists',
+    language: data.language || 'English',
+    rating: 4.8,
+    votes: 1,
+    views: 10,
+    publishDate: data.createdAt || new Date().toISOString(),
+    duration: '',
+    author: data.author || 'FreeYTcourses',
+    creatorName: data.author || 'FreeYTcourses',
+    creatorLogo: '/favicon.svg',
+    type: 'free',
+    sampleVideoId: sampleVid,
+    youtubeUrl: sampleVid ? `https://youtube.com/watch?v=${sampleVid}` : '',
+    tools: data.tags || [],
+    thumbnail: sampleVid ? `https://img.youtube.com/vi/${sampleVid}/hqdefault.jpg` : (data.logo || '/favicon.svg'),
+    moduleType: data.modules && data.modules.length > 1 ? 'multi' : 'single',
+    isEmbeddable: true,
+    chapters: data.modules ? data.modules.map((m) => ({
+      title: m.title,
+      duration: m.duration,
+      videoId: m.videoId,
+      creatorDescription: m.notes || ''
+    })) : [],
+    isCuratedPlaylist: true
+  };
+  mappedData.duration = computeCourseDuration(mappedData);
+  return mappedData;
 }
 
 export async function getAllCourses() {
@@ -140,43 +179,7 @@ export async function getAllCourses() {
       const plSnapshot = await getDocs(collection(db, "playlists"));
       plSnapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        let sampleVid = '';
-        if (data.modules && data.modules.length > 0) {
-          sampleVid = data.modules[0].videoId;
-        }
-        
-        const mappedData = {
-          id: docSnap.id,
-          slug: docSnap.id,
-          title: data.name || 'Curated Course',
-          description: data.overview || '',
-          overview: data.overview || '',
-          category: data.category || 'Playlists', // or extract from tags
-          language: data.language || 'English',
-          rating: 4.8,
-          votes: 1,
-          views: 10,
-          publishDate: data.createdAt || new Date().toISOString(),
-          duration: '',
-          author: data.author || 'FreeYTcourses',
-          creatorName: data.author || 'FreeYTcourses',
-          creatorLogo: '/favicon.svg',
-          type: 'free',
-          sampleVideoId: sampleVid,
-          youtubeUrl: sampleVid ? `https://youtube.com/watch?v=${sampleVid}` : '',
-          tools: data.tags || [],
-          thumbnail: sampleVid ? `https://img.youtube.com/vi/${sampleVid}/hqdefault.jpg` : (data.logo || '/favicon.svg'),
-          moduleType: data.modules && data.modules.length > 1 ? 'multi' : 'single',
-          isEmbeddable: true,
-          chapters: data.modules ? data.modules.map((m) => ({
-            title: m.title,
-            duration: m.duration,
-            videoId: m.videoId,
-            creatorDescription: m.notes || ''
-          })) : [],
-          isCuratedPlaylist: true
-        };
-        mappedData.duration = computeCourseDuration(mappedData);
+        const mappedData = mapPlaylistToCourse(docSnap.id, data);
         fetched.push(mappedData);
       });
     } catch (plErr) {
@@ -213,45 +216,7 @@ export async function getCourseBySlug(slug) {
     // Fallback: Check playlists collection
     const plDoc = await getDoc(doc(db, "playlists", slug));
     if (plDoc.exists()) {
-      const data = plDoc.data();
-      let sampleVid = '';
-      if (data.modules && data.modules.length > 0) {
-        sampleVid = data.modules[0].videoId;
-      }
-      
-      const mappedData = {
-        id: plDoc.id,
-        slug: plDoc.id,
-        title: data.name || 'Curated Course',
-        description: data.overview || '',
-        overview: data.overview || '',
-        category: data.category || 'Playlists',
-        language: data.language || 'English',
-        rating: 4.8,
-        votes: 1,
-        views: 10,
-        publishDate: data.createdAt || new Date().toISOString(),
-        duration: '',
-        author: data.author || 'FreeYTcourses',
-        creatorName: data.author || 'FreeYTcourses',
-        creatorLogo: '/favicon.svg',
-        type: 'free',
-        sampleVideoId: sampleVid,
-        youtubeUrl: sampleVid ? `https://youtube.com/watch?v=${sampleVid}` : '',
-        tools: data.tags || [],
-        thumbnail: sampleVid ? `https://img.youtube.com/vi/${sampleVid}/hqdefault.jpg` : (data.logo || '/favicon.svg'),
-        moduleType: data.modules && data.modules.length > 1 ? 'multi' : 'single',
-        isEmbeddable: true,
-        chapters: data.modules ? data.modules.map((m) => ({
-          title: m.title,
-          duration: m.duration,
-          videoId: m.videoId,
-          creatorDescription: m.notes || ''
-        })) : [],
-        isCuratedPlaylist: true
-      };
-      mappedData.duration = computeCourseDuration(mappedData);
-      return mappedData;
+      return mapPlaylistToCourse(plDoc.id, plDoc.data());
     }
 
     console.warn(`Course slug '${slug}' not found in Firestore.`);
@@ -268,9 +233,9 @@ export async function getCourseBySlug(slug) {
 export function getYoutubeThumbnail(videoId) {
   if (!videoId) return "";
   let id = videoId;
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = videoId.match(regExp);
-  if (match && match[2].length === 11) {
+  if (match && match[2].length >= 10 && match[2].length <= 12) {
     id = match[2];
   }
   return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;

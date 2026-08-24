@@ -1,0 +1,67 @@
+---
+import { getYoutubeThumbnail, getCreatorSlug } from '../lib/firebase.js';
+
+export interface Props {
+  course: any;
+  showcaseBadge?: boolean;
+  bottomLeftText?: string;
+}
+
+const { course, showcaseBadge = false, bottomLeftText = "Curated Course" } = Astro.props;
+---
+
+<article 
+  class="course-card group bg-canvas-soft border border-hairline rounded-md flex flex-col justify-between hover:border-primary/45 transition-all duration-300 relative overflow-hidden h-full cursor-pointer" 
+  data-slug={course.slug}
+  data-category={course.category}
+  data-rating={course.rating || 0}
+  data-module-type={course.chapters?.length > 1 ? 'multi' : 'single'}
+>
+  <div class="relative aspect-video w-full overflow-hidden border-b border-hairline bg-canvas">
+    <img src={course.thumbnail || getYoutubeThumbnail(course.sampleVideoId)} alt={course.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+    
+    <button type="button" class="watch-later-toggle-btn absolute top-2.5 left-2.5 z-30 bg-canvas/95 hover:bg-primary hover:text-on-primary text-ink px-2 py-0.5 rounded-sm transition-all shadow-md text-[10px] font-mono border border-hairline flex items-center gap-1" data-slug={course.slug} title="Save to Watch Later">
+      <svg class="h-3 w-3 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <span class="wl-label pointer-events-none">Watch later</span>
+    </button>
+    
+    {showcaseBadge ? (
+      <span class="absolute top-2.5 right-2.5 text-[9px] font-mono uppercase tracking-wider bg-green-500 text-white px-2 py-0.5 rounded-sm font-semibold shadow-md border border-green-600/20">
+        Uploaded by Creator
+      </span>
+    ) : (
+      <span class={`absolute top-2.5 right-2.5 text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold shadow-md ${course.type === 'paid' ? 'bg-amber-400 text-on-primary border border-amber-500/20' : 'bg-primary text-on-primary border border-primary-soft/20'}`}>
+        {course.type || 'free'}
+      </span>
+    )}
+    
+    <div class="absolute bottom-2 right-2 z-20 bg-canvas/90 backdrop-blur-sm text-ink-strong border border-hairline px-2 py-0.5 rounded-sm text-[10px] font-mono flex items-center gap-1 shadow-md">
+      <span>{course.chapters?.length || 1} Modules</span>
+    </div>
+  </div>
+  <div class="p-4 flex flex-col justify-between flex-grow">
+    <div>
+      <div class="flex items-center gap-1.5 mb-2 flex-wrap">
+        <span class="text-[9px] font-mono uppercase bg-canvas border border-hairline px-2 py-0.5 rounded text-body">{course.category}</span>
+        <span class="text-[9px] font-mono uppercase bg-canvas border border-hairline/85 px-1.5 py-0.5 rounded text-mute">{course.language || 'English'}</span>
+      </div>
+      <h3 class="text-sm font-semibold text-ink-strong mb-2 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+        <a href={`/courses/${course.slug}`} class="focus:outline-none after:absolute after:inset-0">{course.title}</a>
+      </h3>
+      <a href={`/creators/${getCreatorSlug(course.creatorName)}`} class="flex items-center gap-1.5 hover:text-primary transition-colors group/creator shrink-0 relative z-30">
+        <img src={course.creatorLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(course.creatorName)}&background=random&color=fff`} alt={course.creatorName} class="h-5 w-5 rounded-full object-cover border border-hairline shrink-0" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random&color=fff';" />
+        <span class="text-[11px] font-mono text-mute group-hover/creator:text-primary transition-colors leading-none">{course.creatorName}</span>
+      </a>
+    </div>
+    <div class="pt-3 border-t border-hairline flex justify-between items-center text-[10px] font-mono text-mute mt-3">
+      {bottomLeftText === 'rating' ? (
+        <span class="text-[10px] font-mono text-mute font-bold flex items-center gap-1"><span class="text-amber-400">★</span> {course.rating || 0}</span>
+      ) : (
+        <span class="text-[10px] font-mono text-mute">{bottomLeftText}</span>
+      )}
+      <a href={`/courses/${course.slug}`} class="inline-flex items-center gap-1 bg-primary/10 hover:bg-primary border border-primary/30 text-primary hover:text-on-primary px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold uppercase transition-all relative z-30 shrink-0">
+        <span>Watch Now</span>
+      </a>
+    </div>
+  </div>
+</article>
