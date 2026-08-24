@@ -1,0 +1,285 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = "Analytics Dashboard - Admin Console";
+const description = "View analytics for categories and courses.";
+---
+
+<Layout title={title} description={description} activePage="admin" hideSidebar={true}>
+
+  <main class="max-w-6xl mx-auto px-6 py-12 md:py-16 min-h-[calc(100vh-140px)]">
+
+    <!-- Admin Analytics Console (Hidden Until Authenticated) -->
+    <div id="admin-console" class="hidden w-full space-y-8 opacity-0 transform translate-y-4 transition-all duration-500">
+      
+      <!-- Console Header -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-hairline pb-6">
+        <div>
+          <div class="inline-block font-mono text-[10px] text-primary uppercase tracking-[2.52px] mb-2 bg-primary/10 px-2.5 py-1 rounded-pill border border-primary/20">
+            Authenticated Admin Session
+          </div>
+          <h1 class="text-3xl font-light text-ink-strong tracking-[-0.65px]">Analytics Dashboard</h1>
+          <p class="text-sm text-body font-light mt-1">
+            Track performance metrics, category popularity, and top watched courses.
+          </p>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <a 
+            href="/admin/courses" 
+            class="text-xs font-mono uppercase bg-canvas-soft border border-hairline hover:border-primary text-ink hover:text-primary px-3.5 py-2.5 rounded-sm transition-all flex items-center gap-2 cursor-pointer font-medium"
+          >
+            <svg class="h-3.5 w-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            Directory
+          </a>
+
+          <a 
+            href="/admin/submissions" 
+            class="text-xs font-mono uppercase border border-amber-500/50 text-amber-500 hover:bg-amber-500 hover:text-white px-3.5 py-2.5 rounded-sm transition-all flex items-center gap-2 cursor-pointer font-bold"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            Submissions Queue
+          </a>
+
+          <a 
+            href="/admin/upload" 
+            class="text-xs font-mono uppercase border border-primary/50 text-primary hover:bg-primary hover:text-on-primary px-3.5 py-2.5 rounded-sm transition-all flex items-center gap-2 cursor-pointer font-bold"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Add New Course
+          </a>
+
+          <button 
+            id="lock-console-btn" 
+            class="text-xs font-mono uppercase border border-hairline hover:border-red-500/50 hover:text-red-400 text-body px-3.5 py-2.5 rounded-sm transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Sign Out Admin
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="analytics-loading" class="py-12 text-center text-mute font-light">
+        Calculating analytics metrics...
+      </div>
+
+      <!-- Dashboard Grid -->
+      <div id="analytics-content" class="hidden space-y-8">
+        
+        <!-- Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-canvas-soft border border-hairline rounded-md p-6">
+            <h3 class="text-sm font-mono uppercase text-mute tracking-wider mb-2">Total Courses</h3>
+            <p id="total-courses" class="text-3xl font-light text-ink-strong">0</p>
+          </div>
+          <div class="bg-canvas-soft border border-hairline rounded-md p-6">
+            <h3 class="text-sm font-mono uppercase text-mute tracking-wider mb-2">Global Views</h3>
+            <p id="total-views" class="text-3xl font-light text-ink-strong">0</p>
+          </div>
+          <div class="bg-canvas-soft border border-hairline rounded-md p-6">
+            <h3 class="text-sm font-mono uppercase text-mute tracking-wider mb-2">Categories</h3>
+            <p id="total-categories" class="text-3xl font-light text-ink-strong">0</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          <!-- Category Performance -->
+          <div class="bg-canvas-soft border border-hairline rounded-md p-6">
+            <h2 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold border-b border-hairline/40 pb-4 mb-4">
+              Category Performance
+            </h2>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs font-mono text-body">
+                <thead>
+                  <tr class="border-b border-hairline/60 text-mute uppercase tracking-wider text-[11px]">
+                    <th class="py-3 font-semibold pr-4">Category</th>
+                    <th class="py-3 font-semibold pr-4 text-right">Courses</th>
+                    <th class="py-3 font-semibold text-right">Total Views</th>
+                  </tr>
+                </thead>
+                <tbody id="category-stats-list" class="divide-y divide-hairline/30">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Top Courses -->
+          <div class="bg-canvas-soft border border-hairline rounded-md p-6">
+            <h2 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold border-b border-hairline/40 pb-4 mb-4">
+              Top 10 Courses (By Views)
+            </h2>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs font-mono text-body">
+                <thead>
+                  <tr class="border-b border-hairline/60 text-mute uppercase tracking-wider text-[11px]">
+                    <th class="py-3 font-semibold pr-4">Course Title</th>
+                    <th class="py-3 font-semibold pr-4 hidden sm:table-cell">Category</th>
+                    <th class="py-3 font-semibold text-right">Views</th>
+                  </tr>
+                </thead>
+                <tbody id="top-courses-list" class="divide-y divide-hairline/30">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    import { db, auth } from '../../lib/firebase.js';
+    import { collection, getDocs } from 'firebase/firestore';
+    import { onAuthStateChanged, signOut } from 'firebase/auth';
+
+    const PUBLIC_ADMIN_UID = import.meta.env.PUBLIC_ADMIN_UID || 'L3hLhdVxWBRkPk4GQg5KIZGFrx63';
+
+    const adminConsole = document.getElementById('admin-console');
+    const lockConsoleBtn = document.getElementById('lock-console-btn');
+    const analyticsLoading = document.getElementById('analytics-loading');
+    const analyticsContent = document.getElementById('analytics-content');
+
+    function redirectToLoginImmediately() {
+      window.location.replace('/404');
+    }
+
+    if (!auth || !db) {
+      console.warn("Firebase not initialized");
+    } else {
+      const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+        if (user && user.uid === PUBLIC_ADMIN_UID) {
+          showAdminConsole();
+          loadAnalytics();
+        } else {
+          redirectToLoginImmediately();
+        }
+      });
+
+      if (lockConsoleBtn) {
+        lockConsoleBtn.addEventListener('click', async () => {
+          try {
+            await signOut(auth as any);
+            window.location.replace('/404');
+          } catch(e) {
+            console.error("Sign out failed", e);
+          }
+        });
+      }
+    }
+
+    function showAdminConsole() {
+      if (adminConsole) {
+        adminConsole.classList.remove('hidden');
+        setTimeout(() => {
+          adminConsole.classList.remove('opacity-0', 'translate-y-4');
+        }, 50);
+      }
+    }
+
+    function formatNumber(num: number) {
+      return new Intl.NumberFormat('en-US').format(num);
+    }
+
+    async function loadAnalytics() {
+      try {
+        const querySnapshot = await getDocs(collection(db as any, "courses"));
+        const courses: any[] = [];
+        querySnapshot.forEach((doc) => {
+          courses.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Compute metrics
+        let totalViews = 0;
+        const categoryStats: Record<string, { count: number, views: number }> = {};
+
+        courses.forEach(course => {
+          const views = Number(course.siteViews) || 0;
+          totalViews += views;
+          
+          const category = course.category || 'Uncategorized';
+          if (!categoryStats[category]) {
+            categoryStats[category] = { count: 0, views: 0 };
+          }
+          categoryStats[category].count += 1;
+          categoryStats[category].views += views;
+        });
+
+        // Sort categories by views (descending)
+        const sortedCategories = Object.entries(categoryStats).sort((a, b) => b[1].views - a[1].views);
+        
+        // Sort courses by views (descending)
+        const sortedCourses = [...courses].sort((a, b) => (Number(b.siteViews) || 0) - (Number(a.siteViews) || 0)).slice(0, 10);
+
+        // Update Overview DOM
+        document.getElementById('total-courses')!.innerText = formatNumber(courses.length);
+        document.getElementById('total-views')!.innerText = formatNumber(totalViews);
+        document.getElementById('total-categories')!.innerText = formatNumber(sortedCategories.length);
+
+        // Update Categories Table
+        const catList = document.getElementById('category-stats-list')!;
+        catList.innerHTML = '';
+        sortedCategories.forEach(([catName, stats]) => {
+          catList.innerHTML += `
+            <tr class="hover:bg-canvas transition-colors">
+              <td class="py-3 pr-4 font-medium text-ink-strong truncate max-w-[150px] sm:max-w-[200px]" title="${catName}">
+                ${catName}
+              </td>
+              <td class="py-3 pr-4 text-right">
+                ${formatNumber(stats.count)}
+              </td>
+              <td class="py-3 text-right text-primary">
+                ${formatNumber(stats.views)}
+              </td>
+            </tr>
+          `;
+        });
+
+        // Update Courses Table
+        const courseList = document.getElementById('top-courses-list')!;
+        courseList.innerHTML = '';
+        sortedCourses.forEach(course => {
+          courseList.innerHTML += `
+            <tr class="hover:bg-canvas transition-colors">
+              <td class="py-3 pr-4 font-medium text-ink-strong truncate max-w-[200px] sm:max-w-[250px]" title="${course.title}">
+                <a href="/courses/${course.slug}" target="_blank" class="hover:text-primary transition-colors">
+                  ${course.title}
+                </a>
+              </td>
+              <td class="py-3 pr-4 hidden sm:table-cell text-mute">
+                ${course.category || '-'}
+              </td>
+              <td class="py-3 text-right text-primary">
+                ${formatNumber(Number(course.siteViews) || 0)}
+              </td>
+            </tr>
+          `;
+        });
+
+        // Toggle visibility
+        if (analyticsLoading) analyticsLoading.classList.add('hidden');
+        if (analyticsContent) analyticsContent.classList.remove('hidden');
+
+      } catch (err) {
+        console.error("Failed to load analytics", err);
+        if (analyticsLoading) {
+          analyticsLoading.innerHTML = `<span class="text-red-500">Failed to load analytics data. Please try again.</span>`;
+        }
+      }
+    }
+  </script>
+</Layout>

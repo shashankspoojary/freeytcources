@@ -128,6 +128,12 @@ export function recordCourseSiteView(slug) {
     viewsMap[slug] = (Number(viewsMap[slug]) || 0) + 1;
     localStorage.setItem('freeyt_site_course_views', JSON.stringify(viewsMap));
     window.dispatchEvent(new CustomEvent('siteViewsChanged', { detail: { slug, views: viewsMap[slug] } }));
+
+    fetch('/api/record-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug })
+    }).catch(e => console.error("Failed to record site view globally", e));
   } catch (e) {
     console.error("Failed to record site view", e);
   }
