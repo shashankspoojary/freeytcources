@@ -88,6 +88,20 @@ const description = "Manually ingest new courses and syllabus layouts into the c
             <h2 class="text-sm font-mono uppercase tracking-wider text-ink-strong font-semibold">Course Meta-Data</h2>
           </div>
 
+          <div class="mb-6 border-b border-hairline/40 pb-6">
+            <label class="block text-xs font-mono uppercase tracking-wider text-mute mb-3">Course Source</label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="course-source" value="youtube" class="accent-primary" checked />
+                <span class="text-sm text-ink">YouTube</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="course-source" value="external" class="accent-primary" />
+                <span class="text-sm text-ink">External Website</span>
+              </label>
+            </div>
+          </div>
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label for="course-title" class="block text-xs font-mono uppercase tracking-wider text-mute mb-2">Course Title</label>
@@ -100,7 +114,7 @@ const description = "Manually ingest new courses and syllabus layouts into the c
               />
             </div>
 
-            <div>
+            <div id="youtube-link-container">
               <label for="youtube-link" class="block text-xs font-mono uppercase tracking-wider text-mute mb-2 flex justify-between items-center">
                 <span>YouTube Playlist Link / ID</span>
                 <span id="auto-fill-status" class="text-[10px] text-primary hidden truncate ml-2"></span>
@@ -125,6 +139,43 @@ const description = "Manually ingest new courses and syllabus layouts into the c
                 </button>
               </div>
             </div>
+
+            <div id="external-link-container" class="hidden">
+              <label for="external-link" class="block text-xs font-mono uppercase tracking-wider text-mute mb-2 flex justify-between items-center">
+                <span>External Website URL</span>
+              </label>
+              <div class="flex gap-2">
+                <input 
+                  type="text" 
+                  id="external-link" 
+                  placeholder="e.g. https://example.com/course"
+                  class="flex-1 w-full bg-canvas border border-hairline text-ink rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/40"
+                />
+                <button 
+                  type="button" 
+                  id="fetch-external-btn" 
+                  class="px-4 py-3 bg-canvas-soft border border-hairline text-ink hover:border-primary hover:text-primary font-mono text-xs uppercase font-bold rounded-sm transition-colors cursor-pointer shrink-0 flex items-center gap-1 shadow-sm"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Fetch Image
+                </button>
+              </div>
+            </div>
+            
+            <div id="manual-thumbnail-container" class="hidden md:col-span-2">
+              <label for="manual-thumbnail" class="block text-xs font-mono uppercase tracking-wider text-mute mb-2 flex justify-between items-center">
+                <span>Custom Thumbnail URL</span>
+              </label>
+              <input 
+                type="text" 
+                id="manual-thumbnail" 
+                placeholder="e.g. https://example.com/image.jpg"
+                class="w-full bg-canvas border border-hairline text-ink rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder-mute/40"
+              />
+            </div>
+
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1030,19 +1081,85 @@ const description = "Manually ingest new courses and syllabus layouts into the c
     }
   });
 
+  // Course Source Toggle Logic
+  const sourceRadios = document.querySelectorAll('input[name="course-source"]');
+  const youtubeLinkContainer = document.getElementById('youtube-link-container');
+  const externalLinkContainer = document.getElementById('external-link-container');
+  const manualThumbnailContainer = document.getElementById('manual-thumbnail-container');
+  const youtubeInput = document.getElementById('youtube-link') as HTMLInputElement;
+  const externalInput = document.getElementById('external-link') as HTMLInputElement;
+
+  sourceRadios.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      const val = (e.target as HTMLInputElement).value;
+      if (val === 'youtube') {
+        youtubeLinkContainer?.classList.remove('hidden');
+        externalLinkContainer?.classList.add('hidden');
+        manualThumbnailContainer?.classList.add('hidden');
+        youtubeInput.required = true;
+        externalInput.required = false;
+      } else {
+        youtubeLinkContainer?.classList.add('hidden');
+        externalLinkContainer?.classList.remove('hidden');
+        manualThumbnailContainer?.classList.remove('hidden');
+        youtubeInput.required = false;
+        externalInput.required = true;
+      }
+    });
+  });
+
+  // Fetch External Metadata Logic
+  const fetchExternalBtn = document.getElementById('fetch-external-btn');
+  const manualThumbnailInput = document.getElementById('manual-thumbnail') as HTMLInputElement;
+  
+  fetchExternalBtn?.addEventListener('click', async () => {
+    const url = externalInput.value.trim();
+    if (!url) return;
+    
+    const originalText = fetchExternalBtn.innerHTML;
+    fetchExternalBtn.innerHTML = `<span class="animate-pulse">Fetching...</span>`;
+    fetchExternalBtn.setAttribute('disabled', 'true');
+    
+    try {
+      const res = await fetch('/api/fetch-link-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        if (data.image) {
+          manualThumbnailInput.value = data.image;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to fetch external metadata", e);
+    } finally {
+      fetchExternalBtn.innerHTML = originalText;
+      fetchExternalBtn.removeAttribute('disabled');
+    }
+  });
+
   // Form Submit
   uploadForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const titleVal = (document.getElementById('course-title') as HTMLInputElement).value;
-    const ytVal = (document.getElementById('youtube-link') as HTMLInputElement).value;
+    const courseSource = (document.querySelector('input[name="course-source"]:checked') as HTMLInputElement).value;
+    const isExternal = courseSource === 'external';
+    
+    const ytVal = youtubeInput.value;
+    const extVal = externalInput.value;
+    const manualThumbVal = (document.getElementById('manual-thumbnail') as HTMLInputElement).value;
 
-    if (!isEditingMode) {
+    if (!isEditingMode && !isExternal && ytVal) {
       try {
         const dupRes = await fetch('/api/check-duplicate-course', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: ytVal.trim() })
+
         });
         if (dupRes.ok) {
           const dupData = await dupRes.json();
@@ -1139,17 +1256,19 @@ const description = "Manually ingest new courses and syllabus layouts into the c
       author: authorVal.trim(),
       creatorName: authorVal.trim(),
       creatorLogo: extractedCreatorLogo || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120",
+      thumbnail: isExternal ? manualThumbVal.trim() : (extractedCreatorLogo ? '' : ''), // we don't extract thumbnail globally unless we add a variable for it, but if manual we save it.
       channelId: extractedChannelId || '',
       creatorSubscribers: extractedSubscribers || 'Verified Channel',
       views: extractedViews || 12450,
       type: "free",
-      sampleVideoId,
-      youtubeUrl: ytVal.trim(),
+      sampleVideoId: isExternal ? '' : sampleVideoId,
+      youtubeUrl: isExternal ? '' : ytVal.trim(),
+      externalUrl: isExternal ? extVal.trim() : '',
       tools,
       moduleType: computedModuleType,
       overview: overviewVal.trim(),
       chapters,
-      isEmbeddable: extractedIsEmbeddable,
+      isEmbeddable: isExternal ? false : extractedIsEmbeddable,
       isCreatorSubmission: (document.getElementById('creator-showcase-checkbox') as HTMLInputElement)?.checked || false,
       showcaseFeatured: (document.getElementById('creator-showcase-checkbox') as HTMLInputElement)?.checked || false
     };

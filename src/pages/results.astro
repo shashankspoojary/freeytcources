@@ -160,7 +160,12 @@ const description = `Search results for ${searchQuery} on FreeYTCourses. Find th
               )}
               
               <!-- Hidden link to make whole card clickable safely -->
-              <a href={`/courses/${course.slug}`} class="absolute inset-0 z-0 opacity-0"><span class="sr-only">View Course</span></a>
+              <a 
+                href={course.externalUrl || (course.isEmbeddable === false ? (course.youtubeUrl || `/courses/${course.slug}`) : `/courses/${course.slug}`)} 
+                target={(course.externalUrl || course.isEmbeddable === false) ? "_blank" : undefined}
+                rel={(course.externalUrl || course.isEmbeddable === false) ? "noopener noreferrer" : undefined}
+                class="absolute inset-0 z-0 opacity-0"
+              ><span class="sr-only">View Course</span></a>
             </div>
           </article>
         ))
