@@ -388,7 +388,6 @@ const description = "Manage, view, and search all cataloged and submitted course
       try {
         const docRef = doc(db, "courses", slug);
         await deleteDoc(docRef);
-        console.log(`✅ Document '${slug}' successfully deleted from Firestore.`);
         
         allFetchedCourses = allFetchedCourses.filter(c => c.slug !== slug);
         renderCoursesTable(allFetchedCourses);

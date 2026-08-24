@@ -633,9 +633,8 @@ const description = "Sign in or create your FreeYTCourses account with Google or
           // Trigger email verification dispatch
           try {
             await sendEmailVerification(newCredential.user);
-            console.log("Verification email dispatched to:", email);
           } catch (vErr) {
-            console.warn("Verification email dispatch notice:", vErr);
+            // Ignore verification dispatch errors
           }
 
           handleSuccessAndRedirect(newCredential.user, "Account Registration");
